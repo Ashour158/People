@@ -1,6 +1,30 @@
-# HR Management System
+# People HR Management System
 
 A complete, enterprise-grade HR Management System with multi-tenant support, built with Node.js, TypeScript, React, and PostgreSQL.
+
+## 📖 Vision
+
+The People HR Management System aims to be a comprehensive, open-source solution for managing the complete employee lifecycle in organizations of all sizes. Our goal is to provide:
+
+### HR Processes Coverage
+
+- **👥 Employee Management**: From onboarding to exit, manage employee data, documents, and organizational hierarchy
+- **⏰ Attendance & Time Tracking**: Real-time check-in/out, shift management, overtime calculations, and attendance regularization
+- **🏖️ Leave Management**: Multi-type leave policies, approval workflows, balance tracking, and leave calendar
+- **💰 Payroll** *(Planned)*: Salary processing, tax calculations, payslip generation, and statutory compliance
+- **📊 Performance Management** *(Planned)*: Goal setting (OKRs/KPIs), 360-degree reviews, and performance analytics
+- **🎯 Recruitment** *(Planned)*: Job posting, applicant tracking, interview scheduling, and offer management
+- **📚 Training & Development** *(Planned)*: Course management, skill tracking, and certification management
+- **💼 Asset Management** *(Planned)*: Equipment allocation, tracking, and maintenance
+
+### Core Principles
+
+- **Self-Service First**: Empower employees to manage their own data
+- **Automation**: Reduce manual HR tasks through intelligent workflows
+- **Compliance**: Built-in support for labor laws and regulations
+- **Privacy**: GDPR-compliant with data minimization and encryption
+- **Scalability**: From startups to enterprises
+- **Open Source**: Transparent, community-driven development
 
 ## 🚀 Features
 
@@ -215,6 +239,92 @@ SMTP_PASSWORD=your_app_password
 VITE_API_BASE_URL=http://localhost:5000/api/v1
 ```
 
+## 📜 Scripts
+
+The project includes comprehensive npm scripts and a Makefile for common development tasks.
+
+### Using Makefile (Recommended)
+
+```bash
+# Show all available commands
+make help
+
+# Initial setup
+make setup              # Install deps + setup database
+
+# Development
+make dev-backend        # Start backend dev server
+make dev-frontend       # Start frontend dev server
+
+# Testing
+make test               # Run all tests
+make test-backend       # Backend tests with coverage
+make test-frontend      # Frontend tests with coverage
+make test-watch         # Watch mode for tests
+
+# Code Quality
+make lint               # Lint all code
+make lint-fix           # Fix linting issues
+make format             # Format code with Prettier
+make typecheck          # Type check TypeScript
+
+# Build
+make build              # Build both projects
+make validate           # Lint + typecheck + test
+
+# Database
+make db-setup           # Create and initialize database
+make db-migrate         # Run migrations
+make db-seed            # Seed with sample data
+make db-reset           # Drop and recreate database
+
+# Docker
+make docker-up          # Start all services
+make docker-down        # Stop all services
+make docker-logs        # View logs
+
+# Utilities
+make create-env         # Create .env files from examples
+make audit              # Security audit
+make ci                 # Run full CI pipeline locally
+```
+
+### Backend NPM Scripts
+
+```bash
+npm run dev             # Start development server
+npm run build           # Build for production
+npm start               # Start production server
+npm test                # Run tests
+npm run test:watch      # Tests in watch mode
+npm run test:ci         # Tests for CI (with coverage)
+npm run lint            # Lint code
+npm run lint:fix        # Fix linting issues
+npm run format          # Format code
+npm run format:check    # Check formatting
+npm run typecheck       # Type check
+npm run validate        # Lint + typecheck + test
+npm run clean           # Remove build artifacts
+```
+
+### Frontend NPM Scripts
+
+```bash
+npm run dev             # Start development server
+npm run build           # Build for production
+npm run preview         # Preview production build
+npm test                # Run tests
+npm run test:watch      # Tests in watch mode
+npm run test:ui         # Tests with UI
+npm run test:coverage   # Tests with coverage
+npm run lint            # Lint code
+npm run lint:fix        # Fix linting issues
+npm run format          # Format code
+npm run format:check    # Check formatting
+npm run typecheck       # Type check
+npm run validate        # Lint + typecheck + test
+```
+
 ## 🧪 Testing
 
 ```bash
@@ -270,28 +380,276 @@ The system uses a comprehensive PostgreSQL schema with:
 - Proper indexing
 - Foreign key constraints
 
+### Domain Model
+
+The system is built around these core entities and their relationships:
+
+#### Core Entities
+
+**Organizations** (Multi-tenant container)
+- The top-level entity for multi-tenancy
+- Each organization has isolated data
+- Contains: Companies, Employees, and all HR data
+
+**Companies** (Legal entities within organization)
+- Multiple companies per organization
+- Enables multi-company payroll and reporting
+- Example: Holding company with subsidiaries
+
+**Employees**
+- Central entity for all HR operations
+- Links to: Departments, Positions, Attendance, Leave, Payroll
+- Includes: Personal info, employment details, compensation
+
+**Departments**
+- Organizational structure
+- Hierarchical (departments can have sub-departments)
+- Links to: Employees, Budget, Goals
+
+**Attendance Records**
+- Daily check-in/out with timestamps
+- GPS location tracking (with consent)
+- Regularization workflow for corrections
+
+**Leave Requests**
+- Multiple leave types (annual, sick, maternity, etc.)
+- Multi-level approval workflow
+- Automatic balance calculation
+
+**Payroll Runs**
+- Monthly/periodic salary processing
+- Earnings and deductions
+- Tax calculations
+- Payslip generation
+
+**Performance Reviews**
+- Goal setting and tracking
+- 360-degree feedback
+- Rating scales and comments
+
+#### Entity Relationships (ERD)
+
+```
+┌─────────────────┐
+│ Organizations   │
+│                 │
+│ - org_id (PK)   │
+│ - name          │
+│ - plan_type     │
+└────────┬────────┘
+         │ 1
+         │
+         │ N
+┌────────┴────────┐        ┌──────────────────┐
+│ Companies       │        │ Employees        │
+│                 │        │                  │
+│ - company_id(PK)│◄──────►│ - employee_id(PK)│
+│ - org_id (FK)   │ N    1 │ - org_id (FK)    │
+│ - name          │        │ - company_id(FK) │
+└─────────────────┘        │ - dept_id (FK)   │
+                           │ - first_name     │
+                           │ - last_name      │
+                           │ - email          │
+                           │ - hire_date      │
+                           └────────┬─────────┘
+                                    │ 1
+                    ┌───────────────┼───────────────┐
+                    │               │               │
+                    │ N             │ N             │ N
+         ┌──────────┴──────┐ ┌─────┴──────┐ ┌─────┴──────────┐
+         │ Attendance      │ │ Leave      │ │ Payroll        │
+         │ Records         │ │ Requests   │ │ Items          │
+         │                 │ │            │ │                │
+         │ - attendance_id │ │ - leave_id │ │ - payroll_id   │
+         │ - employee_id   │ │ - emp_id   │ │ - emp_id       │
+         │ - check_in      │ │ - type     │ │ - gross_pay    │
+         │ - check_out     │ │ - start    │ │ - deductions   │
+         │ - location      │ │ - end      │ │ - net_pay      │
+         └─────────────────┘ │ - status   │ └────────────────┘
+                             └────────────┘
+
+         ┌─────────────────┐
+         │ Departments     │
+         │                 │
+         │ - dept_id (PK)  │
+         │ - org_id (FK)   │
+         │ - name          │
+         │ - parent_id(FK) │──┐
+         └─────────────────┘  │
+                  ▲            │
+                  └────────────┘ (self-referencing)
+```
+
+#### Key Relationships
+
+- **Organization → Companies**: 1:N (One org has many companies)
+- **Organization → Employees**: 1:N (One org has many employees)
+- **Company → Employees**: 1:N (One company has many employees)
+- **Employee → Attendance**: 1:N (One employee has many attendance records)
+- **Employee → Leave Requests**: 1:N (One employee has many leave requests)
+- **Employee → Payroll Items**: 1:N (One employee has many payroll items)
+- **Department → Employees**: 1:N (One department has many employees)
+- **Department → Department**: 1:N (Hierarchical - parent/child departments)
+
+#### ID Strategy
+
+- **UUID v4**: All primary keys use UUIDs for:
+  - Global uniqueness across systems
+  - Security (non-sequential)
+  - Distributed systems support
+  - No collision risk
+- Generated via PostgreSQL `gen_random_uuid()`
+- Indexed for performance
+
+#### Value Objects
+
+The system uses value objects for type safety:
+
+- **EmailAddress**: Validated email format
+- **Money**: Currency with precision (DECIMAL 15,2)
+- **DateRange**: Start and end dates with validation
+- **PhoneNumber**: International format validation
+- **Address**: Structured address with components
+- **GPS Coordinates**: Latitude/longitude for attendance
+
+For detailed schema documentation, see:
+- [`enhanced_hr_schema.sql`](./enhanced_hr_schema.sql) - Core tables
+- [`hr_attendance_leave_schema.sql`](./hr_attendance_leave_schema.sql) - Time & leave
+- [`payroll_asset_management_schema.sql`](./payroll_asset_management_schema.sql) - Payroll
+- [`docs/adr/0001-database-choice.md`](./docs/adr/0001-database-choice.md) - Database decisions
+
 ## 🛡️ License
 
 This project is licensed under the MIT License.
 
 ## 👥 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please see our [Contributing Guidelines](./CONTRIBUTING.md) for details on:
+
+- Code of Conduct
+- Development setup
+- Branching model and commit conventions
+- Code style guidelines
+- Testing requirements
+- Pull request process
+
+Quick start for contributors:
+
+```bash
+# Fork the repository on GitHub
+
+# Clone your fork
+git clone https://github.com/YOUR_USERNAME/People.git
+cd People
+
+# Add upstream remote
+git remote add upstream https://github.com/Ashour158/People.git
+
+# Create a feature branch
+git checkout -b feature/your-feature-name
+
+# Make your changes and commit
+git commit -m "feat: add your feature"
+
+# Push to your fork
+git push origin feature/your-feature-name
+
+# Create a Pull Request on GitHub
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## 📧 Support
 
-For support, email support@yourdomain.com or open an issue on GitHub.
+For support, please:
+
+- 📖 Check the [documentation](./docs/)
+- 🐛 [Report bugs](https://github.com/Ashour158/People/issues/new?template=bug_report.md)
+- 💡 [Request features](https://github.com/Ashour158/People/issues/new?template=feature_request.md)
+- 💬 Join [discussions](https://github.com/Ashour158/People/discussions)
+- 📧 Email: support@yourdomain.com
+
+## 📚 Documentation
+
+- [API Documentation](./api_documentation.md) - Complete API reference
+- [Architecture](./ARCHITECTURE.md) - System architecture overview
+- [Security](./SECURITY.md) - Security policies and best practices
+- [Contributing Guidelines](./CONTRIBUTING.md) - How to contribute
+- [Roadmap](./ROADMAP.md) - Feature roadmap and milestones
+- [Architecture Decision Records](./docs/adr/) - Technical decisions and rationale
+- [Setup Guide](./SETUP_GUIDE.md) - Detailed setup instructions
+- [Integration Guide](./INTEGRATION_GUIDE.md) - Third-party integrations
+
+## 🔒 Security
+
+For security concerns, please review our [Security Policy](./SECURITY.md).
+
+**Reporting vulnerabilities**: Please email security@yourdomain.com (not via public issues).
+
+## 🏆 Tech Stack
+
+### Backend
+- **Runtime**: Node.js 18+
+- **Language**: TypeScript 5+
+- **Framework**: Express.js
+- **Database**: PostgreSQL 15+
+- **Cache**: Redis 7+
+- **ORM**: Raw SQL with parameterized queries
+- **Authentication**: JWT
+- **Validation**: Joi
+- **Logging**: Winston
+- **Testing**: Jest
+
+### Frontend
+- **Framework**: React 18
+- **Language**: TypeScript 5+
+- **Build Tool**: Vite
+- **UI Library**: Material-UI (MUI)
+- **State Management**: Zustand + React Query
+- **Forms**: React Hook Form + Yup
+- **HTTP Client**: Axios
+- **Testing**: Vitest + Testing Library
+
+### DevOps
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose / Kubernetes
+- **CI/CD**: GitHub Actions
+- **Code Quality**: ESLint + Prettier
+- **Version Control**: Git + GitHub
 
 ## 🎯 Roadmap
 
-- [ ] Payroll management
-- [ ] Performance reviews
-- [ ] Recruitment module
-- [ ] Training management
+See our detailed [ROADMAP.md](./ROADMAP.md) for planned features and milestones.
+
+### Current Status (v1.0.0) ✅
+
+- [x] Core HR infrastructure
+- [x] Authentication & Authorization
+- [x] Employee Management
+- [x] Attendance Management
+- [x] Leave Management
+- [x] Multi-tenant support
+- [x] Docker deployment
+
+### Next Milestones
+
+- **v1.1.0** (Q1 2025): Payroll Module MVP
+- **v1.2.0** (Q2 2025): Performance Management
+- **v1.3.0** (Q3 2025): Recruitment Module
+- **v1.4.0** (Q4 2025): Training Management
+
+### High-Priority Features
+
+- [ ] Payroll processing and payslip generation
+- [ ] Performance reviews and goal tracking (OKRs/KPIs)
+- [ ] Recruitment and applicant tracking
+- [ ] Training and skill management
 - [ ] Asset management
-- [ ] Mobile app
-- [ ] Advanced reporting
-- [ ] Integration with third-party services
+- [ ] Mobile applications (iOS/Android)
+- [ ] Advanced reporting and analytics
+- [ ] Integration with third-party services (Slack, Teams, etc.)
+
+For detailed feature roadmap and progress tracking, see [ROADMAP.md](./ROADMAP.md).
 
 ## 📝 Changelog
 
