@@ -1,0 +1,36 @@
+# Code Owners for People HR Management System
+# 
+# These owners will be requested for review when someone opens a pull request
+# that modifies code in specific areas.
+#
+# Learn more about code owners: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @Ashour158
+
+# Backend code
+/backend/ @Ashour158
+
+# Frontend code
+/frontend/ @Ashour158
+
+# Database schemas
+*.sql @Ashour158
+
+# Documentation
+*.md @Ashour158
+/docs/ @Ashour158
+
+# Configuration files
+*.json @Ashour158
+*.yml @Ashour158
+*.yaml @Ashour158
+
+# Security-related files
+SECURITY.md @Ashour158
+.github/workflows/ @Ashour158
+
+# Docker files
+Dockerfile @Ashour158
+docker-compose.yml @Ashour158
+.dockerignore @Ashour158
