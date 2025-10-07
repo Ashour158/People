@@ -1,0 +1,1855 @@
+# HR Management System - Complete Architecture & Implementation Guide
+
+## 1. SYSTEM OVERVIEW
+
+### Core Philosophy
+Build a modular, scalable HR management platform that handles the complete employee lifecycle from recruitment to exit, with emphasis on:
+- Self-service capabilities
+- Automation of routine tasks
+- Real-time reporting and analytics
+- Mobile-first approach
+- API-first architecture
+
+---
+
+## 2. CORE MODULES & DATA MODELS
+
+### 2.1 EMPLOYEE DATABASE (Core Module)
+
+**Purpose**: Central employee information management system
+
+**Database Schema**:
+```sql
+-- Employees Table
+CREATE TABLE employees (
+    employee_id UUID PRIMARY KEY,
+    employee_code VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100),
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    personal_email VARCHAR(255),
+    phone_number VARCHAR(20),
+    date_of_birth DATE,
+    gender VARCHAR(20),
+    blood_group VARCHAR(10),
+    marital_status VARCHAR(20),
+    nationality VARCHAR(50),
+    
+    -- Employment Details
+    hire_date DATE NOT NULL,
+    employment_type VARCHAR(50), -- Full-time, Part-time, Contract, Intern
+    employee_status VARCHAR(20), -- Active, Inactive, On Leave, Terminated
+    probation_end_date DATE,
+    confirmation_date DATE,
+    termination_date DATE,
+    
+    -- Organizational Structure
+    department_id UUID REFERENCES departments(department_id),
+    designation_id UUID REFERENCES designations(designation_id),
+    location_id UUID REFERENCES locations(location_id),
+    reporting_manager_id UUID REFERENCES employees(employee_id),
+    
+    -- Work Details
+    work_shift_id UUID REFERENCES work_shifts(shift_id),
+    work_location_type VARCHAR(20), -- Office, Remote, Hybrid
+    
+    -- System Fields
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES users(user_id),
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_by UUID REFERENCES users(user_id),
+    is_deleted BOOLEAN DEFAULT FALSE
+);
+
+-- Departments Table
+CREATE TABLE departments (
+    department_id UUID PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    department_code VARCHAR(20) UNIQUE,
+    parent_department_id UUID REFERENCES departments(department_id),
+    department_head_id UUID REFERENCES employees(employee_id),
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Designations/Job Titles
+CREATE TABLE designations (
+    designation_id UUID PRIMARY KEY,
+    designation_name VARCHAR(100) NOT NULL,
+    designation_code VARCHAR(20) UNIQUE,
+    job_level VARCHAR(50),
+    job_description TEXT,
+    department_id UUID REFERENCES departments(department_id),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Locations/Offices
+CREATE TABLE locations (
+    location_id UUID PRIMARY KEY,
+    location_name VARCHAR(100) NOT NULL,
+    location_code VARCHAR(20) UNIQUE,
+    address_line1 VARCHAR(255),
+    address_line2 VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    postal_code VARCHAR(20),
+    timezone VARCHAR(50),
+    is_headquarters BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Employee Documents
+CREATE TABLE employee_documents (
+    document_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    document_type VARCHAR(50), -- ID Proof, Address Proof, Certificate, etc.
+    document_name VARCHAR(255),
+    file_path VARCHAR(500),
+    file_size INTEGER,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    uploaded_by UUID REFERENCES users(user_id),
+    expiry_date DATE,
+    is_verified BOOLEAN DEFAULT FALSE
+);
+
+-- Emergency Contacts
+CREATE TABLE emergency_contacts (
+    contact_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    contact_name VARCHAR(100) NOT NULL,
+    relationship VARCHAR(50),
+    phone_number VARCHAR(20) NOT NULL,
+    alternate_phone VARCHAR(20),
+    email VARCHAR(255),
+    address TEXT,
+    is_primary BOOLEAN DEFAULT FALSE
+);
+
+-- Work Experience (Previous Employment)
+CREATE TABLE work_experience (
+    experience_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    company_name VARCHAR(200) NOT NULL,
+    job_title VARCHAR(100),
+    from_date DATE NOT NULL,
+    to_date DATE,
+    is_current BOOLEAN DEFAULT FALSE,
+    job_description TEXT,
+    reason_for_leaving TEXT
+);
+
+-- Education History
+CREATE TABLE education (
+    education_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    degree_name VARCHAR(100) NOT NULL,
+    institution_name VARCHAR(200),
+    field_of_study VARCHAR(100),
+    start_date DATE,
+    end_date DATE,
+    grade VARCHAR(20),
+    is_highest_qualification BOOLEAN DEFAULT FALSE
+);
+```
+
+---
+
+### 2.2 ATTENDANCE MANAGEMENT
+
+**Purpose**: Track employee attendance, check-in/check-out, work hours
+
+**Database Schema**:
+```sql
+-- Attendance Records
+CREATE TABLE attendance (
+    attendance_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    attendance_date DATE NOT NULL,
+    check_in_time TIMESTAMP,
+    check_out_time TIMESTAMP,
+    total_hours DECIMAL(5,2),
+    break_hours DECIMAL(5,2),
+    net_hours DECIMAL(5,2),
+    
+    -- Location Tracking
+    check_in_location VARCHAR(255), -- Office, Remote, Client Site
+    check_in_latitude DECIMAL(10,8),
+    check_in_longitude DECIMAL(11,8),
+    check_out_latitude DECIMAL(10,8),
+    check_out_longitude DECIMAL(11,8),
+    check_in_ip_address VARCHAR(45),
+    
+    -- Status
+    attendance_status VARCHAR(20), -- Present, Absent, Half-Day, On Leave
+    is_late BOOLEAN DEFAULT FALSE,
+    late_by_minutes INTEGER,
+    is_early_departure BOOLEAN DEFAULT FALSE,
+    early_departure_minutes INTEGER,
+    
+    -- Approval
+    is_regularized BOOLEAN DEFAULT FALSE,
+    regularization_reason TEXT,
+    approved_by UUID REFERENCES employees(employee_id),
+    approved_at TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(employee_id, attendance_date)
+);
+
+-- Work Shifts
+CREATE TABLE work_shifts (
+    shift_id UUID PRIMARY KEY,
+    shift_name VARCHAR(100) NOT NULL,
+    shift_code VARCHAR(20) UNIQUE,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    grace_period_minutes INTEGER DEFAULT 0,
+    core_hours_start TIME,
+    core_hours_end TIME,
+    is_flexible BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Shift Assignments
+CREATE TABLE shift_assignments (
+    assignment_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    shift_id UUID REFERENCES work_shifts(shift_id),
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Attendance Policies
+CREATE TABLE attendance_policies (
+    policy_id UUID PRIMARY KEY,
+    policy_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    max_late_arrivals_per_month INTEGER,
+    max_early_departures_per_month INTEGER,
+    half_day_threshold_hours DECIMAL(4,2),
+    full_day_threshold_hours DECIMAL(4,2),
+    requires_geo_tracking BOOLEAN DEFAULT FALSE,
+    requires_ip_tracking BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+```
+
+---
+
+### 2.3 LEAVE MANAGEMENT
+
+**Purpose**: Handle leave requests, approvals, balances, and policies
+
+**Database Schema**:
+```sql
+-- Leave Types
+CREATE TABLE leave_types (
+    leave_type_id UUID PRIMARY KEY,
+    leave_type_name VARCHAR(100) NOT NULL,
+    leave_code VARCHAR(20) UNIQUE,
+    description TEXT,
+    is_paid BOOLEAN DEFAULT TRUE,
+    max_days_per_year DECIMAL(5,2),
+    min_days_per_request DECIMAL(4,2),
+    max_days_per_request DECIMAL(4,2),
+    can_carry_forward BOOLEAN DEFAULT FALSE,
+    max_carry_forward_days DECIMAL(5,2),
+    requires_document BOOLEAN DEFAULT FALSE,
+    notice_period_days INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    color_code VARCHAR(7) -- For calendar display
+);
+
+-- Leave Balances
+CREATE TABLE leave_balances (
+    balance_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    leave_type_id UUID REFERENCES leave_types(leave_type_id),
+    year INTEGER NOT NULL,
+    allocated_days DECIMAL(5,2) NOT NULL,
+    used_days DECIMAL(5,2) DEFAULT 0,
+    pending_days DECIMAL(5,2) DEFAULT 0,
+    carried_forward_days DECIMAL(5,2) DEFAULT 0,
+    available_days DECIMAL(5,2) GENERATED ALWAYS AS (
+        allocated_days + carried_forward_days - used_days - pending_days
+    ) STORED,
+    UNIQUE(employee_id, leave_type_id, year)
+);
+
+-- Leave Requests
+CREATE TABLE leave_requests (
+    leave_request_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    leave_type_id UUID REFERENCES leave_types(leave_type_id),
+    
+    -- Leave Details
+    from_date DATE NOT NULL,
+    to_date DATE NOT NULL,
+    total_days DECIMAL(5,2) NOT NULL,
+    is_half_day BOOLEAN DEFAULT FALSE,
+    half_day_session VARCHAR(20), -- First Half, Second Half
+    
+    reason TEXT,
+    contact_details VARCHAR(255),
+    
+    -- Document
+    supporting_document_path VARCHAR(500),
+    
+    -- Status & Approval
+    status VARCHAR(20) DEFAULT 'Pending', -- Pending, Approved, Rejected, Cancelled
+    applied_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Approval Workflow
+    approver_id UUID REFERENCES employees(employee_id),
+    approved_date TIMESTAMP,
+    approval_comments TEXT,
+    rejection_reason TEXT,
+    
+    -- Cancellation
+    cancelled_by UUID REFERENCES employees(employee_id),
+    cancelled_at TIMESTAMP,
+    cancellation_reason TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Leave Approval Workflow
+CREATE TABLE leave_approval_workflow (
+    workflow_id UUID PRIMARY KEY,
+    leave_request_id UUID REFERENCES leave_requests(leave_request_id),
+    approver_id UUID REFERENCES employees(employee_id),
+    approval_level INTEGER NOT NULL,
+    status VARCHAR(20), -- Pending, Approved, Rejected
+    comments TEXT,
+    action_date TIMESTAMP,
+    is_final_approver BOOLEAN DEFAULT FALSE
+);
+
+-- Leave Policies
+CREATE TABLE leave_policies (
+    policy_id UUID PRIMARY KEY,
+    policy_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    applicable_to VARCHAR(50), -- All, Department, Designation, Location
+    department_id UUID REFERENCES departments(department_id),
+    designation_id UUID REFERENCES designations(designation_id),
+    location_id UUID REFERENCES locations(location_id),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Leave Policy Rules
+CREATE TABLE leave_policy_rules (
+    rule_id UUID PRIMARY KEY,
+    policy_id UUID REFERENCES leave_policies(policy_id),
+    leave_type_id UUID REFERENCES leave_types(leave_type_id),
+    annual_allocation DECIMAL(5,2),
+    accrual_type VARCHAR(20), -- Annual, Monthly, Quarterly
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Holidays
+CREATE TABLE holidays (
+    holiday_id UUID PRIMARY KEY,
+    holiday_name VARCHAR(100) NOT NULL,
+    holiday_date DATE NOT NULL,
+    holiday_type VARCHAR(50), -- Public, Optional, Regional
+    description TEXT,
+    location_id UUID REFERENCES locations(location_id),
+    is_mandatory BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+```
+
+---
+
+### 2.4 PERFORMANCE MANAGEMENT
+
+**Purpose**: Goal setting, performance reviews, feedback, and appraisals
+
+**Database Schema**:
+```sql
+-- Performance Cycles
+CREATE TABLE performance_cycles (
+    cycle_id UUID PRIMARY KEY,
+    cycle_name VARCHAR(100) NOT NULL,
+    cycle_type VARCHAR(50), -- Annual, Quarterly, Monthly
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    review_start_date DATE,
+    review_end_date DATE,
+    status VARCHAR(20), -- Draft, Active, Completed, Cancelled
+    description TEXT,
+    created_by UUID REFERENCES users(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Goals/Objectives
+CREATE TABLE goals (
+    goal_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    cycle_id UUID REFERENCES performance_cycles(cycle_id),
+    goal_title VARCHAR(200) NOT NULL,
+    goal_description TEXT,
+    goal_category VARCHAR(50), -- Individual, Team, Organizational
+    goal_type VARCHAR(50), -- Performance, Development, Project
+    
+    -- SMART Criteria
+    is_specific BOOLEAN,
+    is_measurable BOOLEAN,
+    is_achievable BOOLEAN,
+    is_relevant BOOLEAN,
+    is_time_bound BOOLEAN,
+    
+    -- Progress
+    start_date DATE NOT NULL,
+    target_date DATE NOT NULL,
+    completion_date DATE,
+    weight_percentage DECIMAL(5,2),
+    progress_percentage DECIMAL(5,2) DEFAULT 0,
+    status VARCHAR(20), -- Not Started, In Progress, Completed, Cancelled
+    
+    -- Alignment
+    parent_goal_id UUID REFERENCES goals(goal_id),
+    aligned_with_org_goal BOOLEAN DEFAULT FALSE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Goal Updates/Check-ins
+CREATE TABLE goal_updates (
+    update_id UUID PRIMARY KEY,
+    goal_id UUID REFERENCES goals(goal_id),
+    update_date DATE NOT NULL,
+    progress_percentage DECIMAL(5,2),
+    status VARCHAR(20),
+    comments TEXT,
+    challenges TEXT,
+    updated_by UUID REFERENCES employees(employee_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Key Result Areas (KRA)
+CREATE TABLE key_result_areas (
+    kra_id UUID PRIMARY KEY,
+    kra_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    designation_id UUID REFERENCES designations(designation_id),
+    department_id UUID REFERENCES departments(department_id),
+    weight_percentage DECIMAL(5,2),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Competencies
+CREATE TABLE competencies (
+    competency_id UUID PRIMARY KEY,
+    competency_name VARCHAR(100) NOT NULL,
+    competency_category VARCHAR(50), -- Technical, Behavioral, Leadership
+    description TEXT,
+    proficiency_levels JSONB, -- [{level: 1, name: 'Basic', description: '...'}, ...]
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Skills
+CREATE TABLE skills (
+    skill_id UUID PRIMARY KEY,
+    skill_name VARCHAR(100) NOT NULL,
+    skill_category VARCHAR(50), -- Technical, Soft, Domain
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Employee Skills
+CREATE TABLE employee_skills (
+    employee_skill_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    skill_id UUID REFERENCES skills(skill_id),
+    proficiency_level INTEGER, -- 1-5 scale
+    years_of_experience DECIMAL(4,2),
+    last_used_date DATE,
+    is_primary_skill BOOLEAN DEFAULT FALSE,
+    self_assessed BOOLEAN DEFAULT TRUE,
+    assessed_date DATE,
+    UNIQUE(employee_id, skill_id)
+);
+
+-- Performance Reviews/Appraisals
+CREATE TABLE performance_reviews (
+    review_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    reviewer_id UUID REFERENCES employees(employee_id),
+    cycle_id UUID REFERENCES performance_cycles(cycle_id),
+    review_type VARCHAR(50), -- Self, Manager, Peer, 360
+    
+    -- Ratings
+    overall_rating DECIMAL(3,2),
+    kra_rating DECIMAL(3,2),
+    competency_rating DECIMAL(3,2),
+    goal_achievement_rating DECIMAL(3,2),
+    
+    -- Review Content
+    strengths TEXT,
+    areas_of_improvement TEXT,
+    achievements TEXT,
+    training_recommendations TEXT,
+    career_aspirations TEXT,
+    manager_comments TEXT,
+    employee_comments TEXT,
+    
+    -- Status
+    status VARCHAR(20), -- Draft, Submitted, In Review, Completed
+    review_date DATE,
+    submitted_date TIMESTAMP,
+    completed_date TIMESTAMP,
+    
+    -- Acknowledgement
+    acknowledged_by_employee BOOLEAN DEFAULT FALSE,
+    employee_acknowledgement_date TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Review Ratings Detail
+CREATE TABLE review_ratings (
+    rating_id UUID PRIMARY KEY,
+    review_id UUID REFERENCES performance_reviews(review_id),
+    rating_category VARCHAR(50), -- KRA, Competency, Skill, Goal
+    category_item_id UUID, -- References KRA, Competency, Skill, or Goal
+    rating_value DECIMAL(3,2),
+    weight_percentage DECIMAL(5,2),
+    comments TEXT
+);
+
+-- Feedback (360 Degree, Peer-to-Peer)
+CREATE TABLE feedback (
+    feedback_id UUID PRIMARY KEY,
+    feedback_for_employee_id UUID REFERENCES employees(employee_id),
+    feedback_by_employee_id UUID REFERENCES employees(employee_id),
+    feedback_type VARCHAR(50), -- Peer, Upward, 360, Continuous
+    feedback_category VARCHAR(50), -- Positive, Constructive, General
+    
+    feedback_text TEXT NOT NULL,
+    is_anonymous BOOLEAN DEFAULT FALSE,
+    
+    -- Related to
+    related_to_review_id UUID REFERENCES performance_reviews(review_id),
+    related_to_goal_id UUID REFERENCES goals(goal_id),
+    
+    status VARCHAR(20), -- Draft, Submitted, Acknowledged
+    feedback_date DATE NOT NULL,
+    acknowledged_date TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.5 RECRUITMENT/HIRING
+
+**Purpose**: Job postings, candidate management, interview scheduling
+
+**Database Schema**:
+```sql
+-- Job Postings
+CREATE TABLE job_postings (
+    job_id UUID PRIMARY KEY,
+    job_title VARCHAR(200) NOT NULL,
+    job_code VARCHAR(50) UNIQUE,
+    department_id UUID REFERENCES departments(department_id),
+    designation_id UUID REFERENCES designations(designation_id),
+    location_id UUID REFERENCES locations(location_id),
+    
+    job_description TEXT,
+    responsibilities TEXT,
+    requirements TEXT,
+    qualifications TEXT,
+    
+    employment_type VARCHAR(50), -- Full-time, Part-time, Contract
+    experience_min_years DECIMAL(4,2),
+    experience_max_years DECIMAL(4,2),
+    
+    salary_min DECIMAL(12,2),
+    salary_max DECIMAL(12,2),
+    currency VARCHAR(3),
+    
+    number_of_positions INTEGER DEFAULT 1,
+    
+    hiring_manager_id UUID REFERENCES employees(employee_id),
+    recruiter_id UUID REFERENCES employees(employee_id),
+    
+    status VARCHAR(20), -- Draft, Open, Closed, On Hold, Cancelled
+    posted_date DATE,
+    closing_date DATE,
+    
+    is_internal_posting BOOLEAN DEFAULT FALSE,
+    is_published BOOLEAN DEFAULT FALSE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Candidates
+CREATE TABLE candidates (
+    candidate_id UUID PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),
+    
+    current_company VARCHAR(200),
+    current_designation VARCHAR(100),
+    total_experience DECIMAL(4,2),
+    
+    resume_path VARCHAR(500),
+    linkedin_url VARCHAR(500),
+    portfolio_url VARCHAR(500),
+    
+    source VARCHAR(50), -- Job Portal, Referral, LinkedIn, Direct
+    referrer_employee_id UUID REFERENCES employees(employee_id),
+    
+    current_location VARCHAR(100),
+    preferred_locations TEXT,
+    
+    expected_salary DECIMAL(12,2),
+    current_salary DECIMAL(12,2),
+    notice_period_days INTEGER,
+    
+    status VARCHAR(20), -- New, Screening, Interview, Offer, Hired, Rejected
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Job Applications
+CREATE TABLE job_applications (
+    application_id UUID PRIMARY KEY,
+    job_id UUID REFERENCES job_postings(job_id),
+    candidate_id UUID REFERENCES candidates(candidate_id),
+    
+    application_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    application_status VARCHAR(20), -- Applied, Screening, Interview, Offer, Hired, Rejected
+    
+    cover_letter TEXT,
+    
+    current_stage VARCHAR(50), -- Application Review, Phone Screen, Technical Interview, etc.
+    
+    assigned_recruiter_id UUID REFERENCES employees(employee_id),
+    
+    is_shortlisted BOOLEAN DEFAULT FALSE,
+    shortlisted_date TIMESTAMP,
+    
+    rejection_reason TEXT,
+    rejected_date TIMESTAMP,
+    
+    UNIQUE(job_id, candidate_id)
+);
+
+-- Interview Rounds
+CREATE TABLE interview_rounds (
+    round_id UUID PRIMARY KEY,
+    round_name VARCHAR(100) NOT NULL,
+    job_id UUID REFERENCES job_postings(job_id),
+    round_sequence INTEGER NOT NULL,
+    round_type VARCHAR(50), -- Phone, Video, In-Person, Technical, HR, Managerial
+    duration_minutes INTEGER,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Interview Schedules
+CREATE TABLE interview_schedules (
+    interview_id UUID PRIMARY KEY,
+    application_id UUID REFERENCES job_applications(application_id),
+    round_id UUID REFERENCES interview_rounds(round_id),
+    
+    interview_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    
+    interview_mode VARCHAR(20), -- Video, In-Person, Phone
+    location VARCHAR(255),
+    meeting_link VARCHAR(500),
+    
+    interviewers JSONB, -- Array of employee_ids
+    
+    status VARCHAR(20), -- Scheduled, Completed, Rescheduled, Cancelled
+    
+    feedback_submitted BOOLEAN DEFAULT FALSE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Interview Feedback
+CREATE TABLE interview_feedback (
+    feedback_id UUID PRIMARY KEY,
+    interview_id UUID REFERENCES interview_schedules(interview_id),
+    interviewer_id UUID REFERENCES employees(employee_id),
+    
+    technical_skills_rating DECIMAL(3,2),
+    communication_rating DECIMAL(3,2),
+    problem_solving_rating DECIMAL(3,2),
+    cultural_fit_rating DECIMAL(3,2),
+    overall_rating DECIMAL(3,2),
+    
+    strengths TEXT,
+    weaknesses TEXT,
+    detailed_feedback TEXT,
+    
+    recommendation VARCHAR(20), -- Strong Hire, Hire, Maybe, No Hire
+    
+    submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Offer Letters
+CREATE TABLE offer_letters (
+    offer_id UUID PRIMARY KEY,
+    application_id UUID REFERENCES job_applications(application_id),
+    
+    offer_date DATE NOT NULL,
+    joining_date DATE,
+    
+    designation_id UUID REFERENCES designations(designation_id),
+    department_id UUID REFERENCES departments(department_id),
+    location_id UUID REFERENCES locations(location_id),
+    
+    annual_salary DECIMAL(12,2),
+    currency VARCHAR(3),
+    
+    offer_letter_path VARCHAR(500),
+    
+    status VARCHAR(20), -- Draft, Sent, Accepted, Rejected, Withdrawn
+    sent_date TIMESTAMP,
+    response_date TIMESTAMP,
+    
+    accepted_date TIMESTAMP,
+    rejection_reason TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.6 ONBOARDING
+
+**Purpose**: New hire onboarding workflows, tasks, documentation
+
+**Database Schema**:
+```sql
+-- Onboarding Programs
+CREATE TABLE onboarding_programs (
+    program_id UUID PRIMARY KEY,
+    program_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    duration_days INTEGER,
+    
+    applicable_to VARCHAR(50), -- Department, Designation, Location
+    department_id UUID REFERENCES departments(department_id),
+    designation_id UUID REFERENCES designations(designation_id),
+    location_id UUID REFERENCES locations(location_id),
+    
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Onboarding Tasks
+CREATE TABLE onboarding_tasks (
+    task_id UUID PRIMARY KEY,
+    program_id UUID REFERENCES onboarding_programs(program_id),
+    task_name VARCHAR(200) NOT NULL,
+    task_description TEXT,
+    task_type VARCHAR(50), -- Document, Training, Setup, Meeting
+    
+    assigned_to_role VARCHAR(50), -- HR, IT, Manager, Buddy
+    
+    due_days_after_joining INTEGER,
+    is_mandatory BOOLEAN DEFAULT TRUE,
+    task_sequence INTEGER,
+    
+    requires_document_upload BOOLEAN DEFAULT FALSE,
+    requires_approval BOOLEAN DEFAULT FALSE,
+    
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Employee Onboarding
+CREATE TABLE employee_onboarding (
+    onboarding_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    program_id UUID REFERENCES onboarding_programs(program_id),
+    
+    joining_date DATE NOT NULL,
+    expected_completion_date DATE,
+    actual_completion_date DATE,
+    
+    status VARCHAR(20), -- Not Started, In Progress, Completed, Delayed
+    completion_percentage DECIMAL(5,2) DEFAULT 0,
+    
+    buddy_id UUID REFERENCES employees(employee_id),
+    
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP
+);
+
+-- Employee Onboarding Task Progress
+CREATE TABLE onboarding_task_progress (
+    progress_id UUID PRIMARY KEY,
+    onboarding_id UUID REFERENCES employee_onboarding(onboarding_id),
+    task_id UUID REFERENCES onboarding_tasks(task_id),
+    
+    assigned_to_id UUID REFERENCES employees(employee_id),
+    
+    status VARCHAR(20), -- Pending, In Progress, Completed, Skipped
+    due_date DATE,
+    completion_date DATE,
+    
+    document_path VARCHAR(500),
+    comments TEXT,
+    
+    approved_by UUID REFERENCES employees(employee_id),
+    approved_at TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.7 TIMESHEET & PROJECT TRACKING
+
+**Purpose**: Track time spent on projects, tasks, billable hours
+
+**Database Schema**:
+```sql
+-- Projects
+CREATE TABLE projects (
+    project_id UUID PRIMARY KEY,
+    project_name VARCHAR(200) NOT NULL,
+    project_code VARCHAR(50) UNIQUE,
+    description TEXT,
+    
+    client_id UUID REFERENCES clients(client_id),
+    
+    start_date DATE,
+    end_date DATE,
+    
+    project_manager_id UUID REFERENCES employees(employee_id),
+    
+    billing_type VARCHAR(20), -- Fixed, Time & Material, Non-Billable
+    billing_rate DECIMAL(10,2),
+    currency VARCHAR(3),
+    
+    budget_hours DECIMAL(10,2),
+    budget_amount DECIMAL(12,2),
+    
+    status VARCHAR(20), -- Planning, Active, On Hold, Completed, Cancelled
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Project Assignments
+CREATE TABLE project_assignments (
+    assignment_id UUID PRIMARY KEY,
+    project_id UUID REFERENCES projects(project_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    role VARCHAR(100),
+    allocation_percentage DECIMAL(5,2),
+    
+    start_date DATE NOT NULL,
+    end_date DATE,
+    
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Tasks
+CREATE TABLE tasks (
+    task_id UUID PRIMARY KEY,
+    project_id UUID REFERENCES projects(project_id),
+    task_name VARCHAR(200) NOT NULL,
+    task_description TEXT,
+    
+    assigned_to_id UUID REFERENCES employees(employee_id),
+    
+    estimated_hours DECIMAL(8,2),
+    
+    start_date DATE,
+    due_date DATE,
+    completion_date DATE,
+    
+    priority VARCHAR(20), -- Low, Medium, High, Critical
+    status VARCHAR(20), -- To Do, In Progress, Completed, Blocked
+    
+    parent_task_id UUID REFERENCES tasks(task_id),
+    
+    created_by UUID REFERENCES employees(employee_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Timesheets
+CREATE TABLE timesheets (
+    timesheet_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    week_start_date DATE NOT NULL,
+    week_end_date DATE NOT NULL,
+    
+    total_hours DECIMAL(8,2) DEFAULT 0,
+    billable_hours DECIMAL(8,2) DEFAULT 0,
+    non_billable_hours DECIMAL(8,2) DEFAULT 0,
+    
+    status VARCHAR(20), -- Draft, Submitted, Approved, Rejected
+    
+    submitted_date TIMESTAMP,
+    approved_by UUID REFERENCES employees(employee_id),
+    approved_date TIMESTAMP,
+    rejection_reason TEXT,
+    
+    UNIQUE(employee_id, week_start_date)
+);
+
+-- Timesheet Entries
+CREATE TABLE timesheet_entries (
+    entry_id UUID PRIMARY KEY,
+    timesheet_id UUID REFERENCES timesheets(timesheet_id),
+    
+    work_date DATE NOT NULL,
+    project_id UUID REFERENCES projects(project_id),
+    task_id UUID REFERENCES tasks(task_id),
+    
+    hours_worked DECIMAL(5,2) NOT NULL,
+    is_billable BOOLEAN DEFAULT TRUE,
+    
+    description TEXT,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Clients
+CREATE TABLE clients (
+    client_id UUID PRIMARY KEY,
+    client_name VARCHAR(200) NOT NULL,
+    client_code VARCHAR(50) UNIQUE,
+    
+    contact_person VARCHAR(100),
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(20),
+    
+    address TEXT,
+    
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.8 COMPENSATION MANAGEMENT
+
+**Purpose**: Manage salaries, bonuses, increments, pay structures
+
+**Database Schema**:
+```sql
+-- Salary Components
+CREATE TABLE salary_components (
+    component_id UUID PRIMARY KEY,
+    component_name VARCHAR(100) NOT NULL,
+    component_code VARCHAR(20) UNIQUE,
+    component_type VARCHAR(20), -- Earning, Deduction
+    calculation_type VARCHAR(50), -- Fixed, Percentage, Formula
+    is_taxable BOOLEAN DEFAULT TRUE,
+    is_part_of_ctc BOOLEAN DEFAULT TRUE,
+    display_order INTEGER,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Employee Compensation
+CREATE TABLE employee_compensation (
+    compensation_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    effective_from DATE NOT NULL,
+    effective_to DATE,
+    
+    annual_ctc DECIMAL(12,2) NOT NULL,
+    monthly_gross DECIMAL(12,2),
+    monthly_net DECIMAL(12,2),
+    
+    currency VARCHAR(3),
+    
+    is_current BOOLEAN DEFAULT TRUE,
+    
+    created_by UUID REFERENCES users(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Compensation Components
+CREATE TABLE compensation_components (
+    id UUID PRIMARY KEY,
+    compensation_id UUID REFERENCES employee_compensation(compensation_id),
+    component_id UUID REFERENCES salary_components(component_id),
+    
+    amount DECIMAL(12,2) NOT NULL,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bonuses
+CREATE TABLE bonuses (
+    bonus_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    bonus_type VARCHAR(50), -- Performance, Joining, Retention, Festival
+    bonus_amount DECIMAL(12,2) NOT NULL,
+    currency VARCHAR(3),
+    
+    bonus_date DATE NOT NULL,
+    payment_date DATE,
+    
+    reason TEXT,
+    
+    approved_by UUID REFERENCES employees(employee_id),
+    approved_date TIMESTAMP,
+    
+    status VARCHAR(20), -- Pending, Approved, Paid
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Salary Revisions
+CREATE TABLE salary_revisions (
+    revision_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    previous_compensation_id UUID REFERENCES employee_compensation(compensation_id),
+    new_compensation_id UUID REFERENCES employee_compensation(compensation_id),
+    
+    revision_type VARCHAR(50), -- Annual, Promotion, Market Adjustment
+    revision_percentage DECIMAL(5,2),
+    
+    effective_date DATE NOT NULL,
+    
+    reason TEXT,
+    
+    approved_by UUID REFERENCES employees(employee_id),
+    approved_date TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.9 LEARNING & DEVELOPMENT (LMS)
+
+**Purpose**: Training programs, courses, certifications, skill development
+
+**Database Schema**:
+```sql
+-- Training Programs
+CREATE TABLE training_programs (
+    program_id UUID PRIMARY KEY,
+    program_name VARCHAR(200) NOT NULL,
+    program_code VARCHAR(50) UNIQUE,
+    description TEXT,
+    
+    program_type VARCHAR(50), -- Onboarding, Technical, Soft Skills, Compliance
+    delivery_mode VARCHAR(50), -- Online, Classroom, Hybrid, Self-Paced
+    
+    duration_hours DECIMAL(6,2),
+    
+    provider VARCHAR(200), -- Internal, External
+    external_provider_name VARCHAR(200),
+    
+    cost_per_participant DECIMAL(10,2),
+    currency VARCHAR(3),
+    
+    is_mandatory BOOLEAN DEFAULT FALSE,
+    
+    status VARCHAR(20), -- Draft, Active, Archived
+    
+    created_by UUID REFERENCES users(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Training Sessions
+CREATE TABLE training_sessions (
+    session_id UUID PRIMARY KEY,
+    program_id UUID REFERENCES training_programs(program_id),
+    
+    session_name VARCHAR(200),
+    
+    trainer_id UUID REFERENCES employees(employee_id),
+    external_trainer_name VARCHAR(100),
+    
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    
+    location VARCHAR(255),
+    meeting_link VARCHAR(500),
+    
+    max_participants INTEGER,
+    min_participants INTEGER,
+    
+    status VARCHAR(20), -- Scheduled, In Progress, Completed, Cancelled
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Training Enrollments
+CREATE TABLE training_enrollments (
+    enrollment_id UUID PRIMARY KEY,
+    session_id UUID REFERENCES training_sessions(session_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    enrollment_type VARCHAR(20), -- Mandatory, Voluntary, Nominated
+    
+    nominated_by UUID REFERENCES employees(employee_id),
+    
+    status VARCHAR(20), -- Enrolled, Attended, Completed, Cancelled, No Show
+    
+    completion_date DATE,
+    completion_percentage DECIMAL(5,2) DEFAULT 0,
+    
+    assessment_score DECIMAL(5,2),
+    passed BOOLEAN,
+    
+    feedback_rating DECIMAL(3,2),
+    feedback_comments TEXT,
+    
+    certificate_path VARCHAR(500),
+    certificate_issued_date DATE
+);
+
+-- Courses (for LMS)
+CREATE TABLE courses (
+    course_id UUID PRIMARY KEY,
+    course_name VARCHAR(200) NOT NULL,
+    course_code VARCHAR(50) UNIQUE,
+    description TEXT,
+    
+    category VARCHAR(100),
+    
+    duration_hours DECIMAL(6,2),
+    
+    is_mandatory BOOLEAN DEFAULT FALSE,
+    is_published BOOLEAN DEFAULT FALSE,
+    
+    passing_score DECIMAL(5,2),
+    
+    created_by UUID REFERENCES users(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Course Modules/Lessons
+CREATE TABLE course_modules (
+    module_id UUID PRIMARY KEY,
+    course_id UUID REFERENCES courses(course_id),
+    module_name VARCHAR(200) NOT NULL,
+    module_sequence INTEGER,
+    description TEXT,
+    
+    content_type VARCHAR(50), -- Video, Document, Quiz, SCORM
+    content_path VARCHAR(500),
+    
+    duration_minutes INTEGER,
+    
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Course Enrollments
+CREATE TABLE course_enrollments (
+    enrollment_id UUID PRIMARY KEY,
+    course_id UUID REFERENCES courses(course_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    enrollment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    status VARCHAR(20), -- In Progress, Completed, Dropped
+    
+    progress_percentage DECIMAL(5,2) DEFAULT 0,
+    
+    started_date DATE,
+    completion_date DATE,
+    
+    final_score DECIMAL(5,2),
+    passed BOOLEAN,
+    
+    certificate_path VARCHAR(500)
+);
+```
+
+---
+
+### 2.10 HR CASE/HELP DESK MANAGEMENT
+
+**Purpose**: Handle employee queries, grievances, requests
+
+**Database Schema**:
+```sql
+-- Case Categories
+CREATE TABLE case_categories (
+    category_id UUID PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    category_code VARCHAR(20) UNIQUE,
+    description TEXT,
+    parent_category_id UUID REFERENCES case_categories(category_id),
+    
+    default_assigned_to_role VARCHAR(50), -- HR, IT, Admin, Manager
+    
+    sla_response_hours INTEGER,
+    sla_resolution_hours INTEGER,
+    
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- HR Cases
+CREATE TABLE hr_cases (
+    case_id UUID PRIMARY KEY,
+    case_number VARCHAR(50) UNIQUE NOT NULL,
+    
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    category_id UUID REFERENCES case_categories(category_id),
+    
+    subject VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    
+    priority VARCHAR(20) DEFAULT 'Medium', -- Low, Medium, High, Critical
+    
+    status VARCHAR(20) DEFAULT 'Open', -- Open, In Progress, Pending, Resolved, Closed
+    
+    assigned_to_id UUID REFERENCES employees(employee_id),
+    
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- SLA Tracking
+    response_due_date TIMESTAMP,
+    resolution_due_date TIMESTAMP,
+    first_response_date TIMESTAMP,
+    resolution_date TIMESTAMP,
+    
+    is_sla_breached BOOLEAN DEFAULT FALSE,
+    
+    -- Closure
+    closed_date TIMESTAMP,
+    closed_by UUID REFERENCES employees(employee_id),
+    closure_comments TEXT,
+    
+    -- Satisfaction
+    satisfaction_rating DECIMAL(3,2),
+    satisfaction_feedback TEXT
+);
+
+-- Case Comments
+CREATE TABLE case_comments (
+    comment_id UUID PRIMARY KEY,
+    case_id UUID REFERENCES hr_cases(case_id),
+    
+    comment_text TEXT NOT NULL,
+    
+    commented_by UUID REFERENCES employees(employee_id),
+    comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    is_internal BOOLEAN DEFAULT FALSE,
+    
+    attachments JSONB
+);
+
+-- Case Attachments
+CREATE TABLE case_attachments (
+    attachment_id UUID PRIMARY KEY,
+    case_id UUID REFERENCES hr_cases(case_id),
+    
+    file_name VARCHAR(255),
+    file_path VARCHAR(500),
+    file_size INTEGER,
+    
+    uploaded_by UUID REFERENCES employees(employee_id),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### 2.11 DOCUMENT MANAGEMENT
+
+**Purpose**: Store, organize, share documents and policies
+
+**Database Schema**:
+```sql
+-- Document Categories
+CREATE TABLE document_categories (
+    category_id UUID PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    parent_category_id UUID REFERENCES document_categories(category_id),
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Documents
+CREATE TABLE documents (
+    document_id UUID PRIMARY KEY,
+    document_name VARCHAR(255) NOT NULL,
+    document_type VARCHAR(50), -- Policy, Form, Template, Handbook, Certificate
+    
+    category_id UUID REFERENCES document_categories(category_id),
+    
+    file_path VARCHAR(500) NOT NULL,
+    file_size INTEGER,
+    file_format VARCHAR(20),
+    
+    description TEXT,
+    version VARCHAR(20),
+    
+    -- Access Control
+    access_level VARCHAR(20), -- Public, Department, Role, Individual
+    department_id UUID REFERENCES departments(department_id),
+    
+    is_published BOOLEAN DEFAULT FALSE,
+    
+    -- Metadata
+    uploaded_by UUID REFERENCES employees(employee_id),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    effective_date DATE,
+    expiry_date DATE,
+    
+    requires_acknowledgement BOOLEAN DEFAULT FALSE,
+    
+    tags TEXT[]
+);
+
+-- Document Access
+CREATE TABLE document_access (
+    access_id UUID PRIMARY KEY,
+    document_id UUID REFERENCES documents(document_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    can_view BOOLEAN DEFAULT TRUE,
+    can_download BOOLEAN DEFAULT TRUE,
+    can_edit BOOLEAN DEFAULT FALSE,
+    
+    granted_by UUID REFERENCES employees(employee_id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Document Acknowledgements
+CREATE TABLE document_acknowledgements (
+    acknowledgement_id UUID PRIMARY KEY,
+    document_id UUID REFERENCES documents(document_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    acknowledged_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45),
+    
+    digital_signature VARCHAR(500)
+);
+
+-- E-Signature Requests
+CREATE TABLE esignature_requests (
+    request_id UUID PRIMARY KEY,
+    document_id UUID REFERENCES documents(document_id),
+    
+    requested_for_employee_id UUID REFERENCES employees(employee_id),
+    requested_by UUID REFERENCES employees(employee_id),
+    
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    due_date DATE,
+    
+    status VARCHAR(20), -- Pending, Signed, Declined, Expired
+    
+    signed_at TIMESTAMP,
+    signature_path VARCHAR(500),
+    
+    ip_address VARCHAR(45),
+    
+    declined_reason TEXT
+);
+```
+
+---
+
+### 2.12 EMPLOYEE ENGAGEMENT
+
+**Purpose**: Surveys, pulse checks, employee feedback, recognition
+
+**Database Schema**:
+```sql
+-- Surveys
+CREATE TABLE surveys (
+    survey_id UUID PRIMARY KEY,
+    survey_name VARCHAR(200) NOT NULL,
+    survey_type VARCHAR(50), -- Engagement, Pulse, Exit, eNPS, Custom
+    description TEXT,
+    
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    
+    is_anonymous BOOLEAN DEFAULT TRUE,
+    
+    target_audience VARCHAR(50), -- All, Department, Location, Custom
+    department_id UUID REFERENCES departments(department_id),
+    location_id UUID REFERENCES locations(location_id),
+    
+    status VARCHAR(20), -- Draft, Active, Closed, Archived
+    
+    created_by UUID REFERENCES users(user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Survey Questions
+CREATE TABLE survey_questions (
+    question_id UUID PRIMARY KEY,
+    survey_id UUID REFERENCES surveys(survey_id),
+    
+    question_text TEXT NOT NULL,
+    question_type VARCHAR(50), -- Multiple Choice, Rating, Text, Yes/No, NPS
+    
+    question_sequence INTEGER,
+    
+    is_required BOOLEAN DEFAULT FALSE,
+    
+    options JSONB, -- For multiple choice questions
+    
+    rating_scale INTEGER -- For rating questions (e.g., 1-5, 1-10)
+);
+
+-- Survey Responses
+CREATE TABLE survey_responses (
+    response_id UUID PRIMARY KEY,
+    survey_id UUID REFERENCES surveys(survey_id),
+    employee_id UUID REFERENCES employees(employee_id),
+    
+    response_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    is_completed BOOLEAN DEFAULT FALSE,
+    completion_percentage DECIMAL(5,2)
+);
+
+-- Survey Answers
+CREATE TABLE survey_answers (
+    answer_id UUID PRIMARY KEY,
+    response_id UUID REFERENCES survey_responses(response_id),
+    question_id UUID REFERENCES survey_questions(question_id),
+    
+    answer_text TEXT,
+    answer_rating INTEGER,
+    answer_options JSONB,
+    
+    answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Recognition Programs
+CREATE TABLE recognition_programs (
+    program_id UUID PRIMARY KEY,
+    program_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    
+    program_type VARCHAR(50), -- Peer-to-Peer, Manager-to-Employee, Achievement
+    
+    points_enabled BOOLEAN DEFAULT FALSE,
+    points_value INTEGER,
+    
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Recognitions
+CREATE TABLE recognitions (
+    recognition_id UUID PRIMARY KEY,
+    program_id UUID REFERENCES recognition_programs(program_id),
+    
+    recognized_employee_id UUID REFERENCES employees(employee_id),
+    recognized_by_employee_id UUID REFERENCES employees(employee_id),
+    
+    recognition_date DATE DEFAULT CURRENT_DATE,
+    
+    recognition_message TEXT NOT NULL,
+    
+    points_awarded INTEGER,
+    
+    is_public BOOLEAN DEFAULT TRUE,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## 3. ADDITIONAL SUPPORTING TABLES
+
+```sql
+-- Users & Authentication
+CREATE TABLE users (
+    user_id UUID PRIMARY KEY,
+    employee_id UUID REFERENCES employees(employee_id),
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    
+    is_active BOOLEAN DEFAULT TRUE,
+    is_locked BOOLEAN DEFAULT FALSE,
+    failed_login_attempts INTEGER DEFAULT 0,
+    last_login TIMESTAMP,
+    
+    must_change_password BOOLEAN DEFAULT FALSE,
+    password_changed_at TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Roles
+CREATE TABLE roles (
+    role_id UUID PRIMARY KEY,
+    role_name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    is_system_role BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- User Roles
+CREATE TABLE user_roles (
+    user_role_id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(user_id),
+    role_id UUID REFERENCES roles(role_id),
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    assigned_by UUID REFERENCES users(user_id),
+    UNIQUE(user_id, role_id)
+);
+
+-- Permissions
+CREATE TABLE permissions (
+    permission_id UUID PRIMARY KEY,
+    permission_name VARCHAR(100) UNIQUE NOT NULL,
+    module_name VARCHAR(50) NOT NULL,
+    permission_type VARCHAR(20), -- View, Create, Edit, Delete, Approve
+    description TEXT
+);
+
+-- Role Permissions
+CREATE TABLE role_permissions (
+    role_permission_id UUID PRIMARY KEY,
+    role_id UUID REFERENCES roles(role_id),
+    permission_id UUID REFERENCES permissions(permission_id),
+    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role_id, permission_id)
+);
+
+-- Audit Log
+CREATE TABLE audit_log (
+    log_id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(user_id),
+    action VARCHAR(50) NOT NULL,
+    entity_type VARCHAR(50),
+    entity_id UUID,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Notifications
+CREATE TABLE notifications (
+    notification_id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(user_id),
+    notification_type VARCHAR(50), -- Info, Warning, Success, Error
+    title VARCHAR(200),
+    message TEXT NOT NULL,
+    link VARCHAR(500),
+    
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- System Settings
+CREATE TABLE system_settings (
+    setting_id UUID PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    setting_type VARCHAR(20), -- String, Number, Boolean, JSON
+    category VARCHAR(50),
+    description TEXT,
+    is_editable BOOLEAN DEFAULT TRUE,
+    modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    modified_by UUID REFERENCES users(user_id)
+);
+
+-- Custom Fields
+CREATE TABLE custom_fields (
+    field_id UUID PRIMARY KEY,
+    module_name VARCHAR(50) NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    field_label VARCHAR(100) NOT NULL,
+    field_type VARCHAR(50), -- Text, Number, Date, Dropdown, Checkbox, etc.
+    field_options JSONB,
+    is_required BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    display_order INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Custom Field Values
+CREATE TABLE custom_field_values (
+    value_id UUID PRIMARY KEY,
+    field_id UUID REFERENCES custom_fields(field_id),
+    entity_id UUID NOT NULL,
+    field_value TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## 4. TECHNOLOGY STACK RECOMMENDATIONS
+
+### Backend
+- **Language**: Node.js (TypeScript) OR Python (Django/FastAPI) OR Java (Spring Boot)
+- **Framework**: 
+  - Node.js: Express.js or NestJS
+  - Python: Django REST Framework or FastAPI
+  - Java: Spring Boot
+- **Database**: PostgreSQL (primary) + Redis (caching)
+- **ORM**: 
+  - Node.js: TypeORM or Prisma
+  - Python: Django ORM or SQLAlchemy
+  - Java: Hibernate
+- **Authentication**: JWT + OAuth 2.0
+- **API Design**: RESTful API + GraphQL (optional)
+
+### Frontend
+- **Framework**: React.js or Vue.js or Angular
+- **State Management**: Redux/Zustand (React) or Vuex (Vue) or NgRx (Angular)
+- **UI Library**: Material-UI, Ant Design, or Tailwind CSS
+- **Build Tool**: Vite or Webpack
+
+### Mobile
+- **Cross-platform**: React Native or Flutter
+- **Native**: Swift (iOS) + Kotlin (Android)
+
+### Infrastructure
+- **Cloud Provider**: AWS, Azure, or Google Cloud
+- **Container**: Docker + Kubernetes
+- **CI/CD**: GitHub Actions, GitLab CI, or Jenkins
+- **Monitoring**: Prometheus + Grafana
+- **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana)
+
+### Additional Services
+- **File Storage**: AWS S3 or Azure Blob Storage
+- **Email**: SendGrid, AWS SES, or Mailgun
+- **SMS**: Twilio or AWS SNS
+- **Video Conferencing**: Zoom API or Microsoft Teams API
+- **Document Generation**: PDFKit or Puppeteer
+- **Background Jobs**: Bull Queue (Node.js) or Celery (Python)
+
+---
+
+## 5. API ARCHITECTURE
+
+### API Endpoints Structure
+
+```
+/api/v1
+├── /auth
+│   ├── POST /login
+│   ├── POST /logout
+│   ├── POST /refresh-token
+│   ├── POST /forgot-password
+│   └── POST /reset-password
+│
+├── /employees
+│   ├── GET /employees
+│   ├── GET /employees/:id
+│   ├── POST /employees
+│   ├── PUT /employees/:id
+│   ├── DELETE /employees/:id
+│   ├── GET /employees/:id/documents
+│   └── GET /employees/:id/reporting-structure
+│
+├── /attendance
+│   ├── GET /attendance
+│   ├── POST /attendance/check-in
+│   ├── POST /attendance/check-out
+│   ├── GET /attendance/summary
+│   └── POST /attendance/regularize
+│
+├── /leave
+│   ├── GET /leave/types
+│   ├── GET /leave/balance
+│   ├── GET /leave/requests
+│   ├── POST /leave/requests
+│   ├── PUT /leave/requests/:id
+│   ├── POST /leave/requests/:id/approve
+│   └── POST /leave/requests/:id/reject
+│
+├── /performance
+│   ├── GET /performance/cycles
+│   ├── GET /performance/goals
+│   ├── POST /performance/goals
+│   ├── GET /performance/reviews
+│   ├── POST /performance/reviews
+│   └── POST /performance/feedback
+│
+├── /recruitment
+│   ├── GET /recruitment/jobs
+│   ├── POST /recruitment/jobs
+│   ├── GET /recruitment/candidates
+│   ├── POST /recruitment/applications
+│   ├── GET /recruitment/interviews
+│   └── POST /recruitment/interviews/:id/feedback
+│
+├── /timesheet
+│   ├── GET /timesheet
+│   ├── POST /timesheet/entries
+│   ├── PUT /timesheet/:id/submit
+│   └── POST /timesheet/:id/approve
+│
+├── /compensation
+│   ├── GET /compensation
+│   ├── POST /compensation/revisions
+│   └── GET /compensation/components
+│
+├── /learning
+│   ├── GET /learning/programs
+│   ├── GET /learning/courses
+│   ├── POST /learning/enrollments
+│   └── GET /learning/progress
+│
+├── /cases
+│   ├── GET /cases
+│   ├── POST /cases
+│   ├── PUT /cases/:id
+│   └── POST /cases/:id/comments
+│
+├── /documents
+│   ├── GET /documents
+│   ├── POST /documents
+│   ├── POST /documents/:id/acknowledge
+│   └── POST /documents/:id/esign
+│
+└── /reports
+    ├── GET /reports/attendance
+    ├── GET /reports/leave
+    ├── GET /reports/headcount
+    └── GET /reports/custom
+```
+
+---
+
+## 6. KEY FEATURES TO IMPLEMENT
+
+### Phase 1 (MVP - 3-4 months)
+1. Employee Database Management
+2. Authentication & Authorization
+3. Basic Attendance Tracking
+4. Leave Management
+5. Simple Dashboard
+6. Basic Reports
+
+### Phase 2 (4-6 months)
+7. Performance Management (Goals, Reviews)
+8. Recruitment Module
+9. Onboarding
+10. Document Management
+11. Mobile App (Basic)
+
+### Phase 3 (6-9 months)
+12. Timesheet & Project Tracking
+13. Compensation Management
+14. Learning Management System
+15. HR Help Desk
+16. Advanced Analytics
+17. Employee Self-Service Portal
+
+### Phase 4 (9-12 months)
+18. Employee Engagement (Surveys, Recognition)
+19. Advanced Workflows & Automation
+20. Integration APIs
+21. Advanced Mobile Features
+22. AI-Powered Insights
+
+---
+
+## 7. SECURITY CONSIDERATIONS
+
+1. **Authentication**
+   - Multi-factor authentication (MFA)
+   - SSO integration (SAML, OAuth)
+   - Session management
+
+2. **Authorization**
+   - Role-based access control (RBAC)
+   - Field-level security
+   - Data segregation
+
+3. **Data Protection**
+   - Encryption at rest and in transit
+   - PII data masking
+   - GDPR compliance
+   - Data retention policies
+
+4. **API Security**
+   - Rate limiting
+   - API key management
+   - Input validation
+   - SQL injection prevention
+
+5. **Audit & Compliance**
+   - Comprehensive audit logs
+   - Compliance reporting
+   - Data backup & recovery
+
+---
+
+## 8. SCALABILITY CONSIDERATIONS
+
+1. **Database**
+   - Read replicas
+   - Database sharding
+   - Connection pooling
+
+2. **Caching**
+   - Redis for session management
+   - Cache frequently accessed data
+   - CDN for static assets
+
+3. **Microservices**
+   - Separate services for heavy modules
+   - Message queues (RabbitMQ, Kafka)
+   - Event-driven architecture
+
+4. **Load Balancing**
+   - Application load balancer
+   - Auto-scaling groups
+
+---
+
+## 9. NEXT STEPS
+
+1. **Set up development environment**
+2. **Create database schema** (start with Phase 1 tables)
+3. **Build authentication system**
+4. **Develop employee management APIs**
+5. **Create admin dashboard**
+6. **Implement attendance module**
+7. **Build leave management**
+8. **Create employee self-service portal**
+9. **Develop reporting engine**
+10. **Add mobile support**
+
+Would you like me to:
+- Generate the backend API code for specific modules?
+- Create the frontend components for any module?
+- Design the database migration scripts?
+- Provide implementation details for specific features?
