@@ -233,9 +233,9 @@ Build a comprehensive, enterprise-grade HR Management System that covers the com
 **Priority**: High | **Status**: Planned
 
 #### API & Integrations
-- [ ] RESTful API documentation
-- [ ] Webhooks
-- [ ] OAuth 2.0
+- [x] RESTful API documentation
+- [x] Webhooks
+- [x] OAuth 2.0
 - [ ] Slack integration
 - [ ] Microsoft Teams integration
 - [ ] Email service integrations
@@ -246,7 +246,7 @@ Build a comprehensive, enterprise-grade HR Management System that covers the com
 - [ ] Background check services
 - [ ] Job board integrations
 
-**Priority**: Medium | **Status**: Planned
+**Priority**: Medium | **Status**: In Progress
 
 #### Internationalization
 - [ ] Multi-language support
