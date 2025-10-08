@@ -182,7 +182,7 @@ export async function validateOrgOwnership(
  * In production, replace with actual JWT authentication
  */
 export function mockAuthMiddleware(organizationId: string, userId: string) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     req.user = {
       user_id: userId,
       organization_id: organizationId,

@@ -27,11 +27,11 @@ export interface LeaveRequestData {
 
 export class LeaveRequest {
   private data: Required<LeaveRequestData>;
-  private dateRange: DateRange;
 
   constructor(data: LeaveRequestData) {
     this.validate(data);
-    this.dateRange = new DateRange(data.start_date, data.end_date);
+    // Validate date range
+    new DateRange(data.start_date, data.end_date);
     
     this.data = {
       leave_request_id: data.leave_request_id || this.generateId(),

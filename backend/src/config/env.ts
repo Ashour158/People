@@ -15,22 +15,22 @@ dotenv.config();
 const envSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().transform(Number).default('5000'),
+  PORT: z.string().default('5000').transform(Number),
   API_VERSION: z.string().default('v1'),
 
   // Database
   DB_HOST: z.string().default('localhost'),
-  DB_PORT: z.string().transform(Number).default('5432'),
+  DB_PORT: z.string().default('5432').transform(Number),
   DB_NAME: z.string().default('hr_system'),
   DB_USER: z.string().default('postgres'),
   DB_PASSWORD: z.string().optional(),
-  DB_POOL_MIN: z.string().transform(Number).default('2'),
-  DB_POOL_MAX: z.string().transform(Number).default('10'),
+  DB_POOL_MIN: z.string().default('2').transform(Number),
+  DB_POOL_MAX: z.string().default('10').transform(Number),
   DB_URL: z.string().optional(),
 
   // Redis
   REDIS_HOST: z.string().default('localhost'),
-  REDIS_PORT: z.string().transform(Number).default('6379'),
+  REDIS_PORT: z.string().default('6379').transform(Number),
   REDIS_PASSWORD: z.string().optional(),
 
   // JWT
@@ -39,16 +39,16 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
   // Security
-  BCRYPT_ROUNDS: z.string().transform(Number).default('12'),
-  MAX_LOGIN_ATTEMPTS: z.string().transform(Number).default('5'),
-  LOCKOUT_DURATION_MINUTES: z.string().transform(Number).default('30'),
+  BCRYPT_ROUNDS: z.string().default('12').transform(Number),
+  MAX_LOGIN_ATTEMPTS: z.string().default('5').transform(Number),
+  LOCKOUT_DURATION_MINUTES: z.string().default('30').transform(Number),
 
   // MENA Configuration
   DEFAULT_CURRENCY: z.string().default('USD'),
   MENA_COUNTRY_CODES: z.string().default('AE,SA,KW,QA,OM,BH,JO,EG,MA,TN,LB,IQ,YE,SY'),
 
   // Multi-Tenancy
-  ENABLE_RLS: z.string().transform((val) => val === 'true').default('false'),
+  ENABLE_RLS: z.string().default('false').transform((val) => val === 'true'),
   
   // Logging
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
@@ -73,7 +73,7 @@ try {
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('❌ Invalid environment configuration:');
-    error.errors.forEach((err) => {
+    error.issues.forEach((err: z.ZodIssue) => {
       console.error(`  - ${err.path.join('.')}: ${err.message}`);
     });
     process.exit(1);
