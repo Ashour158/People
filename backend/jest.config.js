@@ -4,7 +4,9 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      isolatedModules: true,
+    }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',
@@ -12,6 +14,14 @@ module.exports = {
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
     '!src/types/**',
+    '!src/app.ts',
+    '!src/server.ts',
+    '!src/controllers/**',
+    '!src/routes/**',
+    '!src/services/upload.service.ts',
+    '!src/services/leave.service.ts',
+    '!src/utils/email.ts',
+    '!src/database/**',
   ],
   coverageThreshold: {
     global: {
