@@ -254,15 +254,89 @@ export class EventOutboxRepository implements IEventOutboxRepository {
   }
 
   async findPendingEvents(limit = 100): Promise<any[]> {
-    throw new NotImplementedError('EventOutboxRepository.findPendingEvents');
+    const query = `
+      SELECT 
+        event_id, organization_id, event_type, event_name,
+        aggregate_type, aggregate_id, payload, metadata,
+        retry_count, created_at
+      FROM events_outbox
+      WHERE status = 'pending' 
+        AND retry_count < max_retries
+      ORDER BY created_at ASC
+      LIMIT $1
+    `;
+    
+    const result = await this.pool.query(query, [limit]);
+    return result.rows;
   }
 
   async markProcessed(eventId: string): Promise<void> {
-    throw new NotImplementedError('EventOutboxRepository.markProcessed');
+    const query = `
+      UPDATE events_outbox
+      SET 
+        status = 'processed',
+        processed_at = CURRENT_TIMESTAMP
+      WHERE event_id = $1
+    `;
+    
+    await this.pool.query(query, [eventId]);
   }
 
   async markFailed(eventId: string, errorMessage: string): Promise<void> {
-    throw new NotImplementedError('EventOutboxRepository.markFailed');
+    const query = `
+      UPDATE events_outbox
+      SET 
+        status = 'failed',
+        error_message = $2,
+        retry_count = retry_count + 1
+      WHERE event_id = $1
+    `;
+    
+    await this.pool.query(query, [eventId, errorMessage]);
+  }
+
+  async findFailedEvents(limit = 100): Promise<any[]> {
+    const query = `
+      SELECT 
+        event_id, organization_id, event_type, event_name,
+        aggregate_type, aggregate_id, payload, metadata,
+        retry_count, error_message, created_at
+      FROM events_outbox
+      WHERE status = 'failed'
+      ORDER BY created_at DESC
+      LIMIT $1
+    `;
+    
+    const result = await this.pool.query(query, [limit]);
+    return result.rows;
+  }
+
+  async restartFailedEvent(eventId: string): Promise<void> {
+    const query = `
+      UPDATE events_outbox
+      SET 
+        status = 'pending',
+        error_message = NULL,
+        retry_count = 0
+      WHERE event_id = $1 AND status = 'failed'
+    `;
+    
+    await this.pool.query(query, [eventId]);
+  }
+
+  async restartAllFailedEvents(): Promise<number> {
+    const query = `
+      UPDATE events_outbox
+      SET 
+        status = 'pending',
+        error_message = NULL,
+        retry_count = 0
+      WHERE status = 'failed'
+      RETURNING event_id
+    `;
+    
+    const result = await this.pool.query(query);
+    return result.rowCount || 0;
   }
 }
 
