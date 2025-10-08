@@ -89,14 +89,14 @@ export class UploadService {
    */
   private createStorage(destination: string) {
     return multer.diskStorage({
-      destination: (req, file, callback) => {
+      destination: (_req, _file, callback) => {
         const uploadPath = path.join(this.uploadDir, destination);
         if (!fs.existsSync(uploadPath)) {
           fs.mkdirSync(uploadPath, { recursive: true });
         }
         callback(null, uploadPath);
       },
-      filename: (req, file, callback) => {
+      filename: (_req, file, callback) => {
         callback(null, this.generateFilename(file.originalname));
       }
     });

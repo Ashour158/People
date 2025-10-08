@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 
 export const authorize = (permissions: string[]) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<Response | void> => {
     try {
       const user = req.user;
 
@@ -27,9 +27,9 @@ export const authorize = (permissions: string[]) => {
         });
       }
 
-      next();
+      return next();
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 };

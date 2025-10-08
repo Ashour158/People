@@ -9,7 +9,7 @@ export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<Response | void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -52,7 +52,7 @@ export const authenticate = async (
     }
 
     (req as AuthRequest).user = userResult.rows[0];
-    next();
+    return next();
   } catch (error) {
     return res.status(401).json({
       success: false,
