@@ -40,12 +40,19 @@ The People HR Management System aims to be a comprehensive, open-source solution
 - RESTful API with Express.js
 - React frontend with Material-UI
 - PostgreSQL database with comprehensive schema
-- Redis caching
-- Email notifications
-- File upload support
-- Comprehensive logging
-- Docker support
+- Redis caching with session management
+- Email notifications via Nodemailer
+- Real-time WebSocket notifications
+- File upload support with validation
+- Comprehensive logging with Winston
+- Docker support with health checks
 - Security best practices (Helmet, rate limiting, input validation)
+
+### Infrastructure Services
+- **Email Service** - Transactional emails for welcome, password reset, and notifications
+- **Notification Service** - Real-time WebSocket notifications with database persistence
+- **Upload Service** - File upload handling with validation and storage management
+- **Cache Service** - Redis-based caching for improved performance and session management
 
 ## 📋 Prerequisites
 
@@ -136,6 +143,22 @@ docker-compose down
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
 - **API Health Check**: http://localhost:5000/health
+- **Service Health Checks**:
+  - Database: http://localhost:5000/health/database
+  - Cache: http://localhost:5000/health/cache
+  - Email: http://localhost:5000/health/email
+  - WebSocket: http://localhost:5000/health/websocket
+
+## 🔧 Infrastructure Services
+
+The system includes 4 core infrastructure services:
+
+1. **Email Service** - Handles transactional emails (welcome, password reset, notifications)
+2. **Notification Service** - Manages real-time WebSocket notifications with persistence
+3. **Upload Service** - Handles file uploads with validation (documents, images)
+4. **Cache Service** - Provides Redis-based caching for performance optimization
+
+For detailed service documentation, see [docs/SERVICES.md](./docs/SERVICES.md) and [docs/QUICKSTART.md](./docs/QUICKSTART.md).
 
 ## 📚 API Documentation
 
