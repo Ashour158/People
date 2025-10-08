@@ -156,6 +156,24 @@ export interface IEventOutboxRepository {
   
   markProcessed(eventId: string): Promise<void>;
   markFailed(eventId: string, errorMessage: string): Promise<void>;
+  
+  // Methods for restarting failed events
+  findFailedEvents(limit?: number): Promise<Array<{
+    event_id: string;
+    organization_id: string;
+    event_type: string;
+    event_name: string;
+    aggregate_type: string;
+    aggregate_id: string;
+    payload: Record<string, any>;
+    metadata?: Record<string, any>;
+    retry_count: number;
+    error_message: string | null;
+    created_at: Date;
+  }>>;
+  
+  restartFailedEvent(eventId: string): Promise<void>;
+  restartAllFailedEvents(): Promise<number>;
 }
 
 // =====================================================
