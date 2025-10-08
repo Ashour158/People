@@ -24,6 +24,13 @@ Located in `backend/migrations/`:
 - RLS (Row-Level Security) placeholders with documentation
 - MENA-specific fields (gratuity, end-of-service calculations)
 
+**Migration Infrastructure**:
+- `backend/src/database/migrate.ts`: Automated migration runner
+- `backend/src/database/seed.ts`: Database seeding script
+- Migration tracking via `schema_migrations` table
+- Idempotent migrations - safe to run multiple times
+- Transaction-wrapped for data safety
+
 ### 2. TypeScript Domain Models
 
 Located in `backend/src/domain/`:
@@ -141,6 +148,9 @@ backend/
 ├── src/
 │   ├── config/
 │   │   └── env.ts          # Environment configuration with Zod
+│   ├── database/
+│   │   ├── migrate.ts      # Migration runner script
+│   │   └── seed.ts         # Database seeding script
 │   ├── domain/
 │   │   ├── Email.ts        # Email value object
 │   │   ├── Money.ts        # Money value object
@@ -199,8 +209,23 @@ backend/
 
 ### Running Migrations
 
+**Using npm scripts (Recommended)**:
+
 ```bash
-# Using psql
+# Install dependencies first
+cd backend
+npm install
+
+# Run all pending migrations
+npm run migrate
+
+# Seed the database with sample data
+npm run seed
+```
+
+**Using psql directly** (Alternative):
+
+```bash
 psql -U postgres -d hr_system -f backend/migrations/0001_core_org_security.sql
 psql -U postgres -d hr_system -f backend/migrations/0002_hr_core.sql
 psql -U postgres -d hr_system -f backend/migrations/0003_leave_attendance.sql
@@ -208,6 +233,21 @@ psql -U postgres -d hr_system -f backend/migrations/0004_payroll_core.sql
 psql -U postgres -d hr_system -f backend/migrations/0005_performance_recruitment_onboarding.sql
 psql -U postgres -d hr_system -f backend/migrations/0006_assets_analytics.sql
 ```
+
+**Migration Features**:
+- Automatic tracking of applied migrations
+- Idempotent - safe to run multiple times
+- Runs migrations in correct order
+- Transaction-wrapped for safety
+- Clear progress output
+
+**Seed Data**:
+The seed script creates:
+- Demo organization (code: DEMO)
+- Demo company
+- Admin user (email: admin@democompany.com, password: Admin@123)
+- Sample departments (Engineering, HR, Finance, Sales)
+- Sample leave types (Annual, Sick, Casual, Maternity, Paternity)
 
 ### Using Services
 
