@@ -9,6 +9,13 @@ import {
 } from '@mui/material';
 import { authApi } from '../../api/auth.api';
 import { employeeApi, attendanceApi, leaveApi } from '../../api';
+import type { LeaveBalance } from '../../types';
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  color?: string;
+}
 
 export const Dashboard: React.FC = () => {
   const { data: userData } = useQuery({
@@ -31,7 +38,7 @@ export const Dashboard: React.FC = () => {
     queryFn: () => leaveApi.getBalance(),
   });
 
-  const StatCard = ({ title, value, color }: any) => (
+  const StatCard: React.FC<StatCardProps> = ({ title, value, color }) => (
     <Paper
       sx={{
         p: 3,
@@ -51,13 +58,18 @@ export const Dashboard: React.FC = () => {
     </Paper>
   );
 
+  const calculateLeaveBalance = (balances: LeaveBalance[] | undefined): number => {
+    if (!balances) return 0;
+    return balances.reduce((acc, lb) => acc + lb.balance, 0);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
         Dashboard
       </Typography>
       <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-        Welcome back, {userData?.data?.first_name || 'User'}!
+        Welcome back, {userData?.data?.user?.username || 'User'}!
       </Typography>
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
@@ -78,7 +90,7 @@ export const Dashboard: React.FC = () => {
         <Grid item xs={12} md={3}>
           <StatCard
             title="Leave Balance"
-            value={leaveBalance?.data?.reduce((acc: number, lb: any) => acc + lb.available_days, 0) || 0}
+            value={calculateLeaveBalance(leaveBalance?.data)}
             color="#ed6c02"
           />
         </Grid>

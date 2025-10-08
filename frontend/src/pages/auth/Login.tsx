@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { authApi, LoginCredentials } from '../../api/auth.api';
 import { useAuthStore } from '../../store/authStore';
+import type { ApiResponse, AuthResponse } from '../../types';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export const Login: React.FC = () => {
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data: any) => {
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
       setAuth(data.data.user, data.data.token);
       navigate('/dashboard');
     },
@@ -67,7 +68,9 @@ export const Login: React.FC = () => {
 
             {loginMutation.isError && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                {(loginMutation.error as any)?.response?.data?.error || 'Login failed'}
+                {loginMutation.error instanceof Error
+                  ? loginMutation.error.message
+                  : 'Login failed'}
               </Alert>
             )}
 
@@ -84,7 +87,7 @@ export const Login: React.FC = () => {
 
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography variant="body2">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link to="/register" style={{ textDecoration: 'none' }}>
                   Register
                 </Link>
