@@ -42,7 +42,7 @@ export class FeatureFlagService {
   async isEnabled(flagKey: string, context: FeatureFlagContext): Promise<boolean> {
     const flag = await this.getFlag(flagKey);
     
-    if (!flag) {
+    if (!flag || !flag.flag_id) {
       console.warn(`[FeatureFlagService] Flag not found: ${flagKey}`);
       return false;
     }
@@ -53,7 +53,7 @@ export class FeatureFlagService {
 
     // Check user-level override first
     if (context.userId) {
-      const userOverride = await this.getUserOverride(flag.flag_id!, context.userId);
+      const userOverride = await this.getUserOverride(flag.flag_id, context.userId);
       if (userOverride !== null) {
         await this.logEvaluation(flag, context, userOverride);
         return userOverride;
@@ -62,7 +62,7 @@ export class FeatureFlagService {
 
     // Check organization-level override
     if (context.organizationId) {
-      const orgOverride = await this.getOrganizationOverride(flag.flag_id!, context.organizationId);
+      const orgOverride = await this.getOrganizationOverride(flag.flag_id, context.organizationId);
       if (orgOverride !== null) {
         await this.logEvaluation(flag, context, orgOverride);
         return orgOverride;
