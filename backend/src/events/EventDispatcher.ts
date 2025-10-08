@@ -47,7 +47,7 @@ export class EventDispatcher {
   }
 
   private async initializeMessageQueue(): Promise<void> {
-    if (!this.messageQueue) return;
+    if (!this.messageQueue) {return;}
 
     try {
       // Setup main events exchange

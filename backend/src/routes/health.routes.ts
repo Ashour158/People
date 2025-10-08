@@ -38,7 +38,7 @@ router.get('/health', async (req: Request, res: Response) => {
     try {
       const cacheHealthy = await cacheService.ping();
       health.services.cache = cacheHealthy ? 'healthy' : 'unhealthy';
-      if (!cacheHealthy) health.status = 'degraded';
+      if (!cacheHealthy) {health.status = 'degraded';}
     } catch (error) {
       health.services.cache = 'unhealthy';
       health.status = 'degraded';

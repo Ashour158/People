@@ -67,7 +67,7 @@ export class EmployeeService {
   async getEmployees(organizationId: string, filters: any = {}) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['e.organization_id = $1', 'e.is_deleted = FALSE'];
+    const whereConditions = ['e.organization_id = $1', 'e.is_deleted = FALSE'];
     const params: any[] = [organizationId];
     let paramCount = 1;
 

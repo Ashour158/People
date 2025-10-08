@@ -75,7 +75,7 @@ export class CacheService {
 
     try {
       const value = await this.client!.get(key);
-      if (value === null) return null;
+      if (value === null) {return null;}
       
       return JSON.parse(value) as T;
     } catch (error) {
@@ -136,7 +136,7 @@ export class CacheService {
 
     try {
       const keys = await this.client!.keys(pattern);
-      if (keys.length === 0) return 0;
+      if (keys.length === 0) {return 0;}
       
       await this.client!.del(keys);
       return keys.length;

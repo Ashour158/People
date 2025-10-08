@@ -78,7 +78,7 @@ export class AttendanceService {
   async getAttendance(organizationId: string, filters: any = {}) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['a.organization_id = $1'];
+    const whereConditions = ['a.organization_id = $1'];
     const params: any[] = [organizationId];
     let paramCount = 1;
 
@@ -409,7 +409,7 @@ export class AttendanceService {
   ) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['a.employee_id = $1', 'a.organization_id = $2'];
+    const whereConditions = ['a.employee_id = $1', 'a.organization_id = $2'];
     const params: any[] = [employeeId, organizationId];
     let paramCount = 2;
 

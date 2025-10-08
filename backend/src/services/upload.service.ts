@@ -268,7 +268,7 @@ export class UploadService {
   async cleanupTempFiles(): Promise<number> {
     try {
       const tempDir = path.join(this.uploadDir, 'temp');
-      if (!fs.existsSync(tempDir)) return 0;
+      if (!fs.existsSync(tempDir)) {return 0;}
 
       const files = fs.readdirSync(tempDir);
       const now = Date.now();
