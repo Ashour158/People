@@ -18,32 +18,32 @@ router.post(
   '/',
   authorize(['employee.create']),
   validate(createEmployeeSchema),
-  (req, res, next) => employeeController.createEmployee(req, res, next)
+  employeeController.createEmployee.bind(employeeController)
 );
 
 router.get(
   '/',
   authorize(['employee.view']),
-  (req, res, next) => employeeController.getEmployees(req, res, next)
+  employeeController.getEmployees.bind(employeeController)
 );
 
 router.get(
   '/:id',
   authorize(['employee.view']),
-  (req, res, next) => employeeController.getEmployeeById(req, res, next)
+  employeeController.getEmployeeById.bind(employeeController)
 );
 
 router.put(
   '/:id',
   authorize(['employee.update']),
   validate(updateEmployeeSchema),
-  (req, res, next) => employeeController.updateEmployee(req, res, next)
+  employeeController.updateEmployee.bind(employeeController)
 );
 
 router.delete(
   '/:id',
   authorize(['employee.delete']),
-  (req, res, next) => employeeController.deleteEmployee(req, res, next)
+  employeeController.deleteEmployee.bind(employeeController)
 );
 
 export default router;

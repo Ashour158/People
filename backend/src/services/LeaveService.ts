@@ -54,9 +54,9 @@ export class LeaveService {
   }
 
   async approveLeave(
-    leaveRequestId: string,
-    organizationId: string,
-    approverId: string
+    _leaveRequestId: string,
+    _organizationId: string,
+    _approverId: string
   ): Promise<void> {
     // Stub implementation - demonstrates validation pattern
     throw new Error('Method not yet implemented - validation pass-through only');

@@ -14,9 +14,9 @@ const attendanceController = new AttendanceController();
 // All routes require authentication
 router.use(authenticate);
 
-router.post('/check-in', validate(checkInSchema), attendanceController.checkIn);
-router.post('/check-out', validate(checkOutSchema), attendanceController.checkOut);
-router.get('/', attendanceController.getAttendance);
-router.post('/regularization', validate(regularizationSchema), attendanceController.requestRegularization);
+router.post('/check-in', validate(checkInSchema), attendanceController.checkIn.bind(attendanceController));
+router.post('/check-out', validate(checkOutSchema), attendanceController.checkOut.bind(attendanceController));
+router.get('/', attendanceController.getAttendance.bind(attendanceController));
+router.post('/regularization', validate(regularizationSchema), attendanceController.requestRegularization.bind(attendanceController));
 
 export default router;

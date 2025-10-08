@@ -3,7 +3,7 @@
 // Business logic for payroll processing
 // =====================================================
 
-import { PayrollRun, PayrollRunData } from '../domain/PayrollRun';
+import { PayrollRun } from '../domain/PayrollRun';
 import { IPayrollRunRepository } from '../repositories/interfaces';
 import { EventPublisher } from '../events/EventPublisher';
 import { PayrollRunType } from '../domain/enums';

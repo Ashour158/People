@@ -15,15 +15,15 @@ const router = Router();
 const authController = new AuthController();
 
 // Public routes
-router.post('/register', validate(registerSchema), authController.register);
-router.post('/login', loginLimiter, validate(loginSchema), authController.login);
-router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
-router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
-router.post('/refresh-token', authController.refreshToken);
+router.post('/register', validate(registerSchema), authController.register.bind(authController));
+router.post('/login', loginLimiter, validate(loginSchema), authController.login.bind(authController));
+router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword.bind(authController));
+router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword.bind(authController));
+router.post('/refresh-token', authController.refreshToken.bind(authController));
 
 // Protected routes
-router.get('/me', authenticate, authController.getCurrentUser);
-router.post('/change-password', authenticate, validate(changePasswordSchema), authController.changePassword);
-router.post('/logout', authenticate, authController.logout);
+router.get('/me', authenticate, authController.getCurrentUser.bind(authController));
+router.post('/change-password', authenticate, validate(changePasswordSchema), authController.changePassword.bind(authController));
+router.post('/logout', authenticate, authController.logout.bind(authController));
 
 export default router;

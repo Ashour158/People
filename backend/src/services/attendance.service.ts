@@ -1,7 +1,7 @@
 import { query, transaction } from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { getPagination, getPaginationMeta } from '../utils/pagination';
-import { format, differenceInMinutes, startOfMonth, endOfMonth } from 'date-fns';
+import { format } from 'date-fns';
 
 export class AttendanceService {
   /**
@@ -44,7 +44,7 @@ export class AttendanceService {
   /**
    * Check-out employee
    */
-  async checkOut(employeeId: string, organizationId: string, data: any) {
+  async checkOut(employeeId: string, _organizationId: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
     return transaction(async (client) => {
       const today = format(new Date(), 'yyyy-MM-dd');
       
