@@ -24,8 +24,8 @@ const envSchema = z.object({
   DB_NAME: z.string().default('hr_system'),
   DB_USER: z.string().default('postgres'),
   DB_PASSWORD: z.string().optional(),
-  DB_POOL_MIN: z.string().default('2').transform(Number),
-  DB_POOL_MAX: z.string().default('10').transform(Number),
+  DB_POOL_MIN: z.string().default('5').transform(Number), // Increased for scalability
+  DB_POOL_MAX: z.string().default('100').transform(Number), // Increased for unlimited users
   DB_URL: z.string().optional(),
 
   // Redis
