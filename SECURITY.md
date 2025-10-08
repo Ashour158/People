@@ -197,14 +197,25 @@ try {
 - ✅ **Audit Logging**: Track all data modifications
 - ✅ **Multi-tenant Isolation**: Organization-level data separation
 
+### ✨ NEW: Security Enhancement Modules (v1.1)
+
+- ✅ **Multi-Factor Authentication (MFA)**: TOTP-based 2FA with QR code setup and backup codes
+- ✅ **IP Whitelisting**: Organization-level IP restrictions with CIDR support
+- ✅ **Advanced Audit Logging**: Comprehensive event tracking with 30+ event types and 4 severity levels
+- ✅ **Threat Detection**: Real-time detection of SQL injection, XSS, brute force attacks with automatic IP blocking
+- ✅ **Security Monitoring**: Real-time dashboard, metrics, vulnerability scanning, and report generation
+- ✅ **Data Encryption**: Field-level AES-256-GCM encryption for sensitive data
+
+📖 **Documentation**: 
+- Full guide: [docs/SECURITY_MODULES.md](docs/SECURITY_MODULES.md)
+- Quick start: [docs/SECURITY_QUICKSTART.md](docs/SECURITY_QUICKSTART.md)
+
 ### Planned Features
 
-- [ ] Multi-Factor Authentication (MFA)
+- [ ] Biometric authentication
 - [ ] Role-based permissions (granular)
-- [ ] IP whitelisting
-- [ ] Advanced threat detection
 - [ ] Security scanning automation
-- [ ] Encrypted database fields (PII)
+- [ ] SIEM integration
 - [ ] Regular security audits
 
 ## 🔍 Security Checklist
