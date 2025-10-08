@@ -11,6 +11,10 @@ import employeeRoutes from './routes/employee.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import leaveRoutes from './routes/leave.routes';
 import healthRoutes from './routes/health.routes';
+import onboardingRoutes from './routes/onboarding.routes';
+import offboardingRoutes from './routes/offboarding.routes';
+import performanceRoutes from './routes/performance.routes';
+import timesheetRoutes from './routes/timesheet.routes';
 
 const app = express();
 
@@ -32,6 +36,10 @@ app.use(`/api/${API_VERSION}/auth`, authRoutes);
 app.use(`/api/${API_VERSION}/employees`, employeeRoutes);
 app.use(`/api/${API_VERSION}/attendance`, attendanceRoutes);
 app.use(`/api/${API_VERSION}/leave`, leaveRoutes);
+app.use(`/api/${API_VERSION}/onboarding`, onboardingRoutes);
+app.use(`/api/${API_VERSION}/offboarding`, offboardingRoutes);
+app.use(`/api/${API_VERSION}/performance`, performanceRoutes);
+app.use(`/api/${API_VERSION}/timesheet`, timesheetRoutes);
 
 // 404 handler
 app.use((req, res) => {
