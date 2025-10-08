@@ -13,7 +13,8 @@ import { logger } from '../config/logger';
 const FILE_TYPES = {
   images: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
   documents: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'],
-  all: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt']
+  csv: ['.csv'],
+  all: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', '.csv']
 };
 
 // Max file sizes (in bytes)
@@ -169,6 +170,19 @@ export class UploadService {
         fileSize: config.maxSize || MAX_FILE_SIZE.document
       }
     }).single(config.fieldName || 'file');
+  }
+
+  /**
+   * Create multer upload middleware for CSV files (using memory storage)
+   */
+  csvUpload(fieldName: string = 'file') {
+    return multer({
+      storage: multer.memoryStorage(),
+      fileFilter: this.createFileFilter(FILE_TYPES.csv),
+      limits: {
+        fileSize: MAX_FILE_SIZE.document
+      }
+    }).single(fieldName);
   }
 
   /**

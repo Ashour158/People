@@ -8,6 +8,7 @@ import {
   updateEmployeeSchema,
   terminateEmployeeSchema
 } from '../validators/employee.validator';
+import { uploadService } from '../services/upload.service';
 
 const router = Router();
 const employeeController = new EmployeeController();
@@ -102,6 +103,28 @@ router.get(
   '/search/query',
   authorize(['employee.view']),
   employeeController.searchEmployees
+);
+
+// Bulk import employees
+router.post(
+  '/bulk-import',
+  authorize(['employee.create']),
+  uploadService.csvUpload('file'),
+  employeeController.bulkImportEmployees
+);
+
+// Export employees
+router.get(
+  '/export',
+  authorize(['employee.view']),
+  employeeController.exportEmployees
+);
+
+// Download import template
+router.get(
+  '/import-template',
+  authorize(['employee.view']),
+  employeeController.downloadImportTemplate
 );
 
 export default router;
