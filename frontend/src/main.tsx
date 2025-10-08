@@ -12,6 +12,7 @@ import { AttendanceCheckIn } from './pages/attendance/AttendanceCheckIn';
 import { LeaveApply } from './pages/leave/LeaveApply';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
+import './i18n'; // Initialize i18n
 
 const queryClient = new QueryClient({
   defaultOptions: {

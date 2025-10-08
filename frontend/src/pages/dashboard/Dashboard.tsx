@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Grid,
@@ -18,6 +19,7 @@ interface StatCardProps {
 }
 
 export const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { data: userData } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authApi.getCurrentUser,
@@ -66,37 +68,37 @@ export const Dashboard: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Dashboard
+        {t('dashboard.title')}
       </Typography>
       <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-        Welcome back, {userData?.data?.user?.username || 'User'}!
+        {t('dashboard.welcome')}, {userData?.data?.user?.username || 'User'}!
       </Typography>
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         <Grid item xs={12} md={3}>
           <StatCard
-            title="Total Employees"
+            title={t('dashboard.totalEmployees')}
             value={employeesData?.meta?.total || 0}
             color="#1976d2"
           />
         </Grid>
         <Grid item xs={12} md={3}>
           <StatCard
-            title="Today's Attendance"
+            title={t('dashboard.todayAttendance')}
             value={attendanceData?.meta?.total || 0}
             color="#2e7d32"
           />
         </Grid>
         <Grid item xs={12} md={3}>
           <StatCard
-            title="Leave Balance"
+            title={t('leave.leaveBalance')}
             value={calculateLeaveBalance(leaveBalance?.data)}
             color="#ed6c02"
           />
         </Grid>
         <Grid item xs={12} md={3}>
           <StatCard
-            title="Pending Approvals"
+            title={t('dashboard.pendingLeaveRequests')}
             value="0"
             color="#9c27b0"
           />
@@ -105,22 +107,22 @@ export const Dashboard: React.FC = () => {
 
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" gutterBottom>
-          Quick Actions
+          {t('common.actions')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item>
             <Paper sx={{ p: 2 }}>
-              <Typography>Check In/Out</Typography>
+              <Typography>{t('attendance.checkIn')}/{t('attendance.checkOut')}</Typography>
             </Paper>
           </Grid>
           <Grid item>
             <Paper sx={{ p: 2 }}>
-              <Typography>Apply Leave</Typography>
+              <Typography>{t('leave.applyLeave')}</Typography>
             </Paper>
           </Grid>
           <Grid item>
             <Paper sx={{ p: 2 }}>
-              <Typography>View Team</Typography>
+              <Typography>{t('employees.employeeList')}</Typography>
             </Paper>
           </Grid>
         </Grid>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Paper,
@@ -12,10 +13,12 @@ import {
 } from '@mui/material';
 import { authApi, LoginCredentials } from '../../api/auth.api';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSelector } from '../../components/common/LanguageSelector';
 import type { ApiResponse, AuthResponse } from '../../types';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
@@ -39,17 +42,20 @@ export const Login: React.FC = () => {
     <Container maxWidth="sm">
       <Box sx={{ mt: 8 }}>
         <Paper sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <LanguageSelector />
+          </Box>
           <Typography variant="h4" align="center" gutterBottom>
-            HR Management System
+            {t('common.appName')}
           </Typography>
           <Typography variant="h6" align="center" color="textSecondary" gutterBottom>
-            Login
+            {t('auth.login')}
           </Typography>
 
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Email"
+              label={t('auth.email')}
               type="email"
               margin="normal"
               value={credentials.email}
@@ -58,7 +64,7 @@ export const Login: React.FC = () => {
             />
             <TextField
               fullWidth
-              label="Password"
+              label={t('auth.password')}
               type="password"
               margin="normal"
               value={credentials.password}
@@ -70,7 +76,7 @@ export const Login: React.FC = () => {
               <Alert severity="error" sx={{ mt: 2 }}>
                 {loginMutation.error instanceof Error
                   ? loginMutation.error.message
-                  : 'Login failed'}
+                  : t('auth.loginError')}
               </Alert>
             )}
 
@@ -82,14 +88,14 @@ export const Login: React.FC = () => {
               sx={{ mt: 3 }}
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? 'Logging in...' : 'Login'}
+              {loginMutation.isPending ? t('common.loading') : t('auth.login')}
             </Button>
 
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography variant="body2">
-                Don&apos;t have an account?{' '}
+                {t('auth.dontHaveAccount')}{' '}
                 <Link to="/register" style={{ textDecoration: 'none' }}>
-                  Register
+                  {t('auth.register')}
                 </Link>
               </Typography>
             </Box>
