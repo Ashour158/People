@@ -1,12 +1,12 @@
 import bcrypt from 'bcryptjs';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { query, transaction } from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/email';
 
 const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN = '24h'; // Always use string for consistency
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
 
 export class AuthService {
@@ -124,11 +124,10 @@ export class AuthService {
       }
 
       // Generate token
-      const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as number | string };
       const token = jwt.sign(
         { userId: user.user_id, organizationId: organization.organization_id },
         JWT_SECRET,
-        signOptions
+        { expiresIn: JWT_EXPIRES_IN }
       );
 
       return {
@@ -187,11 +186,10 @@ export class AuthService {
     );
 
     // Generate token
-    const signOptions: SignOptions = { expiresIn: JWT_EXPIRES_IN as number | string };
     const token = jwt.sign(
       { userId: user.user_id, organizationId: user.organization_id },
       JWT_SECRET,
-      signOptions
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     delete user.password_hash;
