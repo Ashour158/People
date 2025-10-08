@@ -15,16 +15,23 @@ export class AuditService {
     entityId: string,
     action: AuditAction | string,
     oldValue?: Record<string, any>,
-    newValue?: Record<string, any>
+    newValue?: Record<string, any>,
+    metadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+      organizationId?: string;
+      username?: string;
+    }
   ): Promise<void> {
     // Calculate changes (simplified diff)
     const changes = this.calculateChanges(oldValue, newValue);
     
-    // Extract user info from context (simplified)
-    const username = actorUserId; // Would lookup actual username
+    // Extract user info from context or metadata
+    const username = metadata?.username || actorUserId;
+    const organizationId = metadata?.organizationId || 'default';
     
     await this.auditLogRepository.create({
-      organization_id: 'default', // Would get from context
+      organization_id: organizationId,
       user_id: actorUserId,
       username,
       entity_type: entityType,
@@ -33,6 +40,8 @@ export class AuditService {
       old_values: oldValue,
       new_values: newValue,
       changes,
+      ip_address: metadata?.ipAddress,
+      user_agent: metadata?.userAgent,
     });
   }
 
