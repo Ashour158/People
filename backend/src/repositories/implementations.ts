@@ -254,15 +254,53 @@ export class EventOutboxRepository implements IEventOutboxRepository {
   }
 
   async findPendingEvents(limit = 100): Promise<any[]> {
-    throw new NotImplementedError('EventOutboxRepository.findPendingEvents');
+    const query = `
+      SELECT 
+        event_id, organization_id, event_type, event_name,
+        aggregate_type, aggregate_id, payload, metadata, retry_count
+      FROM events_outbox
+      WHERE processed_at IS NULL
+        AND (next_retry_at IS NULL OR next_retry_at <= NOW())
+        AND retry_count < 5
+      ORDER BY created_at ASC
+      LIMIT $1
+    `;
+    
+    const result = await this.pool.query(query, [limit]);
+    return result.rows.map(row => ({
+      event_id: row.event_id,
+      organization_id: row.organization_id,
+      event_type: row.event_type,
+      event_name: row.event_name,
+      aggregate_type: row.aggregate_type,
+      aggregate_id: row.aggregate_id,
+      payload: row.payload,
+      metadata: row.metadata,
+      retry_count: row.retry_count,
+    }));
   }
 
   async markProcessed(eventId: string): Promise<void> {
-    throw new NotImplementedError('EventOutboxRepository.markProcessed');
+    const query = `
+      UPDATE events_outbox
+      SET processed_at = NOW()
+      WHERE event_id = $1
+    `;
+    
+    await this.pool.query(query, [eventId]);
   }
 
   async markFailed(eventId: string, errorMessage: string): Promise<void> {
-    throw new NotImplementedError('EventOutboxRepository.markFailed');
+    const query = `
+      UPDATE events_outbox
+      SET 
+        retry_count = retry_count + 1,
+        last_error = $2,
+        next_retry_at = NOW() + (INTERVAL '1 minute' * POWER(2, retry_count))
+      WHERE event_id = $1
+    `;
+    
+    await this.pool.query(query, [eventId, errorMessage]);
   }
 }
 
