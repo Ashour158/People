@@ -1,0 +1,407 @@
+# Microservices Docker Compose Configuration
+# Development environment with all services
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # Infrastructure Services
+  # ==========================================
+  
+  postgres:
+    image: postgres:15
+    container_name: hr-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: hr_system
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hr-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: hr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - hr-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: hr-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - hr-network
+
+  # ==========================================
+  # Service Discovery & Configuration
+  # ==========================================
+  
+  consul:
+    image: consul:latest
+    container_name: hr-consul
+    ports:
+      - "8500:8500"  # HTTP API & UI
+      - "8600:8600"  # DNS
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - hr-network
+
+  # ==========================================
+  # API Gateway
+  # ==========================================
+  
+  api-gateway:
+    image: kong:latest
+    container_name: hr-api-gateway
+    environment:
+      KONG_DATABASE: "off"
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+    ports:
+      - "8000:8000"  # Proxy
+      - "8443:8443"  # Proxy SSL
+      - "8001:8001"  # Admin API
+      - "8444:8444"  # Admin API SSL
+    volumes:
+      - ./kong/kong.yml:/kong/declarative/kong.yml:ro
+    depends_on:
+      - employee-service
+      - auth-service
+      - attendance-service
+      - leave-service
+    networks:
+      - hr-network
+
+  # ==========================================
+  # Core Microservices
+  # ==========================================
+
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    container_name: hr-auth-service
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_auth
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret}
+      JWT_EXPIRATION: 24h
+      JWT_REFRESH_EXPIRATION: 7d
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  employee-service:
+    build:
+      context: ./services/employee
+      dockerfile: Dockerfile
+    container_name: hr-employee-service
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_employee
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      AUTH_SERVICE_URL: http://auth-service:3001
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+      - auth-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  attendance-service:
+    build:
+      context: ./services/attendance
+      dockerfile: Dockerfile
+    container_name: hr-attendance-service
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_attendance
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      AUTH_SERVICE_URL: http://auth-service:3001
+      EMPLOYEE_SERVICE_URL: http://employee-service:3002
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+      - auth-service
+      - employee-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  leave-service:
+    build:
+      context: ./services/leave
+      dockerfile: Dockerfile
+    container_name: hr-leave-service
+    environment:
+      NODE_ENV: production
+      PORT: 3004
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_leave
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      AUTH_SERVICE_URL: http://auth-service:3001
+      EMPLOYEE_SERVICE_URL: http://employee-service:3002
+    ports:
+      - "3004:3004"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+      - auth-service
+      - employee-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  payroll-service:
+    build:
+      context: ./services/payroll
+      dockerfile: Dockerfile
+    container_name: hr-payroll-service
+    environment:
+      NODE_ENV: production
+      PORT: 3005
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_payroll
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      AUTH_SERVICE_URL: http://auth-service:3001
+      EMPLOYEE_SERVICE_URL: http://employee-service:3002
+      ATTENDANCE_SERVICE_URL: http://attendance-service:3003
+      LEAVE_SERVICE_URL: http://leave-service:3004
+    ports:
+      - "3005:3005"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+      - auth-service
+      - employee-service
+      - attendance-service
+      - leave-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./services/notification
+      dockerfile: Dockerfile
+    container_name: hr-notification-service
+    environment:
+      NODE_ENV: production
+      PORT: 3006
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/hr_notification
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://admin:password@rabbitmq:5672
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM:-noreply@hr-system.com}
+    ports:
+      - "3006:3006"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+  # ==========================================
+  # Monitoring & Observability
+  # ==========================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hr-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - hr-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hr-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana-datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - hr-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: hr-jaeger
+    ports:
+      - "5775:5775/udp"  # Zipkin compact
+      - "6831:6831/udp"  # Jaeger compact
+      - "6832:6832/udp"  # Jaeger binary
+      - "5778:5778"      # Config
+      - "16686:16686"    # UI
+      - "14268:14268"    # HTTP
+      - "14250:14250"    # gRPC
+      - "9411:9411"      # Zipkin
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: 9411
+    networks:
+      - hr-network
+
+  # ==========================================
+  # Frontend (Optional - for development)
+  # ==========================================
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hr-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000/api/v1
+      VITE_WS_URL: ws://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway
+    networks:
+      - hr-network
+    restart: unless-stopped
+
+# ==========================================
+# Networks
+# ==========================================
+
+networks:
+  hr-network:
+    driver: bridge
+
+# ==========================================
+# Volumes
+# ==========================================
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  consul_data:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,268 @@
+# Kubernetes Deployment Configuration for HR Management System
+# Employee Service - Example Microservice Deployment
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hr-system
+  labels:
+    name: hr-system
+
+---
+# ConfigMap for Employee Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: employee-service-config
+  namespace: hr-system
+data:
+  NODE_ENV: "production"
+  PORT: "3002"
+  LOG_LEVEL: "info"
+  CONSUL_HOST: "consul-server"
+  CONSUL_PORT: "8500"
+
+---
+# Secret for Employee Service
+apiVersion: v1
+kind: Secret
+metadata:
+  name: employee-service-secrets
+  namespace: hr-system
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://postgres:password@postgres:5432/hr_employee"
+  RABBITMQ_URL: "amqp://admin:password@rabbitmq:5672"
+  JWT_SECRET: "your-secret-key-change-in-production"
+
+---
+# Deployment for Employee Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-service
+  namespace: hr-system
+  labels:
+    app: employee-service
+    tier: backend
+    component: microservice
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: employee-service
+  template:
+    metadata:
+      labels:
+        app: employee-service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3002"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: employee-service
+        image: hr-system/employee-service:v1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3002
+          name: http
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: employee-service-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: employee-service-config
+              key: PORT
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: employee-service-secrets
+              key: DATABASE_URL
+        - name: RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: employee-service-secrets
+              key: RABBITMQ_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: employee-service-secrets
+              key: JWT_SECRET
+        - name: CONSUL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: employee-service-config
+              key: CONSUL_HOST
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3002
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+
+---
+# Service for Employee Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-service
+  namespace: hr-system
+  labels:
+    app: employee-service
+spec:
+  type: ClusterIP
+  selector:
+    app: employee-service
+  ports:
+  - port: 80
+    targetPort: 3002
+    protocol: TCP
+    name: http
+  sessionAffinity: None
+
+---
+# HorizontalPodAutoscaler for Employee Service
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: employee-service-hpa
+  namespace: hr-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: employee-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# PodDisruptionBudget for Employee Service
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: employee-service-pdb
+  namespace: hr-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: employee-service
+
+---
+# NetworkPolicy for Employee Service
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: employee-service-network-policy
+  namespace: hr-system
+spec:
+  podSelector:
+    matchLabels:
+      app: employee-service
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: api-gateway
+    ports:
+    - protocol: TCP
+      port: 3002
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: rabbitmq
+    ports:
+    - protocol: TCP
+      port: 5672
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: consul-server
+    ports:
+    - protocol: TCP
+      port: 8500
