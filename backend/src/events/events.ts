@@ -169,6 +169,49 @@ export interface AttendanceCheckedOutEvent extends BaseEvent {
 }
 
 // =====================================================
+// TIMESHEET EVENTS
+// =====================================================
+
+export interface TimesheetSubmittedEvent extends BaseEvent {
+  eventType: 'timesheet';
+  eventName: 'timesheet.submitted';
+  aggregateType: 'timesheet';
+  payload: {
+    timesheetId: string;
+    employeeId: string;
+    periodStart: Date;
+    periodEnd: Date;
+    totalHours: number;
+    status: string;
+  };
+}
+
+export interface TimesheetApprovedEvent extends BaseEvent {
+  eventType: 'timesheet';
+  eventName: 'timesheet.approved';
+  aggregateType: 'timesheet';
+  payload: {
+    timesheetId: string;
+    employeeId: string;
+    approverId: string;
+    approvedAt: Date;
+  };
+}
+
+export interface TimesheetRejectedEvent extends BaseEvent {
+  eventType: 'timesheet';
+  eventName: 'timesheet.rejected';
+  aggregateType: 'timesheet';
+  payload: {
+    timesheetId: string;
+    employeeId: string;
+    rejectedBy: string;
+    rejectedAt: Date;
+    reason: string;
+  };
+}
+
+// =====================================================
 // TYPE UNIONS
 // =====================================================
 
@@ -183,4 +226,7 @@ export type DomainEvent =
   | PayrollRunProcessedEvent
   | PayrollRunApprovedEvent
   | AttendanceCheckedInEvent
-  | AttendanceCheckedOutEvent;
+  | AttendanceCheckedOutEvent
+  | TimesheetSubmittedEvent
+  | TimesheetApprovedEvent
+  | TimesheetRejectedEvent;

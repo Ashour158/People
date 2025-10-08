@@ -7,16 +7,21 @@ import { IEventOutboxRepository } from '../repositories/interfaces';
 import { MessageQueueAdapter } from '../messaging/MessageQueueAdapter';
 import { EXCHANGES, ROUTING_KEYS } from '../messaging/RabbitMQAdapter';
 import { DomainEvent } from './events';
+import { EventHandlerRegistry, createDefaultEventHandlerRegistry } from './EventHandlers';
 
 export class EventDispatcher {
   private isRunning = false;
   private pollInterval = 5000; // 5 seconds
   private pollingTimer: NodeJS.Timeout | null = null;
+  private handlerRegistry: EventHandlerRegistry;
 
   constructor(
     private eventOutboxRepository: IEventOutboxRepository,
-    private messageQueue?: MessageQueueAdapter
-  ) {}
+    private messageQueue?: MessageQueueAdapter,
+    handlerRegistry?: EventHandlerRegistry
+  ) {
+    this.handlerRegistry = handlerRegistry || createDefaultEventHandlerRegistry();
+  }
 
   async start(): Promise<void> {
     if (this.isRunning) {
@@ -114,9 +119,16 @@ export class EventDispatcher {
   }
 
   private async dispatchToLocalHandlers(event: DomainEvent): Promise<void> {
-    // Stub for local handlers
-    // In a monolithic setup, you would call handlers directly
+    // Dispatch to registered event handlers
     console.log(`[EventDispatcher] Local dispatch: ${event.eventName} (${event.eventId})`);
+    
+    try {
+      await this.handlerRegistry.dispatch(event);
+      console.log(`[EventDispatcher] Successfully dispatched ${event.eventName} to handlers`);
+    } catch (error) {
+      console.error(`[EventDispatcher] Failed to dispatch ${event.eventName} to handlers:`, error);
+      throw error;
+    }
   }
 
   private getRoutingKey(eventName: string): string {
@@ -133,6 +145,9 @@ export class EventDispatcher {
       'payroll.run_created': ROUTING_KEYS.PAYROLL_RUN_CREATED,
       'payroll.run_processed': ROUTING_KEYS.PAYROLL_RUN_PROCESSED,
       'payroll.run_approved': ROUTING_KEYS.PAYROLL_RUN_APPROVED,
+      'timesheet.submitted': ROUTING_KEYS.TIMESHEET_SUBMITTED || 'timesheet.submitted',
+      'timesheet.approved': ROUTING_KEYS.TIMESHEET_APPROVED || 'timesheet.approved',
+      'timesheet.rejected': ROUTING_KEYS.TIMESHEET_REJECTED || 'timesheet.rejected',
     };
 
     return routingKeyMap[eventName] || eventName;
