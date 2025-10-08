@@ -1,6 +1,6 @@
 # People HR Management System
 
-A complete, enterprise-grade HR Management System with multi-tenant support, built with Node.js, TypeScript, React, and PostgreSQL.
+A complete, enterprise-grade HR Management System with multi-tenant support, built with Django 4.2, Python 3.9, React 18, TypeScript, and PostgreSQL 13+.
 
 ## 📖 Vision
 
@@ -37,16 +37,16 @@ The People HR Management System aims to be a comprehensive, open-source solution
 - **Role-Based Access Control** - Fine-grained permissions
 
 ### Technical Features
-- RESTful API with Express.js
-- React frontend with Material-UI
-- PostgreSQL database with comprehensive schema
+- RESTful API with Django REST Framework
+- React 18 frontend with TypeScript and Material-UI
+- PostgreSQL 13+ database with comprehensive schema
 - Redis caching with session management
-- Email notifications via Nodemailer
-- Real-time WebSocket notifications
+- Email notifications via Django email backend
+- Real-time WebSocket notifications with Django Channels
 - File upload support with validation
-- Comprehensive logging with Winston
+- Comprehensive logging with Python logging framework
 - Docker support with health checks
-- Security best practices (Helmet, rate limiting, input validation)
+- Security best practices (CORS, rate limiting, input validation)
 
 ### Infrastructure Services
 - **Email Service** - Transactional emails for welcome, password reset, and notifications
@@ -56,9 +56,11 @@ The People HR Management System aims to be a comprehensive, open-source solution
 
 ## 📋 Prerequisites
 
-- Node.js 18+
-- PostgreSQL 15+
+- Python 3.9+
+- Django 4.2+
+- PostgreSQL 13+
 - Redis 7+ (optional, for caching)
+- Node.js 18+ (for frontend)
 - Docker (optional)
 
 ## 🛠️ Installation
@@ -74,7 +76,9 @@ cd People
 #### 2. Setup Backend
 ```bash
 cd backend
-npm install
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with your configuration
 ```
@@ -84,8 +88,12 @@ cp .env.example .env
 # Create database
 createdb hr_system
 
-# Run schema
-psql hr_system < ../enhanced_hr_schema.sql
+# Run Django migrations
+cd backend
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
 ```
 
 #### 4. Setup Frontend
@@ -101,7 +109,8 @@ cp .env.example .env
 Terminal 1 - Backend:
 ```bash
 cd backend
-npm run dev
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+python manage.py runserver
 ```
 
 Terminal 2 - Frontend:
@@ -141,13 +150,15 @@ docker-compose down
 ## 🌐 Access the Application
 
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **API Health Check**: http://localhost:5000/health
+- **Backend API**: http://localhost:8000
+- **API Health Check**: http://localhost:8000/health
+- **Django Admin**: http://localhost:8000/admin
+- **API Documentation**: http://localhost:8000/api/docs
 - **Service Health Checks**:
-  - Database: http://localhost:5000/health/database
-  - Cache: http://localhost:5000/health/cache
-  - Email: http://localhost:5000/health/email
-  - WebSocket: http://localhost:5000/health/websocket
+  - Database: http://localhost:8000/health/database
+  - Cache: http://localhost:8000/health/cache
+  - Email: http://localhost:8000/health/email
+  - WebSocket: http://localhost:8000/health/websocket
 
 ## 🔧 Infrastructure Services
 
@@ -204,19 +215,18 @@ After registration, you'll create your own admin account. The first user in an o
 ```
 People/
 ├── backend/
-│   ├── src/
-│   │   ├── config/         # Configuration files
-│   │   ├── controllers/    # Route controllers
-│   │   ├── middleware/     # Express middleware
-│   │   ├── routes/         # API routes
-│   │   ├── services/       # Business logic
-│   │   ├── types/          # TypeScript types
-│   │   ├── utils/          # Utility functions
-│   │   ├── validators/     # Input validation
-│   │   ├── app.ts          # Express app
-│   │   └── server.ts       # Server entry point
-│   ├── package.json
-│   ├── tsconfig.json
+│   ├── apps/
+│   │   ├── authentication/  # Auth app
+│   │   ├── employees/       # Employee management
+│   │   ├── attendance/      # Attendance tracking
+│   │   ├── leave/          # Leave management
+│   │   └── core/           # Core utilities
+│   ├── config/
+│   │   ├── settings.py     # Django settings
+│   │   ├── urls.py         # URL configuration
+│   │   └── wsgi.py         # WSGI config
+│   ├── manage.py           # Django management
+│   ├── requirements.txt
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
@@ -239,27 +249,46 @@ People/
 ### Backend Environment Variables
 
 ```env
-NODE_ENV=development
-PORT=5000
-DB_HOST=localhost
-DB_PORT=5432
+# Django settings
+DEBUG=True
+SECRET_KEY=your-secret-key-change-in-production
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database (PostgreSQL 13+)
+DB_ENGINE=django.db.backends.postgresql
 DB_NAME=hr_system
 DB_USER=postgres
 DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+
+# Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
-JWT_SECRET=your_secret_key
-JWT_EXPIRES_IN=24h
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
+REDIS_DB=0
+
+# JWT Authentication
+JWT_SECRET_KEY=your-jwt-secret-key
+JWT_ACCESS_TOKEN_LIFETIME=1440  # 24 hours in minutes
+JWT_REFRESH_TOKEN_LIFETIME=10080  # 7 days in minutes
+
+# Email
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
+DEFAULT_FROM_EMAIL=noreply@hrmanagement.com
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
 ### Frontend Environment Variables
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
 ## 📜 Scripts
@@ -312,22 +341,32 @@ make audit              # Security audit
 make ci                 # Run full CI pipeline locally
 ```
 
-### Backend NPM Scripts
+### Backend Python/Django Scripts
 
 ```bash
-npm run dev             # Start development server
-npm run build           # Build for production
-npm start               # Start production server
-npm test                # Run tests
-npm run test:watch      # Tests in watch mode
-npm run test:ci         # Tests for CI (with coverage)
-npm run lint            # Lint code
-npm run lint:fix        # Fix linting issues
-npm run format          # Format code
-npm run format:check    # Check formatting
-npm run typecheck       # Type check
-npm run validate        # Lint + typecheck + test
-npm run clean           # Remove build artifacts
+# Development
+python manage.py runserver        # Start development server
+python manage.py migrate           # Run database migrations
+python manage.py makemigrations    # Create new migrations
+python manage.py createsuperuser   # Create admin user
+python manage.py shell            # Django shell
+
+# Testing
+python manage.py test              # Run tests
+pytest                             # Run tests with pytest
+pytest --cov                       # Tests with coverage
+pytest -v                          # Verbose tests
+
+# Code Quality
+black .                            # Format code
+flake8 .                          # Lint code
+mypy .                            # Type check
+python manage.py check            # Check for issues
+
+# Management
+python manage.py collectstatic    # Collect static files
+python manage.py loaddata <fixture>  # Load fixtures
+python manage.py dumpdata <app>   # Export data
 ```
 
 ### Frontend NPM Scripts
@@ -351,11 +390,13 @@ npm run validate        # Lint + typecheck + test
 ## 🧪 Testing
 
 ```bash
-# Backend tests
+# Backend tests (Django/Python)
 cd backend
-npm test
+pytest                    # Run all tests
+pytest --cov             # Run with coverage
+python manage.py test    # Django test runner
 
-# Frontend tests
+# Frontend tests (React/TypeScript)
 cd frontend
 npm test
 ```
@@ -365,15 +406,17 @@ npm test
 ### Production Build
 
 ```bash
-# Backend
+# Backend (Django)
 cd backend
-npm run build
-npm start
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
 
-# Frontend
+# Frontend (React + TypeScript)
 cd frontend
 npm run build
-# Serve the dist/ folder with a web server
+# Serve the dist/ folder with a web server (nginx, etc.)
 ```
 
 ### Docker Production
@@ -384,14 +427,14 @@ docker-compose -f docker-compose.yml up -d
 
 ## 🔒 Security Features
 
-- JWT-based authentication
-- Password hashing with bcrypt
+- JWT-based authentication with Django REST Framework
+- Password hashing with Django's PBKDF2 algorithm
 - Rate limiting on API endpoints
-- Input validation with Joi
-- SQL injection protection
-- XSS protection with Helmet
-- CORS configuration
-- Secure session management
+- Input validation with Django REST Framework serializers
+- SQL injection protection via Django ORM
+- XSS protection with Django middleware
+- CORS configuration with django-cors-headers
+- Secure session management with Django sessions
 
 ## 📊 Database Schema
 
@@ -624,16 +667,18 @@ For security concerns, please review our [Security Policy](./SECURITY.md).
 ## 🏆 Tech Stack
 
 ### Backend
-- **Runtime**: Node.js 18+
-- **Language**: TypeScript 5+
-- **Framework**: Express.js
-- **Database**: PostgreSQL 15+
+- **Framework**: Django 4.2+
+- **Language**: Python 3.9+
+- **API**: Django REST Framework
+- **Database**: PostgreSQL 13+
 - **Cache**: Redis 7+
-- **ORM**: Raw SQL with parameterized queries
-- **Authentication**: JWT
-- **Validation**: Joi
-- **Logging**: Winston
-- **Testing**: Jest
+- **ORM**: Django ORM
+- **Authentication**: JWT (djangorestframework-simplejwt)
+- **Validation**: Django REST Framework Serializers
+- **Logging**: Python logging framework
+- **Testing**: pytest + Django TestCase
+- **ASGI Server**: Daphne (for WebSockets)
+- **Task Queue**: Celery + Redis
 
 ### Frontend
 - **Framework**: React 18

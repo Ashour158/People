@@ -19,9 +19,33 @@ NC='\033[0m' # No Color
 # Check prerequisites
 echo "Checking prerequisites..."
 
-# Check Node.js
+# Check Python
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}❌ Python 3 is not installed${NC}"
+    echo "Please install Python 3.9+ from https://www.python.org/"
+    exit 1
+fi
+
+PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d'.' -f1)
+PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f2)
+
+if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 9 ]); then
+    echo -e "${RED}❌ Python version is too old (need 3.9+), found $PYTHON_VERSION${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Python $PYTHON_VERSION${NC}"
+
+# Check pip
+if ! command -v pip3 &> /dev/null; then
+    echo -e "${RED}❌ pip3 is not installed${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ pip3 $(pip3 --version | awk '{print $2}')${NC}"
+
+# Check Node.js (for frontend)
 if ! command -v node &> /dev/null; then
-    echo -e "${RED}❌ Node.js is not installed${NC}"
+    echo -e "${RED}❌ Node.js is not installed (required for frontend)${NC}"
     echo "Please install Node.js 18+ from https://nodejs.org/"
     exit 1
 fi
@@ -43,7 +67,7 @@ echo -e "${GREEN}✓ npm $(npm -v)${NC}"
 # Check PostgreSQL
 if ! command -v psql &> /dev/null; then
     echo -e "${YELLOW}⚠ PostgreSQL is not installed${NC}"
-    echo "Please install PostgreSQL 15+ from https://www.postgresql.org/"
+    echo "Please install PostgreSQL 13+ from https://www.postgresql.org/"
     read -p "Continue without PostgreSQL check? (y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -92,8 +116,10 @@ if [ "$OPTION" == "1" ]; then
     echo ""
     echo "Access the application:"
     echo "  Frontend: http://localhost:3000"
-    echo "  Backend:  http://localhost:5000"
-    echo "  Health:   http://localhost:5000/health"
+    echo "  Backend:  http://localhost:8000"
+    echo "  Django Admin: http://localhost:8000/admin"
+    echo "  API Docs:   http://localhost:8000/api/docs"
+    echo "  Health:   http://localhost:8000/health"
     echo ""
     echo "View logs: docker-compose logs -f"
     echo "Stop services: docker-compose down"
@@ -106,7 +132,7 @@ elif [ "$OPTION" == "2" ]; then
     # Backend setup
     echo ""
     echo "=================================="
-    echo "Setting up Backend"
+    echo "Setting up Backend (Django)"
     echo "=================================="
     cd backend
     
@@ -117,8 +143,17 @@ elif [ "$OPTION" == "2" ]; then
         read -p "Press enter to continue..."
     fi
     
+    echo "Creating Python virtual environment..."
+    python3 -m venv venv
+    
+    echo "Activating virtual environment..."
+    source venv/bin/activate
+    
     echo "Installing backend dependencies..."
-    npm install
+    pip install -r requirements.txt
+    
+    echo "Running Django migrations..."
+    python manage.py migrate
     
     echo -e "${GREEN}✓ Backend setup complete${NC}"
     
@@ -146,10 +181,11 @@ elif [ "$OPTION" == "2" ]; then
     echo "=================================="
     echo "Database Setup"
     echo "=================================="
-    echo "Please run the following commands manually:"
+    echo "Please ensure you have created the PostgreSQL database:"
     echo ""
     echo "  createdb hr_system"
-    echo "  psql hr_system < enhanced_hr_schema.sql"
+    echo ""
+    echo "Django migrations were already run during backend setup."
     echo ""
     
     echo "=================================="
@@ -158,10 +194,10 @@ elif [ "$OPTION" == "2" ]; then
     echo ""
     echo "To start the application, open 3 terminals:"
     echo ""
-    echo "Terminal 1 - Backend:"
-    echo "  cd backend && npm run dev"
+    echo "Terminal 1 - Backend (Django):"
+    echo "  cd backend && source venv/bin/activate && python manage.py runserver"
     echo ""
-    echo "Terminal 2 - Frontend:"
+    echo "Terminal 2 - Frontend (React):"
     echo "  cd frontend && npm run dev"
     echo ""
     echo "Terminal 3 - Redis (optional):"

@@ -17,16 +17,20 @@ This guide will walk you through setting up and running the complete HR Manageme
 ## Prerequisites
 
 ### Required Software
-- **Node.js** 18 or higher - [Download](https://nodejs.org/)
-- **PostgreSQL** 15 or higher - [Download](https://www.postgresql.org/download/)
+- **Python** 3.9 or higher - [Download](https://www.python.org/)
+- **Django** 4.2 or higher (installed via pip)
+- **PostgreSQL** 13 or higher - [Download](https://www.postgresql.org/download/)
 - **Redis** 7 or higher (optional, for caching) - [Download](https://redis.io/download/)
+- **Node.js** 18 or higher (for frontend) - [Download](https://nodejs.org/)
 - **Docker** (optional, for containerized deployment) - [Download](https://www.docker.com/products/docker-desktop/)
 
 ### Verify Installations
 ```bash
+python3 --version  # Should be 3.9+
+pip3 --version
 node --version  # Should be 18+
 npm --version
-psql --version  # Should be 15+
+psql --version  # Should be 13+
 redis-server --version  # Should be 7+
 docker --version  # If using Docker
 ```
@@ -64,13 +68,15 @@ docker-compose up -d
 This will start:
 - PostgreSQL database (port 5432)
 - Redis cache (port 6379)
-- Backend API (port 5000)
+- Backend API (port 8000)
 - Frontend UI (port 3000)
 
 ### Step 4: Access the Application
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **Health Check**: http://localhost:5000/health
+- **Backend API**: http://localhost:8000
+- **Django Admin**: http://localhost:8000/admin
+- **API Docs**: http://localhost:8000/api/docs
+- **Health Check**: http://localhost:8000/health
 
 ### Step 5: View Logs (Optional)
 ```bash
@@ -100,9 +106,15 @@ For development or if you prefer not to use Docker.
 git clone https://github.com/Ashour158/People.git
 cd People
 
-# Setup backend
+# Setup backend (Django)
 cd backend
-npm install
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
 
 # Create environment file
 cp .env.example .env
@@ -110,42 +122,41 @@ cp .env.example .env
 
 Edit `backend/.env`:
 ```env
-NODE_ENV=development
-PORT=5000
-API_VERSION=v1
+DEBUG=True
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-DB_HOST=localhost
-DB_PORT=5432
+# Database (PostgreSQL 13+)
+DB_ENGINE=django.db.backends.postgresql
 DB_NAME=hr_system
 DB_USER=postgres
 DB_PASSWORD=your_password
-DB_POOL_MIN=2
-DB_POOL_MAX=10
+DB_HOST=localhost
+DB_PORT=5432
 
+# Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
-REDIS_PASSWORD=
+REDIS_DB=0
 
-JWT_SECRET=your_super_secret_key_change_in_production
-JWT_EXPIRES_IN=24h
-JWT_REFRESH_EXPIRES_IN=7d
+# JWT Authentication
+JWT_SECRET_KEY=your-jwt-secret-key
+JWT_ACCESS_TOKEN_LIFETIME=1440  # 24 hours in minutes
+JWT_REFRESH_TOKEN_LIFETIME=10080  # 7 days in minutes
 
-BCRYPT_ROUNDS=12
-MAX_LOGIN_ATTEMPTS=5
-LOCKOUT_DURATION_MINUTES=30
+# Email
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
+DEFAULT_FROM_EMAIL=noreply@yourdomain.com
 
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-EMAIL_FROM=noreply@yourdomain.com
-
+# File Upload
 UPLOAD_DIR=./uploads
 MAX_FILE_SIZE_MB=10
 ALLOWED_FILE_TYPES=pdf,doc,docx,jpg,jpeg,png
-
-LOG_LEVEL=info
-LOG_DIR=./logs
 ```
 
 ### Step 2: Setup Database
@@ -159,8 +170,13 @@ psql -U postgres
 CREATE DATABASE hr_system;
 \q
 
-# Import schema
-psql -U postgres -d hr_system -f ../enhanced_hr_schema.sql
+# Run Django migrations
+cd backend
+source venv/bin/activate
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
 ```
 
 ### Step 3: Install Frontend
@@ -175,38 +191,51 @@ cp .env.example .env
 
 Edit `frontend/.env`:
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-### Step 4: Build Backend (Optional for Development)
+### Step 4: Running Development Servers
 
 ```bash
-cd ../backend
-npm run build
+# Terminal 1 - Backend (Django)
+cd backend
+source venv/bin/activate
+python manage.py runserver
+
+# Terminal 2 - Frontend (React + TypeScript)
+cd ../frontend
+npm run dev
 ```
 
 ---
 
 ## 🗄️ Database Setup
 
-### Option 1: Using the Provided Schema
+### Using Django Migrations (Recommended)
 
-The repository includes a complete PostgreSQL schema with all tables, indexes, and relationships.
+Django manages the database schema automatically using migrations.
 
 ```bash
-psql -U postgres -d hr_system -f enhanced_hr_schema.sql
+cd backend
+source venv/bin/activate
+
+# Run migrations
+python manage.py migrate
+
+# Create initial data (optional)
+python manage.py loaddata fixtures/initial_data.json
 ```
 
-### Option 2: Manual Database Creation
+### Manual Database Creation (Legacy)
 
-If you need to create tables manually or customize the schema:
+If you need to use the SQL schema file:
 
 1. Connect to your database:
 ```bash
 psql -U postgres -d hr_system
 ```
 
-2. The schema includes:
+2. The Django ORM handles:
    - Organizations and Companies
    - Users and Authentication
    - Employees and Departments
@@ -257,7 +286,7 @@ cd backend
 npm run dev
 ```
 
-The backend will start on http://localhost:5000
+The backend will start on http://localhost:8000
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -339,15 +368,15 @@ After registration, you'll be automatically logged in. Or:
 
 ```bash
 # Health check
-curl http://localhost:5000/health
+curl http://localhost:8000/health
 
 # Login
-curl -X POST http://localhost:5000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"Password123!"}'
 
 # Get current user (replace TOKEN with actual token)
-curl http://localhost:5000/api/v1/auth/me \
+curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN"
 ```
 

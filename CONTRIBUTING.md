@@ -16,9 +16,11 @@ By participating in this project, you agree to maintain a respectful and collabo
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
-- Node.js 18+ 
-- PostgreSQL 15+
+- Python 3.9+
+- Django 4.2+
+- PostgreSQL 13+
 - Redis 7+ (optional, for caching)
+- Node.js 18+ (for frontend)
 - Git
 
 ### Setting Up Your Development Environment
@@ -38,11 +40,13 @@ Before you begin, ensure you have the following installed:
 
 4. **Install dependencies**:
    ```bash
-   # Backend
+   # Backend (Django)
    cd backend
-   npm install
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
    
-   # Frontend
+   # Frontend (React + TypeScript)
    cd ../frontend
    npm install
    ```
@@ -63,16 +67,20 @@ Before you begin, ensure you have the following installed:
 6. **Set up the database**:
    ```bash
    createdb hr_system
-   psql hr_system < enhanced_hr_schema.sql
+   cd backend
+   source venv/bin/activate
+   python manage.py migrate
+   python manage.py createsuperuser
    ```
 
 7. **Start development servers**:
    ```bash
-   # Terminal 1 - Backend
+   # Terminal 1 - Backend (Django)
    cd backend
-   npm run dev
+   source venv/bin/activate
+   python manage.py runserver
    
-   # Terminal 2 - Frontend
+   # Terminal 2 - Frontend (React)
    cd frontend
    npm run dev
    ```

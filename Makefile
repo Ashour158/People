@@ -122,7 +122,7 @@ docker-up: ## Start all services with Docker Compose
 	@echo '$(BLUE)Starting Docker services...$(NC)'
 	docker-compose up -d
 	@echo '$(GREEN)Services started!$(NC)'
-	@echo 'Backend: http://localhost:5000'
+	@echo 'Backend: http://localhost:8000'
 	@echo 'Frontend: http://localhost:3000'
 	@echo 'PostgreSQL: localhost:5432'
 
@@ -239,9 +239,9 @@ info: ## Show project information
 	@echo 'Description: Enterprise-grade HR Management System'
 	@echo ''
 	@echo '$(BLUE)Technology Stack$(NC)'
-	@echo 'Backend: Node.js + TypeScript + Express + PostgreSQL'
-	@echo 'Frontend: React + TypeScript + Vite + Material-UI'
-	@echo 'Database: PostgreSQL 15+'
+	@echo 'Backend: Django 4.2+ + Python 3.9+ + Django REST Framework + PostgreSQL 13+'
+	@echo 'Frontend: React 18 + TypeScript + Vite + Material-UI'
+	@echo 'Database: PostgreSQL 13+'
 	@echo 'Cache: Redis 7+'
 	@echo ''
 	@echo '$(BLUE)Quick Start$(NC)'

@@ -6,9 +6,9 @@ This is an **enterprise-grade, multi-tenant HR Management System** built to comp
 
 ### Architecture
 
-- **Backend**: Node.js + TypeScript + Express + PostgreSQL + Redis
+- **Backend**: Django 4.2 + Python 3.9 + Django REST Framework + PostgreSQL 13+ + Redis
 - **Frontend**: React 18 + TypeScript + Vite + Material-UI + React Query + Zustand
-- **Database**: PostgreSQL 15+ with multi-tenant architecture
+- **Database**: PostgreSQL 13+ with multi-tenant architecture
 - **Caching**: Redis 7+
 - **Deployment**: Docker, Kubernetes, GitHub Actions CI/CD
 
@@ -30,22 +30,21 @@ This is an **enterprise-grade, multi-tenant HR Management System** built to comp
 
 ```
 /
-├── backend/                  # Node.js + TypeScript backend (to be created)
-│   ├── src/
-│   │   ├── server.ts        # Main server entry point
-│   │   ├── config/          # Configuration files
-│   │   ├── database/        # Database connection and migrations
-│   │   ├── middleware/      # Express middleware
-│   │   ├── routes/          # API route handlers
-│   │   ├── controllers/     # Business logic controllers
-│   │   ├── services/        # Business logic services
-│   │   ├── models/          # Data models and types
-│   │   ├── utils/           # Utility functions
-│   │   └── validators/      # Input validation schemas
-│   ├── package.json
-│   ├── tsconfig.json
+├── backend/                  # Django + Python backend
+│   ├── apps/
+│   │   ├── authentication/  # Auth app
+│   │   ├── employees/       # Employee management
+│   │   ├── attendance/      # Attendance tracking
+│   │   ├── leave/          # Leave management
+│   │   └── core/           # Core utilities
+│   ├── config/
+│   │   ├── settings.py     # Django settings
+│   │   ├── urls.py         # URL configuration
+│   │   └── wsgi.py         # WSGI config
+│   ├── manage.py           # Django management
+│   ├── requirements.txt
 │   └── .env.example
-├── frontend/                 # React + TypeScript frontend (to be created)
+├── frontend/                 # React + TypeScript frontend
 │   ├── src/
 │   │   ├── main.tsx         # Application entry point
 │   │   ├── App.tsx          # Root component
@@ -70,42 +69,58 @@ This is an **enterprise-grade, multi-tenant HR Management System** built to comp
 
 ### TypeScript
 
-- **Always use TypeScript** for both backend and frontend
+- **Always use TypeScript** for frontend development
 - Enable strict mode in `tsconfig.json`
 - Define explicit types for function parameters and return values
 - Use interfaces for object shapes, types for unions/intersections
 - Avoid using `any` - use `unknown` if type is truly unknown
 - Use proper null checking with optional chaining (`?.`) and nullish coalescing (`??`)
 
-### Backend Code Style
+### Backend Code Style (Django/Python)
 
-- **Framework**: Express.js with TypeScript
-- **Database**: Use parameterized queries to prevent SQL injection
-- **Error Handling**: Use custom `AppError` class for consistent error responses
-- **Validation**: Use Joi for input validation on all API endpoints
-- **Authentication**: JWT tokens stored in HTTP-only cookies or Authorization header
-- **Logging**: Use Winston for structured logging
-- **Async/Await**: Always use async/await, never use callbacks
-- **Environment Variables**: All configuration via environment variables using `dotenv`
+- **Framework**: Django 4.2+ with Django REST Framework
+- **Database**: Use Django ORM to prevent SQL injection
+- **Error Handling**: Use DRF exception handling for consistent error responses
+- **Validation**: Use DRF Serializers for input validation on all API endpoints
+- **Authentication**: JWT tokens via djangorestframework-simplejwt
+- **Logging**: Use Python's logging framework with structured logging
+- **Async/Await**: Use async views where appropriate for performance
+- **Environment Variables**: All configuration via environment variables using python-decouple or django-environ
 
-Example backend controller pattern:
-```typescript
-export class EmployeeController {
-  async getEmployees(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { page, limit, search } = req.query;
-      const result = await employeeService.getEmployees({
-        page: Number(page) || 1,
-        limit: Number(limit) || 10,
-        search: String(search || ''),
-        organizationId: req.user.organization_id
-      });
-      res.json({ success: true, ...result });
-    } catch (error) {
-      next(error);
-    }
-  }
-}
+Example backend view pattern:
+```python
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class EmployeeViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EmployeeSerializer
+    
+    def get_queryset(self):
+        # Filter by organization for multi-tenancy
+        return Employee.objects.filter(
+            organization_id=self.request.user.organization_id
+        )
+    
+    def list(self, request):
+        page = int(request.query_params.get('page', 1))
+        limit = int(request.query_params.get('limit', 10))
+        search = request.query_params.get('search', '')
+        
+        queryset = self.get_queryset()
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) | 
+                Q(last_name__icontains=search)
+            )
+        
+        # Paginate and return
+        paginator = PageNumberPagination()
+        paginator.page_size = limit
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = self.get_serializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 ```
 
 ### Frontend Code Style
@@ -197,8 +212,8 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
 
 ### Testing Guidelines
 
-- **Unit Tests**: Jest for backend, Vitest for frontend
-- **Integration Tests**: Test API endpoints with supertest
+- **Unit Tests**: pytest for backend, Vitest for frontend
+- **Integration Tests**: Test API endpoints with Django TestCase or pytest-django
 - **Test Coverage**: Aim for >80% coverage on critical paths
 - **Test Structure**: Arrange-Act-Assert pattern
 - **Mocking**: Mock external dependencies (database, Redis, email service)
@@ -249,12 +264,14 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
 
 ## Development Workflow
 
-### Backend Development
+### Backend Development (Django/Python)
 
 1. **Install Dependencies**:
    ```bash
    cd backend
-   npm install
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
    ```
 
 2. **Setup Environment**:
@@ -265,22 +282,31 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
 
 3. **Run Database Migrations**:
    ```bash
-   npm run migrate
+   python manage.py migrate
    ```
 
-4. **Start Development Server**:
+4. **Create Superuser**:
    ```bash
-   npm run dev
+   python manage.py createsuperuser
    ```
 
-5. **Run Tests**:
+5. **Start Development Server**:
    ```bash
-   npm test
+   python manage.py runserver
    ```
 
-6. **Lint Code**:
+6. **Run Tests**:
    ```bash
-   npm run lint
+   pytest
+   # Or use Django's test runner
+   python manage.py test
+   ```
+
+7. **Lint Code**:
+   ```bash
+   flake8 .
+   black .
+   mypy .
    ```
 
 ### Frontend Development
@@ -314,9 +340,11 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
    createdb hr_system
    ```
 
-2. **Run Schema**:
+2. **Run Django Migrations**:
    ```bash
-   psql hr_system < database/schema.sql
+   cd backend
+   source venv/bin/activate
+   python manage.py migrate
    ```
 
 ## Deployment
@@ -340,8 +368,8 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
 1. **Multi-tenancy**: Always filter queries by `organization_id` to ensure data isolation
 2. **Security First**: Never skip input validation or authentication checks
 3. **Performance**: Use pagination for list endpoints, add database indexes
-4. **Error Handling**: Always use try-catch blocks and proper error responses
-5. **Type Safety**: Leverage TypeScript's type system - avoid `any` types
+4. **Error Handling**: Always use try-except blocks in Python and proper error responses
+5. **Type Safety**: Leverage Python type hints and TypeScript's type system - avoid `any` types
 6. **Documentation**: Add JSDoc comments for complex functions
 7. **Consistency**: Follow existing patterns in the codebase
 8. **Testing**: Write tests for new features and bug fixes
@@ -357,14 +385,15 @@ export const EmployeeList: React.FC<EmployeeListProps> = ({ departmentId }) => {
 ## Common Commands
 
 ```bash
-# Backend
-npm run dev          # Start dev server
-npm run build        # Build for production
-npm test            # Run tests
-npm run lint        # Lint code
-npm run migrate     # Run database migrations
+# Backend (Django/Python)
+python manage.py runserver    # Start dev server
+python manage.py migrate       # Run database migrations
+python manage.py makemigrations # Create new migrations
+pytest                         # Run tests
+flake8 .                      # Lint code
+black .                       # Format code
 
-# Frontend
+# Frontend (React/TypeScript)
 npm run dev         # Start dev server
 npm run build       # Build for production
 npm run preview     # Preview production build
@@ -376,10 +405,10 @@ docker-compose up -d           # Start in background
 docker-compose down            # Stop all services
 docker-compose logs -f backend # View backend logs
 
-# Database
-npm run migrate                # Run migrations
-npm run seed                   # Seed database
-psql hr_system                 # Connect to database
+# Database (Django manages migrations)
+python manage.py migrate        # Run migrations
+python manage.py loaddata <fixture>  # Load fixtures
+psql hr_system                  # Connect to database
 ```
 
 ## Additional Resources

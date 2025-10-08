@@ -23,21 +23,21 @@
 │                      APPLICATION LAYER                       │
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │         Node.js Backend API (Port 5000)                 │ │
+│  │         Django Backend API (Port 8000)                  │ │
 │  │                                                          │ │
 │  │  ┌──────────────────────────────────────────────────┐  │ │
 │  │  │              Middleware Stack                     │  │ │
-│  │  │  • Helmet (Security Headers)                     │  │ │
-│  │  │  • CORS                                           │  │ │
+│  │  │  • SecurityMiddleware                             │  │ │
+│  │  │  • CORS (django-cors-headers)                     │  │ │
 │  │  │  • Rate Limiting                                  │  │ │
 │  │  │  • Authentication (JWT)                           │  │ │
 │  │  │  • Authorization (RBAC)                           │  │ │
-│  │  │  • Input Validation (Joi)                         │  │ │
+│  │  │  • Input Validation (DRF Serializers)             │  │ │
 │  │  │  • Error Handler                                  │  │ │
 │  │  └──────────────────────────────────────────────────┘  │ │
 │  │                                                          │ │
 │  │  ┌──────────────────────────────────────────────────┐  │ │
-│  │  │              API Routes                           │  │ │
+│  │  │              API Routes (Django REST Framework)   │  │ │
 │  │  │  • /auth      - Authentication                    │  │ │
 │  │  │  • /employees - Employee Management               │  │ │
 │  │  │  • /attendance - Attendance Tracking              │  │ │
@@ -45,7 +45,7 @@
 │  │  └──────────────────────────────────────────────────┘  │ │
 │  │                                                          │ │
 │  │  ┌──────────────────────────────────────────────────┐  │ │
-│  │  │             Business Logic                        │  │ │
+│  │  │             Business Logic (Django Apps)          │  │ │
 │  │  │  • AuthService                                    │  │ │
 │  │  │  • EmployeeService                                │  │ │
 │  │  │  • AttendanceService                              │  │ │
@@ -104,25 +104,25 @@ frontend/
 ### Backend Architecture
 ```
 backend/
-├── API Layer (Express)
-│   └── Routes
-│       ├── auth.routes
-│       ├── employee.routes
-│       ├── attendance.routes
-│       └── leave.routes
+├── API Layer (Django REST Framework)
+│   └── Views (ViewSets)
+│       ├── auth.views
+│       ├── employee.views
+│       ├── attendance.views
+│       └── leave.views
 │
 ├── Middleware
-│   ├── authenticate
-│   ├── authorize
-│   ├── validate
+│   ├── authenticate (JWT)
+│   ├── authorize (Permissions)
+│   ├── SecurityMiddleware
 │   ├── errorHandler
 │   └── rateLimiter
 │
-├── Controllers (Request Handlers)
-│   ├── AuthController
-│   ├── EmployeeController
-│   ├── AttendanceController
-│   └── LeaveController
+├── Serializers (Validation & Serialization)
+│   ├── AuthSerializer
+│   ├── EmployeeSerializer
+│   ├── AttendanceSerializer
+│   └── LeaveSerializer
 │
 ├── Services (Business Logic)
 │   ├── AuthService
@@ -130,11 +130,11 @@ backend/
 │   ├── AttendanceService
 │   └── LeaveService
 │
-├── Validators (Input Validation)
-│   ├── authValidator
-│   ├── employeeValidator
-│   ├── attendanceValidator
-│   └── leaveValidator
+├── Models (Django ORM)
+│   ├── User
+│   ├── Employee
+│   ├── Attendance
+│   └── Leave
 │
 ├── Utils
 │   ├── email
@@ -142,9 +142,9 @@ backend/
 │   └── response
 │
 └── Config
-    ├── database
-    ├── redis
-    └── logger
+    ├── settings.py
+    ├── urls.py
+    └── wsgi.py
 ```
 
 ## Data Flow
@@ -185,14 +185,14 @@ backend/
 │   Security Layer 1: Network         │
 │   • CORS policies                   │
 │   • Rate limiting                   │
-│   • Helmet security headers         │
+│   • Django SecurityMiddleware       │
 └───────────────┬─────────────────────┘
                 │
 ┌───────────────▼─────────────────────┐
 │   Security Layer 2: Authentication  │
 │   • JWT token verification          │
 │   • Token expiration                │
-│   • Secure password storage         │
+│   • Django password hashing         │
 └───────────────┬─────────────────────┘
                 │
 ┌───────────────▼─────────────────────┐
@@ -204,9 +204,9 @@ backend/
                 │
 ┌───────────────▼─────────────────────┐
 │   Security Layer 4: Input           │
-│   • Schema validation (Joi)         │
-│   • Type checking (TypeScript)      │
-│   • SQL injection prevention        │
+│   • Serializer validation (DRF)    │
+│   • Type checking (Python typing)   │
+│   • SQL injection prevention (ORM)  │
 └───────────────┬─────────────────────┘
                 │
 ┌───────────────▼─────────────────────┐
@@ -230,12 +230,12 @@ backend/
 │  └────────────────────────────────────────────────────┘ │
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐ │
-│  │  Backend Container (node:18-alpine)                 │ │
-│  │  Port: 5000                                         │ │
+│  │  Backend Container (python:3.9-slim)                │ │
+│  │  Port: 8000                                         │ │
 │  └────────────────────────────────────────────────────┘ │
 │                                                          │
 │  ┌────────────────────────────────────────────────────┐ │
-│  │  PostgreSQL Container (postgres:15-alpine)          │ │
+│  │  PostgreSQL Container (postgres:13-alpine)          │ │
 │  │  Port: 5432                                         │ │
 │  │  Volume: postgres_data                              │ │
 │  └────────────────────────────────────────────────────┘ │
@@ -295,16 +295,17 @@ React 18 (UI Library)
 
 ### Backend Stack
 ```
-Node.js 18 (Runtime)
-    ├── TypeScript (Type Safety)
-    ├── Express (Web Framework)
-    ├── PostgreSQL (Database)
-    ├── Redis (Cache)
-    ├── JWT (Authentication)
-    ├── Bcrypt (Password Hashing)
-    ├── Joi (Validation)
-    ├── Winston (Logging)
-    └── Nodemailer (Email)
+Django 4.2+ (Web Framework)
+    ├── Python 3.9+ (Language)
+    ├── Django REST Framework (API)
+    ├── PostgreSQL 13+ (Database)
+    ├── Redis 7+ (Cache)
+    ├── Django ORM (Database Access)
+    ├── JWT (djangorestframework-simplejwt)
+    ├── DRF Serializers (Validation)
+    ├── Python logging (Logging)
+    ├── Celery (Task Queue)
+    └── Daphne/ASGI (WebSockets)
 ```
 
 ## Scalability Considerations
