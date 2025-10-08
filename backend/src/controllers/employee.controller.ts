@@ -83,4 +83,152 @@ export class EmployeeController {
       next(error);
     }
   }
+
+  async terminateEmployee(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { id } = req.params;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.terminateEmployee(organizationId, id, req.body);
+      return successResponse(res, result, 'Employee terminated successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEmployeeTeam(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { id } = req.params;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.getEmployeeTeam(organizationId, id);
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEmployeeStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { company_id } = req.query;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.getEmployeeStats(
+        organizationId, 
+        company_id as string | undefined
+      );
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async activateEmployee(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { id } = req.params;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.activateEmployee(organizationId, id);
+      return successResponse(res, result, 'Employee activated successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEmployeesByDepartment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { company_id } = req.query;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.getEmployeesByDepartment(
+        organizationId, 
+        company_id as string | undefined
+      );
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getNewJoiners(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { company_id } = req.query;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.getNewJoiners(
+        organizationId, 
+        company_id as string | undefined
+      );
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getEmployeesOnProbation(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { company_id } = req.query;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      const result = await employeeService.getEmployeesOnProbation(
+        organizationId, 
+        company_id as string | undefined
+      );
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async searchEmployees(req: Request, res: Response, next: NextFunction) {
+    try {
+      const organizationId = (req as AuthRequest).user?.organization_id;
+      const { q, limit } = req.query;
+      
+      if (!organizationId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+      
+      if (!q) {
+        return res.status(400).json({ success: false, error: 'Search query required' });
+      }
+      
+      const result = await employeeService.searchEmployees(
+        organizationId, 
+        q as string,
+        limit ? parseInt(limit as string) : 10
+      );
+      return successResponse(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
