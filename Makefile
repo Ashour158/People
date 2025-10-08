@@ -122,7 +122,7 @@ docker-up: ## Start all services with Docker Compose
 	@echo '$(BLUE)Starting Docker services...$(NC)'
 	docker-compose up -d
 	@echo '$(GREEN)Services started!$(NC)'
-	@echo 'Backend: http://localhost:5000'
+	@echo 'Backend: http://localhost:8000'
 	@echo 'Frontend: http://localhost:3000'
 	@echo 'PostgreSQL: localhost:5432'
 

@@ -191,7 +191,7 @@ cp .env.example .env
 
 Edit `frontend/.env`:
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
 ### Step 4: Running Development Servers
@@ -286,7 +286,7 @@ cd backend
 npm run dev
 ```
 
-The backend will start on http://localhost:5000
+The backend will start on http://localhost:8000
 
 **Terminal 2 - Frontend:**
 ```bash
@@ -368,15 +368,15 @@ After registration, you'll be automatically logged in. Or:
 
 ```bash
 # Health check
-curl http://localhost:5000/health
+curl http://localhost:8000/health
 
 # Login
-curl -X POST http://localhost:5000/api/v1/auth/login \
+curl -X POST http://localhost:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@example.com","password":"Password123!"}'
 
 # Get current user (replace TOKEN with actual token)
-curl http://localhost:5000/api/v1/auth/me \
+curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN"
 ```
 
