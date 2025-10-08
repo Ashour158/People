@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { Pool } from 'pg';
-import db from '../config/database';
-import logger from '../utils/logger';
+import { pool } from '../config/database';
+import { logger } from '../config/logger';
 
 // =====================================================
 // AI SERVICE - OPENAI INTEGRATION
@@ -47,7 +47,7 @@ export class AIService {
       timeout: 60000,
     });
 
-    this.db = db;
+    this.db = pool;
   }
 
   // =====================================================

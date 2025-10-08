@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import aiService from '../services/ai.service';
 import { successResponse, errorResponse } from '../utils/response';
-import logger from '../utils/logger';
+import { logger } from '../config/logger';
 
 export class AIController {
   // =====================================================
