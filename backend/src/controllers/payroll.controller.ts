@@ -8,6 +8,10 @@ export class PayrollController {
   async createComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.createComponent(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -19,6 +23,10 @@ export class PayrollController {
   async getComponents(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getComponents(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -30,6 +38,10 @@ export class PayrollController {
   async getComponentById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getComponentById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -41,6 +53,10 @@ export class PayrollController {
   async updateComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.updateComponent(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -52,6 +68,10 @@ export class PayrollController {
   async deleteComponent(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       await payrollService.deleteComponent(organizationId, req.params.id);
       res.json({ success: true, message: 'Component deleted successfully' });
@@ -63,6 +83,10 @@ export class PayrollController {
   async createEmployeeCompensation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.createEmployeeCompensation(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -74,6 +98,10 @@ export class PayrollController {
   async getEmployeeCompensation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getEmployeeCompensation(organizationId, req.params.employeeId);
       res.json({ success: true, data: result });
@@ -85,6 +113,10 @@ export class PayrollController {
   async updateEmployeeCompensation(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.updateEmployeeCompensation(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -96,6 +128,10 @@ export class PayrollController {
   async createPayrollRun(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.createPayrollRun(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -107,6 +143,10 @@ export class PayrollController {
   async getPayrollRuns(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getPayrollRuns(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -118,6 +158,10 @@ export class PayrollController {
   async getPayrollRunById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getPayrollRunById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -129,6 +173,10 @@ export class PayrollController {
   async processPayrollRun(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.processPayrollRun(organizationId, req.params.id, authReq.user.user_id);
       res.json({ success: true, data: result, message: 'Payroll run processing started' });
@@ -140,6 +188,10 @@ export class PayrollController {
   async finalizePayrollRun(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.finalizePayrollRun(organizationId, req.params.id, authReq.user.user_id);
       res.json({ success: true, data: result, message: 'Payroll run finalized successfully' });
@@ -151,6 +203,10 @@ export class PayrollController {
   async regeneratePayslips(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       await payrollService.regeneratePayslips(organizationId, req.params.id, authReq.user.user_id);
       res.json({ success: true, message: 'Payslips regenerated successfully' });
@@ -162,6 +218,10 @@ export class PayrollController {
   async getPayslips(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getPayslips(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -173,6 +233,10 @@ export class PayrollController {
   async getPayslipById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await payrollService.getPayslipById(organizationId, req.params.id);
       res.json({ success: true, data: result });

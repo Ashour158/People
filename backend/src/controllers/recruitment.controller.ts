@@ -8,6 +8,10 @@ export class RecruitmentController {
   async createJob(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.createJob(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -19,6 +23,10 @@ export class RecruitmentController {
   async getJobs(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getJobs(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -30,6 +38,10 @@ export class RecruitmentController {
   async getJobById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getJobById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -41,6 +53,10 @@ export class RecruitmentController {
   async updateJob(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.updateJob(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -52,6 +68,10 @@ export class RecruitmentController {
   async deleteJob(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       await recruitmentService.deleteJob(organizationId, req.params.id);
       res.json({ success: true, message: 'Job posting deleted successfully' });
@@ -63,6 +83,10 @@ export class RecruitmentController {
   async publishJob(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.publishJob(organizationId, req.params.id, authReq.user.user_id);
       res.json({ success: true, data: result, message: 'Job posting published successfully' });
@@ -74,6 +98,10 @@ export class RecruitmentController {
   async closeJob(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.closeJob(organizationId, req.params.id, authReq.user.user_id);
       res.json({ success: true, data: result, message: 'Job posting closed successfully' });
@@ -85,6 +113,10 @@ export class RecruitmentController {
   async createCandidate(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.createCandidate(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -96,6 +128,10 @@ export class RecruitmentController {
   async getCandidates(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getCandidates(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -107,6 +143,10 @@ export class RecruitmentController {
   async getCandidateById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getCandidateById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -118,6 +158,10 @@ export class RecruitmentController {
   async updateCandidate(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.updateCandidate(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -129,6 +173,10 @@ export class RecruitmentController {
   async deleteCandidate(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       await recruitmentService.deleteCandidate(organizationId, req.params.id);
       res.json({ success: true, message: 'Candidate deleted successfully' });
@@ -140,6 +188,10 @@ export class RecruitmentController {
   async createApplication(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.createApplication(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -151,6 +203,10 @@ export class RecruitmentController {
   async getApplications(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getApplications(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -162,6 +218,10 @@ export class RecruitmentController {
   async getApplicationById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getApplicationById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -173,6 +233,10 @@ export class RecruitmentController {
   async updateApplicationStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.updateApplicationStatus(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -184,6 +248,10 @@ export class RecruitmentController {
   async scheduleInterview(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.scheduleInterview(organizationId, authReq.user.user_id, req.body);
       res.status(201).json({ success: true, data: result });
@@ -195,6 +263,10 @@ export class RecruitmentController {
   async getInterviews(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getInterviews(organizationId, req.query);
       res.json({ success: true, ...result });
@@ -206,6 +278,10 @@ export class RecruitmentController {
   async getInterviewById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.getInterviewById(organizationId, req.params.id);
       res.json({ success: true, data: result });
@@ -217,6 +293,10 @@ export class RecruitmentController {
   async updateInterview(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.updateInterview(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
@@ -228,6 +308,10 @@ export class RecruitmentController {
   async addInterviewFeedback(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const authReq = req as AuthRequest;
+      if (!authReq.user) {
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
+      }
       const organizationId = authReq.user.organization_id;
       const result = await recruitmentService.addInterviewFeedback(organizationId, req.params.id, authReq.user.user_id, req.body);
       res.json({ success: true, data: result });
