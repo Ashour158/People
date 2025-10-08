@@ -4,12 +4,15 @@ import helmet from 'helmet';
 import { authenticate } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiter';
+import { threatDetection } from './middleware/threatDetection';
+import { ipWhitelist } from './middleware/ipWhitelist';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
 import employeeRoutes from './routes/employee.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import leaveRoutes from './routes/leave.routes';
+import securityRoutes from './routes/security.routes';
 
 const app = express();
 
@@ -21,6 +24,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
 app.use('/api', apiLimiter);
+
+// Security middleware (applied after authentication)
+app.use('/api', threatDetection);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -34,9 +40,10 @@ app.get('/health', (req, res) => {
 // API Routes
 const API_VERSION = process.env.API_VERSION || 'v1';
 app.use(`/api/${API_VERSION}/auth`, authRoutes);
-app.use(`/api/${API_VERSION}/employees`, employeeRoutes);
-app.use(`/api/${API_VERSION}/attendance`, attendanceRoutes);
-app.use(`/api/${API_VERSION}/leave`, leaveRoutes);
+app.use(`/api/${API_VERSION}/employees`, authenticate, ipWhitelist, employeeRoutes);
+app.use(`/api/${API_VERSION}/attendance`, authenticate, ipWhitelist, attendanceRoutes);
+app.use(`/api/${API_VERSION}/leave`, authenticate, ipWhitelist, leaveRoutes);
+app.use(`/api/${API_VERSION}/security`, authenticate, ipWhitelist, securityRoutes);
 
 // 404 handler
 app.use((req, res) => {
