@@ -5,7 +5,8 @@ import { authenticate } from '../middleware/auth';
 import { authorize } from '../middleware/authorize';
 import {
   createEmployeeSchema,
-  updateEmployeeSchema
+  updateEmployeeSchema,
+  terminateEmployeeSchema
 } from '../validators/employee.validator';
 
 const router = Router();
@@ -44,6 +45,63 @@ router.delete(
   '/:id',
   authorize(['employee.delete']),
   employeeController.deleteEmployee
+);
+
+// Terminate employee
+router.post(
+  '/:id/terminate',
+  authorize(['employee.terminate']),
+  validate(terminateEmployeeSchema),
+  employeeController.terminateEmployee
+);
+
+// Activate employee
+router.post(
+  '/:id/activate',
+  authorize(['employee.update']),
+  employeeController.activateEmployee
+);
+
+// Get employee's team
+router.get(
+  '/:id/team',
+  authorize(['employee.view']),
+  employeeController.getEmployeeTeam
+);
+
+// Employee statistics
+router.get(
+  '/stats/overview',
+  authorize(['employee.view']),
+  employeeController.getEmployeeStats
+);
+
+// Get employees by department
+router.get(
+  '/stats/by-department',
+  authorize(['employee.view']),
+  employeeController.getEmployeesByDepartment
+);
+
+// Get new joiners
+router.get(
+  '/stats/new-joiners',
+  authorize(['employee.view']),
+  employeeController.getNewJoiners
+);
+
+// Get employees on probation
+router.get(
+  '/stats/on-probation',
+  authorize(['employee.view']),
+  employeeController.getEmployeesOnProbation
+);
+
+// Search employees
+router.get(
+  '/search/query',
+  authorize(['employee.view']),
+  employeeController.searchEmployees
 );
 
 export default router;
