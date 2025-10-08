@@ -1,4 +1,4 @@
-import { Employee, EmployeeStatus, EmploymentStatus, EmployeeData } from './Employee';
+import { Employee, EmploymentStatus, EmployeeData } from './Employee';
 
 describe('Employee Domain Model', () => {
   const validEmployeeData: EmployeeData = {
