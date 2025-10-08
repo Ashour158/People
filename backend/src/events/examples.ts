@@ -3,11 +3,11 @@
 // Demonstrates how to use the event handling system
 // =====================================================
 
-import { initializeEventSystem, shutdownEventSystem } from './events/setup';
-import { EventDispatcher, EventHandler } from './events/EventDispatcher';
-import { EventPublisher } from './events/EventPublisher';
-import { EventOutboxRepository } from './repositories/implementations';
-import { pool } from './config/database';
+import { initializeEventSystem, shutdownEventSystem } from './setup';
+import { EventDispatcher, EventHandler } from './EventDispatcher';
+import { EventPublisher } from './EventPublisher';
+import { EventOutboxRepository } from '../repositories/implementations';
+import { pool } from '../config/database';
 
 // =====================================================
 // EXAMPLE 1: Quick Setup (Recommended)
@@ -241,8 +241,12 @@ export async function example6_PublishingEvents() {
  * Complete example of integrating with an Express application.
  */
 export function example7_ExpressIntegration() {
-  import express from 'express';
+  // Note: In a real application, import express at the top of the file
+  // import express from 'express';
   
+  // Pseudo-code for demonstration:
+  /*
+  const express = require('express');
   const app = express();
   let dispatcher: EventDispatcher;
   
@@ -276,6 +280,9 @@ export function example7_ExpressIntegration() {
   });
   
   return app;
+  */
+  
+  console.log('See code comments for Express integration example');
 }
 
 // =====================================================

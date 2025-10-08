@@ -67,9 +67,9 @@ describe('Event Handlers', () => {
         };
 
         await expect(handleEmployeeUpdated(event)).resolves.not.toThrow();
-        expect(consoleLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Employee Updated')
-        );
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const calls = consoleLogSpy.mock.calls.map(call => call.join(' '));
+        expect(calls.some((call: string) => call.includes('Employee Updated'))).toBe(true);
       });
 
       it('should detect critical field changes', async () => {
@@ -86,9 +86,9 @@ describe('Event Handlers', () => {
         };
 
         await expect(handleEmployeeUpdated(event)).resolves.not.toThrow();
-        expect(consoleLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Critical changes detected')
-        );
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const calls = consoleLogSpy.mock.calls.map(call => call.join(' '));
+        expect(calls.some((call: string) => call.includes('Critical changes detected'))).toBe(true);
       });
     });
 

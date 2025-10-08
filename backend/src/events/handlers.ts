@@ -18,11 +18,12 @@ import { EventHandler } from './EventDispatcher';
  * - Initialize employee profile
  */
 export const handleEmployeeCreated: EventHandler = async (event) => {
-  const { employeeId, email, firstName, lastName } = event.payload;
+  const { employeeId, firstName, lastName } = event.payload;
   
   console.log(`[Event Handler] Employee Created: ${firstName} ${lastName} (${employeeId})`);
   
   // TODO: Send welcome email
+  // const { email } = event.payload;
   // await emailService.sendWelcomeEmail({
   //   to: email,
   //   name: `${firstName} ${lastName}`,
@@ -78,7 +79,7 @@ export const handleEmployeeUpdated: EventHandler = async (event) => {
  * - Calculate final settlement
  */
 export const handleEmployeeTerminated: EventHandler = async (event) => {
-  const { employeeId, terminationDate, reason } = event.payload;
+  const { employeeId, terminationDate } = event.payload;
   
   console.log(`[Event Handler] Employee Terminated: ${employeeId} on ${terminationDate}`);
   
@@ -86,6 +87,7 @@ export const handleEmployeeTerminated: EventHandler = async (event) => {
   // await accessService.deactivateEmployee(employeeId);
   
   // TODO: Calculate final settlement (gratuity, unused leaves, etc.)
+  // const { reason } = event.payload;
   // await payrollService.calculateFinalSettlement(employeeId, terminationDate);
   
   // TODO: Initiate exit checklist
@@ -114,11 +116,12 @@ export const handleEmployeeTerminated: EventHandler = async (event) => {
  * - Notify team members
  */
 export const handleLeaveRequested: EventHandler = async (event) => {
-  const { leaveRequestId, employeeId, leaveTypeId, startDate, endDate, totalDays } = event.payload;
+  const { leaveRequestId, employeeId, startDate, endDate, totalDays } = event.payload;
   
   console.log(`[Event Handler] Leave Requested: ${employeeId} for ${totalDays} days (${startDate} to ${endDate})`);
   
   // TODO: Notify manager
+  // const { leaveTypeId } = event.payload;
   // const manager = await employeeService.getManager(employeeId);
   // await notificationService.notifyLeaveRequest({
   //   managerId: manager.id,
@@ -149,11 +152,12 @@ export const handleLeaveRequested: EventHandler = async (event) => {
  * - Notify team
  */
 export const handleLeaveApproved: EventHandler = async (event) => {
-  const { leaveRequestId, employeeId, approverId } = event.payload;
+  const { leaveRequestId, approverId } = event.payload;
   
   console.log(`[Event Handler] Leave Approved: ${leaveRequestId} by ${approverId}`);
   
   // TODO: Notify employee
+  // const { employeeId } = event.payload;
   // await notificationService.notifyLeaveApproval({
   //   employeeId,
   //   leaveRequestId,
@@ -184,11 +188,12 @@ export const handleLeaveApproved: EventHandler = async (event) => {
  * - Log for audit
  */
 export const handleLeaveRejected: EventHandler = async (event) => {
-  const { leaveRequestId, employeeId, rejectedBy, reason } = event.payload;
+  const { leaveRequestId, rejectedBy } = event.payload;
   
   console.log(`[Event Handler] Leave Rejected: ${leaveRequestId} by ${rejectedBy}`);
   
   // TODO: Notify employee
+  // const { employeeId, reason } = event.payload;
   // await notificationService.notifyLeaveRejection({
   //   employeeId,
   //   leaveRequestId,
@@ -235,11 +240,12 @@ export const handlePayrollRunCreated: EventHandler = async (event) => {
  * - Prepare bank file
  */
 export const handlePayrollRunProcessed: EventHandler = async (event) => {
-  const { payrollRunId, totalEmployees, totalGross, totalNet } = event.payload;
+  const { payrollRunId, totalEmployees, totalNet } = event.payload;
   
   console.log(`[Event Handler] Payroll Run Processed: ${payrollRunId} (${totalEmployees} employees, Net: ${totalNet})`);
   
   // TODO: Generate payslips
+  // const { totalGross } = event.payload;
   // await payrollService.generatePayslips(payrollRunId);
   
   // TODO: Notify finance team
@@ -289,11 +295,12 @@ export const handlePayrollRunApproved: EventHandler = async (event) => {
  * - Notify if outside geofence
  */
 export const handleAttendanceCheckedIn: EventHandler = async (event) => {
-  const { attendanceId, employeeId, checkInTime, location } = event.payload;
+  const { employeeId, checkInTime } = event.payload;
   
   console.log(`[Event Handler] Attendance Check-In: ${employeeId} at ${checkInTime}`);
   
   // TODO: Check if late
+  // const { attendanceId, location } = event.payload;
   // const shift = await shiftService.getEmployeeShift(employeeId);
   // if (isLateArrival(checkInTime, shift.startTime)) {
   //   await notificationService.notifyLateArrival({
@@ -322,11 +329,12 @@ export const handleAttendanceCheckedIn: EventHandler = async (event) => {
  * - Calculate overtime if applicable
  */
 export const handleAttendanceCheckedOut: EventHandler = async (event) => {
-  const { attendanceId, employeeId, checkOutTime, workingHours } = event.payload;
+  const { employeeId, checkOutTime, workingHours } = event.payload;
   
   console.log(`[Event Handler] Attendance Check-Out: ${employeeId} at ${checkOutTime} (${workingHours} hours)`);
   
   // TODO: Calculate overtime
+  // const { attendanceId } = event.payload;
   // const shift = await shiftService.getEmployeeShift(employeeId);
   // if (workingHours > shift.standardHours) {
   //   const overtimeHours = workingHours - shift.standardHours;
