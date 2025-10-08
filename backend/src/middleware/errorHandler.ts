@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/logger';
+import { sanitizeError } from './securityLogger';
 
 export class AppError extends Error {
   statusCode: number;
@@ -21,17 +22,38 @@ export const errorHandler = (
 ) => {
   let { statusCode = 500, message } = err;
 
+  // Log error details
   if (!err.isOperational) {
-    logger.error('Unexpected error:', err);
+    logger.error('Unexpected error:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+    });
     statusCode = 500;
-    message = 'Internal server error';
+    message = sanitizeError(err);
   } else {
-    logger.warn('Operational error:', { statusCode, message, path: req.path });
+    logger.warn('Operational error:', { 
+      statusCode, 
+      message, 
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+    });
   }
 
-  res.status(statusCode).json({
+  // Don't expose internal error details in production
+  const response: any = {
     success: false,
     error: message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+  };
+
+  // Only include stack trace in development
+  if (process.env.NODE_ENV === 'development') {
+    response.stack = err.stack;
+  }
+
+  res.status(statusCode).json(response);
 };
