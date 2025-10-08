@@ -126,7 +126,7 @@ export class AuthService {
       const token = jwt.sign(
         { userId: user.user_id, organizationId: organization.organization_id },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: '24h' }
       );
 
       return {
@@ -185,7 +185,7 @@ export class AuthService {
     const token = jwt.sign(
       { userId: user.user_id, organizationId: user.organization_id },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: '24h' }
     );
 
     delete user.password_hash;

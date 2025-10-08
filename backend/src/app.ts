@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { authenticate } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiter';
 
@@ -10,6 +9,9 @@ import authRoutes from './routes/auth.routes';
 import employeeRoutes from './routes/employee.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import leaveRoutes from './routes/leave.routes';
+import performanceRoutes from './routes/performance.routes';
+import payrollRoutes from './routes/payroll.routes';
+import recruitmentRoutes from './routes/recruitment.routes';
 
 const app = express();
 
@@ -23,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiLimiter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     success: true,
     message: 'Server is healthy',
@@ -37,9 +39,12 @@ app.use(`/api/${API_VERSION}/auth`, authRoutes);
 app.use(`/api/${API_VERSION}/employees`, employeeRoutes);
 app.use(`/api/${API_VERSION}/attendance`, attendanceRoutes);
 app.use(`/api/${API_VERSION}/leave`, leaveRoutes);
+app.use(`/api/${API_VERSION}/performance`, performanceRoutes);
+app.use(`/api/${API_VERSION}/payroll`, payrollRoutes);
+app.use(`/api/${API_VERSION}/recruitment`, recruitmentRoutes);
 
 // 404 handler
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({
     success: false,
     error: 'Endpoint not found'
