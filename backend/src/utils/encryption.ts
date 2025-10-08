@@ -8,8 +8,6 @@ import { env } from '../config/env';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
-const SALT_LENGTH = 64;
 
 /**
  * Derives an encryption key from the JWT secret
@@ -49,7 +47,14 @@ export function decrypt(encryptedText: string): string {
     const parts = encryptedText.split(':');
     if (parts.length !== 3) return encryptedText;
 
-    const [ivHex, authTagHex, encrypted] = parts;
+    const ivHex = parts[0];
+    const authTagHex = parts[1];
+    const encrypted = parts[2];
+
+    if (!ivHex || !authTagHex || !encrypted) {
+      return encryptedText;
+    }
+
     const key = getEncryptionKey();
     const iv = Buffer.from(ivHex, 'hex');
     const authTag = Buffer.from(authTagHex, 'hex');
@@ -57,8 +62,9 @@ export function decrypt(encryptedText: string): string {
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
 
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    const decryptedBuffer = decipher.update(encrypted, 'hex');
+    const finalBuffer = decipher.final();
+    const decrypted = Buffer.concat([decryptedBuffer, finalBuffer]).toString('utf8');
 
     return decrypted;
   } catch (error) {
