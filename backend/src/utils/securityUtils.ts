@@ -20,11 +20,15 @@ export interface TokenPayload {
  * @returns JWT token
  */
 export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.jwt.secret, {
-    expiresIn: env.jwt.expiresIn as string,
-    issuer: 'hr-management-system',
-    audience: 'hr-api',
-  });
+  return jwt.sign(
+    payload,
+    env.jwt.secret,
+    {
+      expiresIn: env.jwt.expiresIn,
+      issuer: 'hr-management-system',
+      audience: 'hr-api',
+    } as jwt.SignOptions
+  );
 };
 
 /**
@@ -33,11 +37,15 @@ export const generateAccessToken = (payload: TokenPayload): string => {
  * @returns JWT refresh token
  */
 export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.jwt.secret, {
-    expiresIn: env.jwt.refreshExpiresIn as string,
-    issuer: 'hr-management-system',
-    audience: 'hr-api',
-  });
+  return jwt.sign(
+    payload,
+    env.jwt.secret,
+    {
+      expiresIn: env.jwt.refreshExpiresIn,
+      issuer: 'hr-management-system',
+      audience: 'hr-api',
+    } as jwt.SignOptions
+  );
 };
 
 /**
@@ -50,7 +58,7 @@ export const verifyToken = (token: string): TokenPayload | null => {
     return jwt.verify(token, env.jwt.secret, {
       issuer: 'hr-management-system',
       audience: 'hr-api',
-    }) as TokenPayload;
+    } as jwt.VerifyOptions) as TokenPayload;
   } catch (error) {
     return null;
   }
@@ -103,12 +111,27 @@ export const generateResetToken = (): { token: string; hash: string; expiresAt: 
  * @returns true if valid IPv4 or IPv6
  */
 export const isValidIP = (ip: string): boolean => {
-  // IPv4
-  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  // IPv4 - more strict validation
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const ipv4Match = ip.match(ipv4Regex);
+  
+  if (ipv4Match) {
+    // Check each octet is 0-255
+    for (let i = 1; i <= 4; i++) {
+      const part = ipv4Match[i];
+      if (!part) return false;
+      const octet = parseInt(part, 10);
+      if (octet < 0 || octet > 255) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
   // IPv6
   const ipv6Regex = /^([\da-f]{1,4}:){7}[\da-f]{1,4}$/i;
   
-  return ipv4Regex.test(ip) || ipv6Regex.test(ip);
+  return ipv6Regex.test(ip);
 };
 
 /**

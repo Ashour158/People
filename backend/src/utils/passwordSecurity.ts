@@ -112,9 +112,12 @@ export const containsPersonalInfo = (
   }
   
   if (userData.email) {
-    const emailPart = userData.email.split('@')[0].toLowerCase();
-    if (emailPart && lowerPassword.includes(emailPart)) {
-      return true;
+    const parts = userData.email.split('@');
+    if (parts.length > 0 && parts[0]) {
+      const emailPart = parts[0].toLowerCase();
+      if (lowerPassword.includes(emailPart)) {
+        return true;
+      }
     }
   }
   
