@@ -17,8 +17,8 @@ export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
+  _next: NextFunction
+): Response => {
   let { statusCode = 500, message } = err;
 
   if (!err.isOperational) {
@@ -29,7 +29,7 @@ export const errorHandler = (
     logger.warn('Operational error:', { statusCode, message, path: req.path });
   }
 
-  res.status(statusCode).json({
+  return res.status(statusCode).json({
     success: false,
     error: message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })

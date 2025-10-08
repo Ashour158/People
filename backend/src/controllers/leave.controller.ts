@@ -1,3 +1,4 @@
+import { getRequiredParam } from '../utils/request';
 import { Request, Response, NextFunction } from 'express';
 import { LeaveService } from '../services/leave.service';
 import { successResponse } from '../utils/response';
@@ -6,7 +7,7 @@ import { AuthRequest } from '../types';
 const leaveService = new LeaveService();
 
 export class LeaveController {
-  async getLeaveTypes(req: Request, res: Response, next: NextFunction) {
+  async getLeaveTypes(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const companyId = req.query.company_id as string;
@@ -18,11 +19,11 @@ export class LeaveController {
       const result = await leaveService.getLeaveTypes(organizationId, companyId);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async applyLeave(req: Request, res: Response, next: NextFunction) {
+  async applyLeave(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
@@ -34,11 +35,11 @@ export class LeaveController {
       const result = await leaveService.applyLeave(employeeId, organizationId, req.body);
       return successResponse(res, result, 'Leave application submitted', undefined, 201);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getLeaveApplications(req: Request, res: Response, next: NextFunction) {
+  async getLeaveApplications(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const filters = req.query;
@@ -55,15 +56,15 @@ export class LeaveController {
       const result = await leaveService.getLeaveApplications(organizationId, filters);
       return successResponse(res, result.leaves, undefined, result.meta);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async approveRejectLeave(req: Request, res: Response, next: NextFunction) {
+  async approveRejectLeave(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const approverId = (req as AuthRequest).user?.employee_id;
-      const { id } = req.params;
+      const id = getRequiredParam(req, 'id');
       const { action, ...data } = req.body;
       
       if (!organizationId || !approverId) {
@@ -79,11 +80,11 @@ export class LeaveController {
       );
       return successResponse(res, result, `Leave ${action}d successfully`);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getLeaveBalance(req: Request, res: Response, next: NextFunction) {
+  async getLeaveBalance(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = req.params.employeeId || (req as AuthRequest).user?.employee_id;
@@ -100,15 +101,15 @@ export class LeaveController {
       );
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async cancelLeave(req: Request, res: Response, next: NextFunction) {
+  async cancelLeave(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
-      const { id } = req.params;
+      const id = getRequiredParam(req, 'id');
       const { cancellation_reason } = req.body;
       
       if (!organizationId || !employeeId) {
@@ -123,11 +124,11 @@ export class LeaveController {
       );
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getPendingApprovals(req: Request, res: Response, next: NextFunction) {
+  async getPendingApprovals(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const approverId = (req as AuthRequest).user?.employee_id;
@@ -139,11 +140,11 @@ export class LeaveController {
       const result = await leaveService.getPendingApprovals(approverId, organizationId);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getTeamLeaves(req: Request, res: Response, next: NextFunction) {
+  async getTeamLeaves(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const managerId = (req as AuthRequest).user?.employee_id;
@@ -155,11 +156,11 @@ export class LeaveController {
       const result = await leaveService.getTeamLeaves(managerId, organizationId, req.query);
       return successResponse(res, result.leaves, undefined, result.meta);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getLeaveSummary(req: Request, res: Response, next: NextFunction) {
+  async getLeaveSummary(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
@@ -176,11 +177,11 @@ export class LeaveController {
       );
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getLeaveCalendar(req: Request, res: Response, next: NextFunction) {
+  async getLeaveCalendar(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       
@@ -191,11 +192,11 @@ export class LeaveController {
       const result = await leaveService.getLeaveCalendar(organizationId, req.query);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getLeaveStats(req: Request, res: Response, next: NextFunction) {
+  async getLeaveStats(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const { year } = req.query;
@@ -210,11 +211,11 @@ export class LeaveController {
       );
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getMyLeaveHistory(req: Request, res: Response, next: NextFunction) {
+  async getMyLeaveHistory(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
@@ -230,11 +231,11 @@ export class LeaveController {
       );
       return successResponse(res, result.leaves, undefined, result.meta);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async checkLeaveEligibility(req: Request, res: Response, next: NextFunction) {
+  async checkLeaveEligibility(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
@@ -260,7 +261,7 @@ export class LeaveController {
       );
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 }

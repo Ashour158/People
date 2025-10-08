@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 
 export const validate = (schema: Joi.ObjectSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): Response | void => {
     const { error, value } = schema.validate(req.body, {
       abortEarly: false,
       stripUnknown: true
@@ -22,6 +22,6 @@ export const validate = (schema: Joi.ObjectSchema) => {
     }
 
     req.body = value;
-    next();
+    return next();
   };
 };

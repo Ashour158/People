@@ -6,16 +6,16 @@ import { AuthRequest } from '../types';
 const authService = new AuthService();
 
 export class AuthController {
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const result = await authService.register(req.body);
       return successResponse(res, result, 'Registration successful', undefined, 201);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { email, password } = req.body;
       const ipAddress = req.ip;
@@ -24,31 +24,31 @@ export class AuthController {
       const result = await authService.login(email, password, ipAddress, userAgent);
       return successResponse(res, result, 'Login successful');
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+  async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { email } = req.body;
       const result = await authService.forgotPassword(email);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async resetPassword(req: Request, res: Response, next: NextFunction) {
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const { token, new_password } = req.body;
       const result = await authService.resetPassword(token, new_password);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async changePassword(req: Request, res: Response, next: NextFunction) {
+  async changePassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const userId = (req as AuthRequest).user?.user_id;
       const { current_password, new_password } = req.body;
@@ -60,11 +60,11 @@ export class AuthController {
       const result = await authService.changePassword(userId, current_password, new_password);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+  async getCurrentUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const userId = (req as AuthRequest).user?.user_id;
       
@@ -75,11 +75,11 @@ export class AuthController {
       const result = await authService.getCurrentUser(userId);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async logout(req: Request, res: Response, next: NextFunction) {
+  async logout(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const userId = (req as AuthRequest).user?.user_id;
       
@@ -90,16 +90,16 @@ export class AuthController {
       const result = await authService.logout(userId);
       return successResponse(res, result);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
-  async refreshToken(req: Request, res: Response, next: NextFunction) {
+  async refreshToken(_req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       // This is a simplified version. In production, implement proper refresh token logic
       return successResponse(res, { message: 'Refresh token endpoint' });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 }
