@@ -47,7 +47,7 @@ metadata:
     tier: backend
     component: microservice
 spec:
-  replicas: 3
+  replicas: 5  # Increased base replicas for unlimited users
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -169,8 +169,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: employee-service
-  minReplicas: 2
-  maxReplicas: 10
+  minReplicas: 3
+  maxReplicas: 50  # Increased for unlimited user scalability
   metrics:
   - type: Resource
     resource:
@@ -198,7 +198,7 @@ spec:
         value: 100
         periodSeconds: 30
       - type: Pods
-        value: 2
+        value: 4  # Scale up faster (4 pods at a time)
         periodSeconds: 30
       selectPolicy: Max
 

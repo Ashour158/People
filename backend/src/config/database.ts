@@ -9,10 +9,13 @@ const poolConfig: PoolConfig = {
   database: process.env.DB_NAME || 'hr_system',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
-  min: parseInt(process.env.DB_POOL_MIN || '2'),
-  max: parseInt(process.env.DB_POOL_MAX || '10'),
+  // Increased pool size for unlimited user scalability
+  min: parseInt(process.env.DB_POOL_MIN || '5'),
+  max: parseInt(process.env.DB_POOL_MAX || '100'),
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  // Additional settings for high-load scenarios
+  allowExitOnIdle: false,
 };
 
 export const pool = new Pool(poolConfig);
