@@ -20,43 +20,43 @@ Build a comprehensive, enterprise-grade HR Management System that covers the com
 **Goal**: Establish core infrastructure and basic HR operations
 
 #### Core Infrastructure
-- [x] Project setup with TypeScript
-- [x] Backend API with Express.js
-- [x] Frontend with React + Material-UI
-- [x] PostgreSQL database schema
-- [x] Docker containerization
-- [x] CI/CD pipeline with GitHub Actions
+- [ ] Project setup with TypeScript
+- [ ] Backend API with Express.js
+- [ ] Frontend with React + Material-UI
+- [ ] PostgreSQL database schema
+- [ ] Docker containerization
+- [ ] CI/CD pipeline with GitHub Actions
 
 #### Authentication & Security
-- [x] JWT-based authentication
-- [x] Role-based access control (RBAC)
-- [x] Password hashing and security
-- [x] Multi-tenant architecture
-- [x] API rate limiting
-- [x] Input validation
+- [ ] JWT-based authentication
+- [ ] Role-based access control (RBAC)
+- [ ] Password hashing and security
+- [ ] Multi-tenant architecture
+- [ ] API rate limiting
+- [ ] Input validation
 
 #### Employee Management
-- [x] Employee CRUD operations
-- [x] Department management
-- [x] Role assignment
-- [x] Employee profiles
-- [x] Document management
-- [x] Audit logging
+- [ ] Employee CRUD operations
+- [ ] Department management
+- [ ] Role assignment
+- [ ] Employee profiles
+- [ ] Document management
+- [ ] Audit logging
 
 #### Attendance Management
-- [x] Check-in/Check-out
-- [x] Attendance tracking
-- [x] Regularization requests
-- [x] Attendance reports
-- [x] Shift management
+- [ ] Check-in/Check-out
+- [ ] Attendance tracking
+- [ ] Regularization requests
+- [ ] Attendance reports
+- [ ] Shift management
 
 #### Leave Management
-- [x] Leave types configuration
-- [x] Leave application
-- [x] Approval workflow
-- [x] Leave balance calculation
-- [x] Leave reports
-- [x] Leave calendar
+- [ ] Leave types configuration
+- [ ] Leave application
+- [ ] Approval workflow
+- [ ] Leave balance calculation
+- [ ] Leave reports
+- [ ] Leave calendar
 
 ### 🚧 Phase 2: Advanced HR Operations (IN PROGRESS)
 
