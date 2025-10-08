@@ -30,21 +30,21 @@ class NotImplementedError extends Error {
 export class EmployeeRepository implements IEmployeeRepository {
   constructor(private pool: Pool) {}
 
-  async findById(employeeId: string, organizationId: string): Promise<Employee | null> {
+  async findById(_employeeId: string, _organizationId: string): Promise<Employee | null> {
     throw new NotImplementedError('EmployeeRepository.findById');
   }
 
-  async findByEmail(email: string, organizationId: string): Promise<Employee | null> {
+  async findByEmail(_email: string, _organizationId: string): Promise<Employee | null> {
     throw new NotImplementedError('EmployeeRepository.findByEmail');
   }
 
-  async findByEmployeeCode(employeeCode: string, organizationId: string): Promise<Employee | null> {
+  async findByEmployeeCode(_employeeCode: string, _organizationId: string): Promise<Employee | null> {
     throw new NotImplementedError('EmployeeRepository.findByEmployeeCode');
   }
 
   async findAll(
-    organizationId: string,
-    filters?: {
+    _organizationId: string,
+    _filters?: {
       departmentId?: string;
       status?: string;
       searchTerm?: string;
@@ -76,15 +76,15 @@ export class EmployeeRepository implements IEmployeeRepository {
       data.employment_status
     ];
 
-    const result = await this.pool.query(query, values);
+    await this.pool.query(query, values);
     return employee; // Simplified - return the same employee
   }
 
-  async update(employeeId: string, organizationId: string, data: Partial<Employee>): Promise<Employee> {
+  async update(_employeeId: string, _organizationId: string, _data: Partial<Employee>): Promise<Employee> {
     throw new NotImplementedError('EmployeeRepository.update');
   }
 
-  async softDelete(employeeId: string, organizationId: string): Promise<boolean> {
+  async softDelete(_employeeId: string, _organizationId: string): Promise<boolean> {
     throw new NotImplementedError('EmployeeRepository.softDelete');
   }
 
@@ -102,57 +102,57 @@ export class EmployeeRepository implements IEmployeeRepository {
 export class LeaveRepository implements ILeaveRepository {
   constructor(private pool: Pool) {}
 
-  async findLeaveTypeById(leaveTypeId: string, organizationId: string): Promise<LeaveType | null> {
+  async findLeaveTypeById(_leaveTypeId: string, _organizationId: string): Promise<LeaveType | null> {
     throw new NotImplementedError('LeaveRepository.findLeaveTypeById');
   }
 
-  async findAllLeaveTypes(organizationId: string): Promise<LeaveType[]> {
+  async findAllLeaveTypes(_organizationId: string): Promise<LeaveType[]> {
     throw new NotImplementedError('LeaveRepository.findAllLeaveTypes');
   }
 
-  async createLeaveType(leaveType: LeaveType): Promise<LeaveType> {
+  async createLeaveType(_leaveType: LeaveType): Promise<LeaveType> {
     throw new NotImplementedError('LeaveRepository.createLeaveType');
   }
 
-  async findLeaveRequestById(requestId: string, organizationId: string): Promise<LeaveRequest | null> {
+  async findLeaveRequestById(_requestId: string, _organizationId: string): Promise<LeaveRequest | null> {
     throw new NotImplementedError('LeaveRepository.findLeaveRequestById');
   }
 
   async findLeaveRequestsByEmployee(
-    employeeId: string,
-    organizationId: string,
-    filters?: { status?: string; year?: number; page?: number; limit?: number }
+    _employeeId: string,
+    _organizationId: string,
+    _filters?: { status?: string; year?: number; page?: number; limit?: number }
   ): Promise<{ requests: LeaveRequest[]; total: number }> {
     throw new NotImplementedError('LeaveRepository.findLeaveRequestsByEmployee');
   }
 
-  async findPendingLeaveRequests(approverId: string, organizationId: string): Promise<LeaveRequest[]> {
+  async findPendingLeaveRequests(_approverId: string, _organizationId: string): Promise<LeaveRequest[]> {
     throw new NotImplementedError('LeaveRepository.findPendingLeaveRequests');
   }
 
-  async createLeaveRequest(request: LeaveRequest): Promise<LeaveRequest> {
+  async createLeaveRequest(_request: LeaveRequest): Promise<LeaveRequest> {
     throw new NotImplementedError('LeaveRepository.createLeaveRequest');
   }
 
-  async updateLeaveRequest(requestId: string, organizationId: string, data: Partial<LeaveRequest>): Promise<LeaveRequest> {
+  async updateLeaveRequest(_requestId: string, _organizationId: string, _data: Partial<LeaveRequest>): Promise<LeaveRequest> {
     throw new NotImplementedError('LeaveRepository.updateLeaveRequest');
   }
 
   async getLeaveBalance(
-    employeeId: string,
-    leaveTypeId: string,
-    year: number,
-    organizationId: string
+    _employeeId: string,
+    _leaveTypeId: string,
+    _year: number,
+    _organizationId: string
   ): Promise<{ allocated_days: number; used_days: number; pending_days: number; available_days: number } | null> {
     throw new NotImplementedError('LeaveRepository.getLeaveBalance');
   }
 
   async updateLeaveBalance(
-    employeeId: string,
-    leaveTypeId: string,
-    year: number,
-    organizationId: string,
-    balance: { allocated_days?: number; used_days?: number; pending_days?: number; available_days?: number }
+    _employeeId: string,
+    _leaveTypeId: string,
+    _year: number,
+    _organizationId: string,
+    _balance: { allocated_days?: number; used_days?: number; pending_days?: number; available_days?: number }
   ): Promise<void> {
     throw new NotImplementedError('LeaveRepository.updateLeaveBalance');
   }
@@ -165,17 +165,17 @@ export class LeaveRepository implements ILeaveRepository {
 export class PayrollRunRepository implements IPayrollRunRepository {
   constructor(private pool: Pool) {}
 
-  async findById(payrollRunId: string, organizationId: string): Promise<PayrollRun | null> {
+  async findById(_payrollRunId: string, _organizationId: string): Promise<PayrollRun | null> {
     throw new NotImplementedError('PayrollRunRepository.findById');
   }
 
-  async findByPeriod(year: number, month: number, organizationId: string, runType?: string): Promise<PayrollRun | null> {
+  async findByPeriod(_year: number, _month: number, _organizationId: string, _runType?: string): Promise<PayrollRun | null> {
     throw new NotImplementedError('PayrollRunRepository.findByPeriod');
   }
 
   async findAll(
-    organizationId: string,
-    filters?: { status?: string; year?: number; month?: number; page?: number; limit?: number }
+    _organizationId: string,
+    _filters?: { status?: string; year?: number; month?: number; page?: number; limit?: number }
   ): Promise<{ runs: PayrollRun[]; total: number }> {
     throw new NotImplementedError('PayrollRunRepository.findAll');
   }
@@ -206,11 +206,11 @@ export class PayrollRunRepository implements IPayrollRunRepository {
     return payrollRun;
   }
 
-  async update(payrollRunId: string, organizationId: string, data: Partial<PayrollRun>): Promise<PayrollRun> {
+  async update(_payrollRunId: string, _organizationId: string, _data: Partial<PayrollRun>): Promise<PayrollRun> {
     throw new NotImplementedError('PayrollRunRepository.update');
   }
 
-  async delete(payrollRunId: string, organizationId: string): Promise<boolean> {
+  async delete(_payrollRunId: string, _organizationId: string): Promise<boolean> {
     throw new NotImplementedError('PayrollRunRepository.delete');
   }
 }
@@ -253,15 +253,15 @@ export class EventOutboxRepository implements IEventOutboxRepository {
     return result.rows[0].event_id;
   }
 
-  async findPendingEvents(limit = 100): Promise<any[]> {
+  async findPendingEvents(_limit = 100): Promise<unknown[]> {
     throw new NotImplementedError('EventOutboxRepository.findPendingEvents');
   }
 
-  async markProcessed(eventId: string): Promise<void> {
+  async markProcessed(_eventId: string): Promise<void> {
     throw new NotImplementedError('EventOutboxRepository.markProcessed');
   }
 
-  async markFailed(eventId: string, errorMessage: string): Promise<void> {
+  async markFailed(_eventId: string, _errorMessage: string): Promise<void> {
     throw new NotImplementedError('EventOutboxRepository.markFailed');
   }
 }
@@ -312,11 +312,11 @@ export class AuditLogRepository implements IAuditLogRepository {
     return result.rows[0].audit_id;
   }
 
-  async findByEntity(entityType: string, entityId: string, organizationId: string, limit = 50): Promise<any[]> {
+  async findByEntity(_entityType: string, _entityId: string, _organizationId: string, _limit = 50): Promise<unknown[]> {
     throw new NotImplementedError('AuditLogRepository.findByEntity');
   }
 
-  async findByUser(userId: string, organizationId: string, filters?: any): Promise<any[]> {
+  async findByUser(_userId: string, _organizationId: string, _filters?: unknown): Promise<unknown[]> {
     throw new NotImplementedError('AuditLogRepository.findByUser');
   }
 }

@@ -9,6 +9,8 @@ export class EventDispatcher {
   private isRunning = false;
   private pollInterval = 5000; // 5 seconds
 
+  // Note: eventOutboxRepository is currently unused but will be needed for full implementation
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(private eventOutboxRepository: IEventOutboxRepository) {}
 
   start(): void {
@@ -18,6 +20,7 @@ export class EventDispatcher {
     }
 
     this.isRunning = true;
+    // eslint-disable-next-line no-console
     console.log('Event dispatcher started (stub mode)');
     
     // NOTE: Actual implementation would poll the outbox and dispatch events
@@ -58,9 +61,10 @@ export class EventDispatcher {
     }
   }
 
-  private async dispatchEvent(event: any): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private async dispatchEvent(event: unknown): Promise<void> {
     // Stub: Would dispatch to appropriate handlers based on event type
-    console.log(`Dispatching event: ${event.event_name} (${event.event_id})`);
+    // In the full implementation, this will process events from the outbox
   }
 }
 

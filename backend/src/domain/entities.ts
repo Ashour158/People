@@ -22,7 +22,7 @@ export interface NotificationTemplate {
   notification_type: NotificationType;
   subject?: string;
   body_template: string;
-  variables?: Record<string, any>;
+  variables?: Record<string, unknown>;
   supports_email?: boolean;
   supports_sms?: boolean;
   supports_push?: boolean;

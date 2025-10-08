@@ -1,7 +1,7 @@
 import { query, transaction } from '../config/database';
 import { AppError } from '../middleware/errorHandler';
 import { getPagination, getPaginationMeta } from '../utils/pagination';
-import { differenceInDays, isWeekend, format } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 
 export class LeaveService {
   /**
@@ -177,8 +177,8 @@ export class LeaveService {
          WHERE leave_application_id = $5 AND organization_id = $6 AND leave_status = 'pending'
          RETURNING *`,
         action === 'reject' 
-          ? [action === 'approve' ? 'approved' : 'rejected', approverId, data.comments, data.rejection_reason, leaveApplicationId, organizationId]
-          : [action === 'approve' ? 'approved' : 'rejected', approverId, data.comments, leaveApplicationId, organizationId]
+          ? ['rejected', approverId, data.comments, data.rejection_reason, leaveApplicationId, organizationId]
+          : ['approved', approverId, data.comments, leaveApplicationId, organizationId]
       );
 
       if (result.rows.length === 0) {

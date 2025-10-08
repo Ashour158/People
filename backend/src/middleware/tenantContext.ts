@@ -53,6 +53,7 @@ export function tenantContext() {
       
       next();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Tenant context middleware error:', error);
       res.status(500).json({
         success: false,
@@ -80,6 +81,7 @@ export async function setOrganizationContext(
       [organizationId]
     );
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to set organization context:', error);
     throw new Error('Failed to set organization context in database');
   }

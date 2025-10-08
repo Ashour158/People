@@ -6,8 +6,7 @@
 import { z } from 'zod';
 import { 
   EmploymentType, 
-  EmployeeStatus, 
-  LeaveStatus, 
+  EmployeeStatus,
   PayrollRunType,
   PayrollRunStatus 
 } from '../domain/enums';

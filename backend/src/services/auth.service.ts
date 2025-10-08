@@ -6,7 +6,7 @@ import { AppError } from '../middleware/errorHandler';
 import { sendPasswordResetEmail, sendWelcomeEmail } from '../utils/email';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN: string | number = process.env.JWT_EXPIRES_IN || '24h';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12');
 
 export class AuthService {
@@ -119,6 +119,7 @@ export class AuthService {
       try {
         await sendWelcomeEmail(user.email, data.first_name);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to send welcome email:', error);
       }
 
@@ -126,7 +127,7 @@ export class AuthService {
       const token = jwt.sign(
         { userId: user.user_id, organizationId: organization.organization_id },
         JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
+        { expiresIn: JWT_EXPIRES_IN as string }
       );
 
       return {
@@ -143,7 +144,10 @@ export class AuthService {
   /**
    * Login user
    */
-  async login(email: string, password: string, ipAddress?: string, userAgent?: string) {
+  async login(email: string, password: string, _ipAddress?: string, _userAgent?: string): Promise<{
+    user: Record<string, unknown>;
+    token: string;
+  }> {
     const result = await query(
       `SELECT 
         u.user_id, u.username, u.email, u.password_hash, u.is_active,
@@ -185,7 +189,7 @@ export class AuthService {
     const token = jwt.sign(
       { userId: user.user_id, organizationId: user.organization_id },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN as string }
     );
 
     delete user.password_hash;
@@ -326,7 +330,7 @@ export class AuthService {
   /**
    * Logout user
    */
-  async logout(userId: string) {
+  async logout(_userId: string): Promise<{ message: string }> {
     // In a real implementation, you might want to blacklist the token
     return { message: 'Logged out successfully' };
   }

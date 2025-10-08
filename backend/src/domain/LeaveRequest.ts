@@ -26,7 +26,10 @@ export interface LeaveRequestData {
 }
 
 export class LeaveRequest {
-  private data: Required<LeaveRequestData>;
+  private data: Omit<Required<LeaveRequestData>, 'approved_at' | 'rejected_at'> & {
+    approved_at: Date | null;
+    rejected_at: Date | null;
+  };
 
   constructor(data: LeaveRequestData) {
     this.validate(data);
@@ -46,9 +49,9 @@ export class LeaveRequest {
       status: data.status || LeaveStatus.PENDING,
       current_approver_id: data.current_approver_id || '',
       approved_by: data.approved_by || '',
-      approved_at: data.approved_at || null as any,
+      approved_at: data.approved_at || null,
       rejected_by: data.rejected_by || '',
-      rejected_at: data.rejected_at || null as any,
+      rejected_at: data.rejected_at || null,
       rejection_reason: data.rejection_reason || '',
     };
   }
@@ -162,7 +165,7 @@ export class LeaveRequest {
     this.data.status = LeaveStatus.CANCELLED;
   }
 
-  toJSON(): Required<LeaveRequestData> {
+  toJSON() {
     return { ...this.data };
   }
 }

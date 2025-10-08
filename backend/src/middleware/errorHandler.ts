@@ -9,24 +9,32 @@ export class AppError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
-    Error.captureStackTrace(this, this.constructor);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
   }
 }
 
 export const errorHandler = (
-  err: any,
+  err: AppError | Error,
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
-  let { statusCode = 500, message } = err;
+  _next: NextFunction
+): void => {
+  let statusCode = 500;
+  let message = 'Internal server error';
 
-  if (!err.isOperational) {
-    logger.error('Unexpected error:', err);
-    statusCode = 500;
-    message = 'Internal server error';
+  if (err instanceof AppError) {
+    statusCode = err.statusCode;
+    message = err.message;
+    
+    if (!err.isOperational) {
+      logger.error('Unexpected error:', err);
+    } else {
+      logger.warn('Operational error:', { statusCode, message, path: req.path });
+    }
   } else {
-    logger.warn('Operational error:', { statusCode, message, path: req.path });
+    logger.error('Unexpected error:', err);
   }
 
   res.status(statusCode).json({
