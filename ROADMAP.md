@@ -259,6 +259,26 @@ Build a comprehensive, enterprise-grade HR Management System that covers the com
 
 **Priority**: Medium | **Status**: Planned
 
+#### AI & Machine Learning Integrations
+- [x] AI/ML architecture and documentation
+- [x] Database schema for AI features
+- [x] Resume parsing and analysis (NLP)
+- [x] Candidate matching and scoring
+- [x] Attrition prediction analytics
+- [x] Performance prediction models
+- [x] Sentiment analysis for feedback
+- [x] Skills gap analysis
+- [x] Learning path recommendations
+- [x] AI chatbot/virtual assistant
+- [x] OpenAI GPT-4 integration
+- [x] AI usage tracking and cost management
+- [x] Privacy-first AI implementation
+- [ ] Custom ML model training
+- [ ] Multi-modal AI (voice, video)
+- [ ] Advanced workforce analytics
+
+**Priority**: High | **Status**: Core Features Completed
+
 ### 🔧 Phase 7: Platform Enhancements (Ongoing)
 
 **Goal**: Improve performance, security, and user experience
