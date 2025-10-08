@@ -204,11 +204,13 @@ export class LeaveService {
   /**
    * Get leave balance
    */
-  async getLeaveBalance(employeeId: string, organizationId: string) {
+  async getLeaveBalance(employeeId: string, organizationId: string, year?: number) {
+    const targetYear = year || new Date().getFullYear();
+    
     const result = await query(
       `SELECT 
         lb.*,
-        lt.leave_type_name, lt.leave_code, lt.color_code
+        lt.leave_type_name, lt.leave_code, lt.leave_category, lt.color_code, lt.icon
       FROM leave_balances lb
       JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
       WHERE lb.employee_id = $1 AND lb.organization_id = $2
@@ -217,5 +219,366 @@ export class LeaveService {
     );
 
     return result.rows;
+  }
+
+  /**
+   * Cancel leave request
+   */
+  async cancelLeave(
+    leaveApplicationId: string,
+    organizationId: string,
+    employeeId: string,
+    cancellationReason: string
+  ) {
+    return transaction(async (client) => {
+      const result = await client.query(
+        `UPDATE leave_applications
+        SET 
+          leave_status = 'cancelled',
+          cancellation_reason = $1,
+          updated_at = NOW()
+        WHERE leave_application_id = $2 
+          AND organization_id = $3
+          AND employee_id = $4
+          AND leave_status IN ('pending', 'approved')
+        RETURNING *`,
+        [cancellationReason, leaveApplicationId, organizationId, employeeId]
+      );
+
+      if (result.rows.length === 0) {
+        throw new AppError(404, 'Leave application not found or cannot be cancelled');
+      }
+
+      const leave = result.rows[0];
+
+      // Restore leave balance if it was approved
+      if (leave.leave_status === 'approved') {
+        await client.query(
+          `UPDATE leave_balances
+          SET used_days = used_days - $1,
+              available_days = available_days + $1
+          WHERE employee_id = $2 AND leave_type_id = $3`,
+          [leave.total_days, employeeId, leave.leave_type_id]
+        );
+      }
+
+      return {
+        message: 'Leave application cancelled successfully'
+      };
+    });
+  }
+
+  /**
+   * Get pending leave approvals for a manager
+   */
+  async getPendingApprovals(approverId: string, organizationId: string) {
+    const result = await query(
+      `SELECT 
+        la.leave_application_id, la.from_date, la.to_date, la.total_days,
+        la.reason, la.created_at,
+        e.employee_id, e.employee_code, e.first_name, e.last_name, 
+        e.email, e.profile_picture_url,
+        lt.leave_type_name, lt.leave_code, lt.color_code,
+        d.department_name
+      FROM leave_applications la
+      JOIN employees e ON la.employee_id = e.employee_id
+      JOIN leave_types lt ON la.leave_type_id = lt.leave_type_id
+      LEFT JOIN departments d ON e.department_id = d.department_id
+      WHERE e.manager_id = $1
+        AND la.organization_id = $2
+        AND la.leave_status = 'pending'
+      ORDER BY la.created_at ASC`,
+      [approverId, organizationId]
+    );
+
+    return result.rows;
+  }
+
+  /**
+   * Get team leaves (for managers)
+   */
+  async getTeamLeaves(managerId: string, organizationId: string, filters: any = {}) {
+    const { page, perPage, offset } = getPagination(filters);
+    
+    let whereConditions = ['e.manager_id = $1', 'la.organization_id = $2'];
+    const params: any[] = [managerId, organizationId];
+    let paramCount = 2;
+
+    if (filters.leave_status) {
+      paramCount++;
+      whereConditions.push(`la.leave_status = $${paramCount}`);
+      params.push(filters.leave_status);
+    }
+
+    if (filters.from_date) {
+      paramCount++;
+      whereConditions.push(`la.from_date >= $${paramCount}`);
+      params.push(filters.from_date);
+    }
+
+    if (filters.to_date) {
+      paramCount++;
+      whereConditions.push(`la.to_date <= $${paramCount}`);
+      params.push(filters.to_date);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+
+    const countResult = await query(
+      `SELECT COUNT(*) as total 
+      FROM leave_applications la
+      JOIN employees e ON la.employee_id = e.employee_id
+      WHERE ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult.rows[0].total);
+
+    const result = await query(
+      `SELECT 
+        la.*,
+        e.employee_code, e.first_name, e.last_name, e.profile_picture_url,
+        lt.leave_type_name, lt.color_code,
+        d.department_name
+      FROM leave_applications la
+      JOIN employees e ON la.employee_id = e.employee_id
+      JOIN leave_types lt ON la.leave_type_id = lt.leave_type_id
+      LEFT JOIN departments d ON e.department_id = d.department_id
+      WHERE ${whereClause}
+      ORDER BY la.from_date DESC
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`,
+      [...params, perPage, offset]
+    );
+
+    return {
+      leaves: result.rows,
+      meta: getPaginationMeta(total, page, perPage)
+    };
+  }
+
+  /**
+   * Get leave summary/statistics
+   */
+  async getLeaveSummary(employeeId: string, organizationId: string, year?: number) {
+    const targetYear = year || new Date().getFullYear();
+
+    const result = await query(
+      `SELECT 
+        COUNT(*) as total_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'approved') as approved_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'pending') as pending_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'rejected') as rejected_requests,
+        COALESCE(SUM(total_days) FILTER (WHERE leave_status = 'approved'), 0) as total_days_taken,
+        COALESCE(SUM(total_days) FILTER (WHERE leave_status = 'pending'), 0) as total_days_pending
+      FROM leave_applications
+      WHERE employee_id = $1 
+        AND organization_id = $2
+        AND EXTRACT(YEAR FROM from_date) = $3`,
+      [employeeId, organizationId, targetYear]
+    );
+
+    return {
+      year: targetYear,
+      ...result.rows[0]
+    };
+  }
+
+  /**
+   * Get leave calendar (organization-wide or team view)
+   */
+  async getLeaveCalendar(
+    organizationId: string,
+    filters: any = {}
+  ) {
+    let whereConditions = ['la.organization_id = $1', 'la.leave_status = \'approved\''];
+    const params: any[] = [organizationId];
+    let paramCount = 1;
+
+    if (filters.department_id) {
+      paramCount++;
+      whereConditions.push(`e.department_id = $${paramCount}`);
+      params.push(filters.department_id);
+    }
+
+    if (filters.from_date) {
+      paramCount++;
+      whereConditions.push(`la.from_date >= $${paramCount}`);
+      params.push(filters.from_date);
+    }
+
+    if (filters.to_date) {
+      paramCount++;
+      whereConditions.push(`la.to_date <= $${paramCount}`);
+      params.push(filters.to_date);
+    }
+
+    if (filters.employee_id) {
+      paramCount++;
+      whereConditions.push(`la.employee_id = $${paramCount}`);
+      params.push(filters.employee_id);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+
+    const result = await query(
+      `SELECT 
+        la.leave_application_id, la.from_date, la.to_date, la.total_days,
+        la.is_half_day, la.half_day_session,
+        e.employee_id, e.employee_code, e.first_name, e.last_name,
+        e.profile_picture_url,
+        lt.leave_type_name, lt.color_code,
+        d.department_name
+      FROM leave_applications la
+      JOIN employees e ON la.employee_id = e.employee_id
+      JOIN leave_types lt ON la.leave_type_id = lt.leave_type_id
+      LEFT JOIN departments d ON e.department_id = d.department_id
+      WHERE ${whereClause}
+      ORDER BY la.from_date ASC`,
+      params
+    );
+
+    return result.rows;
+  }
+
+  /**
+   * Get leave statistics for organization
+   */
+  async getLeaveStats(organizationId: string, year?: number) {
+    const targetYear = year || new Date().getFullYear();
+
+    const result = await query(
+      `SELECT 
+        COUNT(*) as total_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'approved') as approved_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'pending') as pending_requests,
+        COUNT(*) FILTER (WHERE leave_status = 'rejected') as rejected_requests,
+        COALESCE(SUM(total_days) FILTER (WHERE leave_status = 'approved'), 0) as total_days_approved,
+        COUNT(DISTINCT employee_id) as employees_on_leave
+      FROM leave_applications
+      WHERE organization_id = $1
+        AND EXTRACT(YEAR FROM from_date) = $2`,
+      [organizationId, targetYear]
+    );
+
+    return {
+      year: targetYear,
+      ...result.rows[0]
+    };
+  }
+
+  /**
+   * Get my leave history
+   */
+  async getMyLeaveHistory(
+    employeeId: string,
+    organizationId: string,
+    filters: any = {}
+  ) {
+    const { page, perPage, offset } = getPagination(filters);
+    
+    let whereConditions = ['la.employee_id = $1', 'la.organization_id = $2'];
+    const params: any[] = [employeeId, organizationId];
+    let paramCount = 2;
+
+    if (filters.leave_status) {
+      paramCount++;
+      whereConditions.push(`la.leave_status = $${paramCount}`);
+      params.push(filters.leave_status);
+    }
+
+    if (filters.year) {
+      paramCount++;
+      whereConditions.push(`EXTRACT(YEAR FROM la.from_date) = $${paramCount}`);
+      params.push(filters.year);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+
+    const countResult = await query(
+      `SELECT COUNT(*) as total FROM leave_applications la WHERE ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult.rows[0].total);
+
+    const result = await query(
+      `SELECT 
+        la.*,
+        lt.leave_type_name, lt.leave_code, lt.color_code
+      FROM leave_applications la
+      JOIN leave_types lt ON la.leave_type_id = lt.leave_type_id
+      WHERE ${whereClause}
+      ORDER BY la.created_at DESC
+      LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`,
+      [...params, perPage, offset]
+    );
+
+    return {
+      leaves: result.rows,
+      meta: getPaginationMeta(total, page, perPage)
+    };
+  }
+
+  /**
+   * Check leave eligibility
+   */
+  async checkLeaveEligibility(
+    employeeId: string,
+    organizationId: string,
+    leaveTypeId: string,
+    fromDate: Date,
+    toDate: Date
+  ) {
+    // Get leave type details
+    const leaveTypeResult = await query(
+      'SELECT * FROM leave_types WHERE leave_type_id = $1 AND organization_id = $2',
+      [leaveTypeId, organizationId]
+    );
+
+    if (leaveTypeResult.rows.length === 0) {
+      return {
+        eligible: false,
+        reason: 'Leave type not found'
+      };
+    }
+
+    const leaveType = leaveTypeResult.rows[0];
+
+    // Calculate days
+    const daysDiff = differenceInDays(toDate, fromDate) + 1;
+
+    // Check min/max days
+    if (leaveType.min_days_per_request && daysDiff < leaveType.min_days_per_request) {
+      return {
+        eligible: false,
+        reason: `Minimum ${leaveType.min_days_per_request} days required`
+      };
+    }
+
+    if (leaveType.max_days_per_request && daysDiff > leaveType.max_days_per_request) {
+      return {
+        eligible: false,
+        reason: `Maximum ${leaveType.max_days_per_request} days allowed`
+      };
+    }
+
+    // Check leave balance
+    const balanceResult = await query(
+      'SELECT * FROM leave_balances WHERE employee_id = $1 AND leave_type_id = $2',
+      [employeeId, leaveTypeId]
+    );
+
+    if (balanceResult.rows.length > 0) {
+      const balance = balanceResult.rows[0];
+      if (balance.available_days < daysDiff && !leaveType.allows_negative_balance) {
+        return {
+          eligible: false,
+          reason: `Insufficient leave balance. Available: ${balance.available_days} days`
+        };
+      }
+    }
+
+    return {
+      eligible: true,
+      days: daysDiff
+    };
   }
 }
