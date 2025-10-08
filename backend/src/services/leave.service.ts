@@ -106,7 +106,7 @@ export class LeaveService {
   async getLeaveApplications(organizationId: string, filters: any = {}) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['la.organization_id = $1'];
+    const whereConditions = ['la.organization_id = $1'];
     const params: any[] = [organizationId];
     let paramCount = 1;
 
@@ -300,7 +300,7 @@ export class LeaveService {
   async getTeamLeaves(managerId: string, organizationId: string, filters: any = {}) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['e.manager_id = $1', 'la.organization_id = $2'];
+    const whereConditions = ['e.manager_id = $1', 'la.organization_id = $2'];
     const params: any[] = [managerId, organizationId];
     let paramCount = 2;
 
@@ -389,7 +389,7 @@ export class LeaveService {
     organizationId: string,
     filters: any = {}
   ) {
-    let whereConditions = ['la.organization_id = $1', 'la.leave_status = \'approved\''];
+    const whereConditions = ['la.organization_id = $1', 'la.leave_status = \'approved\''];
     const params: any[] = [organizationId];
     let paramCount = 1;
 
@@ -475,7 +475,7 @@ export class LeaveService {
   ) {
     const { page, perPage, offset } = getPagination(filters);
     
-    let whereConditions = ['la.employee_id = $1', 'la.organization_id = $2'];
+    const whereConditions = ['la.employee_id = $1', 'la.organization_id = $2'];
     const params: any[] = [employeeId, organizationId];
     let paramCount = 2;
 

@@ -140,7 +140,7 @@ export class RabbitMQAdapter implements MessageQueueAdapter {
     await this.channel.consume(
       queue,
       async (msg: ConsumeMessage | null) => {
-        if (!msg) return;
+        if (!msg) {return;}
 
         try {
           const event: DomainEvent = JSON.parse(msg.content.toString());

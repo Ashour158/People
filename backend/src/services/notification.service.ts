@@ -258,7 +258,7 @@ export class NotificationService {
         WHERE e.employee_id = $1
       `, [employeeId]);
 
-      if (result.rows.length === 0) return;
+      if (result.rows.length === 0) {return;}
 
       const employee = result.rows[0];
 
