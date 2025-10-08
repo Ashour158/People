@@ -15,6 +15,7 @@ import onboardingRoutes from './routes/onboarding.routes';
 import offboardingRoutes from './routes/offboarding.routes';
 import performanceRoutes from './routes/performance.routes';
 import timesheetRoutes from './routes/timesheet.routes';
+import complianceRoutes from './routes/compliance.routes';
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use(`/api/${API_VERSION}/onboarding`, onboardingRoutes);
 app.use(`/api/${API_VERSION}/offboarding`, offboardingRoutes);
 app.use(`/api/${API_VERSION}/performance`, performanceRoutes);
 app.use(`/api/${API_VERSION}/timesheet`, timesheetRoutes);
+app.use(`/api/${API_VERSION}/compliance`, complianceRoutes);
 
 // 404 handler
 app.use((req, res) => {
