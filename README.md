@@ -361,14 +361,29 @@ docker-compose -f docker-compose.yml up -d
 
 ## 🔒 Security Features
 
-- JWT-based authentication
-- Password hashing with bcrypt
-- Rate limiting on API endpoints
-- Input validation with Joi
-- SQL injection protection
-- XSS protection with Helmet
-- CORS configuration
-- Secure session management
+- **JWT-based authentication** with issuer/audience validation
+- **Password security**:
+  - bcrypt hashing with 12 rounds
+  - Strength validation with scoring (0-4)
+  - Common password detection
+  - Personal information detection
+- **Rate limiting** (100 req/15min general, 5 req/15min login)
+- **Input validation** with Joi schemas
+- **SQL injection protection** via parameterized queries
+- **XSS protection** with Helmet and CSP
+- **CORS configuration** with origin whitelist
+- **Security logging** with automatic threat detection
+- **Secure session management**
+- **Account lockout** after 5 failed attempts
+- **Audit logging** for all data modifications
+- **Multi-tenant isolation** at database level
+- **IP validation and tracking**
+- **Error sanitization** in production
+- **63 comprehensive security tests**
+
+For detailed security information, see:
+- [Security Policy](./SECURITY.md)
+- [Security Implementation Guide](./docs/SECURITY_GUIDE.md)
 
 ## 📊 Database Schema
 

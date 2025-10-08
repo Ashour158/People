@@ -9,6 +9,13 @@ We release security updates for the following versions:
 | 1.x.x   | :white_check_mark: |
 | < 1.0   | :x:                |
 
+## 📚 Documentation
+
+For comprehensive security implementation details, see:
+- [Security Implementation Guide](./docs/SECURITY_GUIDE.md) - Complete security features and configuration
+- [API Documentation](./api_documentation.md) - API security best practices
+- [Architecture Documentation](./ARCHITECTURE.md) - System architecture and security layers
+
 ## 🚨 Reporting a Vulnerability
 
 We take security seriously. If you discover a security vulnerability, please report it responsibly.
@@ -184,28 +191,37 @@ try {
 
 ## 🔐 Security Features
 
-### Current Implementation
+### Current Implementation ✅
 
-- ✅ **JWT Authentication**: Token-based authentication with expiration
-- ✅ **Password Hashing**: bcrypt with 12 rounds
-- ✅ **Input Validation**: Joi schema validation
-- ✅ **SQL Injection Protection**: Parameterized queries
-- ✅ **XSS Protection**: Helmet middleware
-- ✅ **CORS Configuration**: Restricted origins
-- ✅ **Rate Limiting**: API endpoint throttling
-- ✅ **Account Lockout**: After failed login attempts
-- ✅ **Audit Logging**: Track all data modifications
+- ✅ **JWT Authentication**: Token-based authentication with expiration, issuer, and audience validation
+- ✅ **Password Hashing**: bcrypt with 12 rounds (configurable)
+- ✅ **Input Validation**: Joi schema validation on all endpoints
+- ✅ **SQL Injection Protection**: Parameterized queries throughout
+- ✅ **XSS Protection**: Helmet middleware with comprehensive CSP
+- ✅ **CORS Configuration**: Origin whitelist validation
+- ✅ **Rate Limiting**: Two-tier API endpoint throttling (100 req/15min general, 5 req/15min login)
+- ✅ **Account Lockout**: After 5 failed login attempts for 30 minutes
+- ✅ **Audit Logging**: Track all data modifications with IP and user agent
 - ✅ **Multi-tenant Isolation**: Organization-level data separation
+- ✅ **Security Logging**: Automatic detection of suspicious patterns (XSS, SQL injection, path traversal)
+- ✅ **Password Strength Validation**: Scoring system (0-4) with comprehensive checks
+- ✅ **Secure Token Generation**: Cryptographically secure random tokens
+- ✅ **IP Validation**: Proper IPv4/IPv6 validation with range checks
+- ✅ **Error Sanitization**: Production-safe error messages
+- ✅ **Security Test Suite**: 63 comprehensive tests covering critical security functions
 
-### Planned Features
+### Planned Features 🚧
 
 - [ ] Multi-Factor Authentication (MFA)
+- [ ] Biometric authentication
 - [ ] Role-based permissions (granular)
 - [ ] IP whitelisting
 - [ ] Advanced threat detection
 - [ ] Security scanning automation
 - [ ] Encrypted database fields (PII)
 - [ ] Regular security audits
+- [ ] Refresh token rotation
+- [ ] Session management improvements
 
 ## 🔍 Security Checklist
 
