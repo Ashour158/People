@@ -594,14 +594,26 @@ For support, please:
 
 ## 📚 Documentation
 
-- [API Documentation](./api_documentation.md) - Complete API reference
-- [Architecture](./ARCHITECTURE.md) - System architecture overview
-- [Security](./SECURITY.md) - Security policies and best practices
-- [Contributing Guidelines](./CONTRIBUTING.md) - How to contribute
-- [Roadmap](./ROADMAP.md) - Feature roadmap and milestones
+### Architecture & Design
+- [Architecture Overview](./ARCHITECTURE.md) - System architecture overview
+- [Microservices Architecture](./docs/MICROSERVICES_ARCHITECTURE.md) - Complete microservices design and implementation
+- [Microservices Migration Guide](./docs/MICROSERVICES_MIGRATION_GUIDE.md) - Step-by-step migration from monolith to microservices
 - [Architecture Decision Records](./docs/adr/) - Technical decisions and rationale
+
+### API & Integration
+- [API Documentation](./api_documentation.md) - Complete API reference
+- [Message Queue Integration](./backend/src/messaging/README.md) - RabbitMQ implementation guide
+
+### Setup & Deployment
 - [Setup Guide](./SETUP_GUIDE.md) - Detailed setup instructions
 - [Integration Guide](./INTEGRATION_GUIDE.md) - Third-party integrations
+- [Docker Compose (Monolith)](./docker-compose.yml) - Single-server deployment
+- [Docker Compose (Microservices)](./docker-compose.microservices.yml) - Microservices deployment
+
+### Development
+- [Contributing Guidelines](./CONTRIBUTING.md) - How to contribute
+- [Security Policy](./SECURITY.md) - Security policies and best practices
+- [Roadmap](./ROADMAP.md) - Feature roadmap and milestones
 
 ## 🔒 Security
 
@@ -636,9 +648,14 @@ For security concerns, please review our [Security Policy](./SECURITY.md).
 ### DevOps
 - **Containerization**: Docker
 - **Orchestration**: Docker Compose / Kubernetes
+- **Message Queue**: RabbitMQ (for microservices)
+- **API Gateway**: Kong (for microservices)
+- **Service Discovery**: Consul (for microservices)
 - **CI/CD**: GitHub Actions
 - **Code Quality**: ESLint + Prettier
 - **Version Control**: Git + GitHub
+- **Monitoring**: Prometheus + Grafana (recommended)
+- **Tracing**: Jaeger (recommended)
 
 ## 🎯 Roadmap
 
