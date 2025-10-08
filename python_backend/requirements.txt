@@ -1,0 +1,80 @@
+# Python HR Management System - Requirements
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.25
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pydantic[email]==2.5.3
+pydantic-settings==2.1.0
+
+# Redis & Caching
+redis==5.0.1
+hiredis==2.3.2
+
+# Task Queue
+celery==5.3.6
+kombu==5.3.5
+
+# Email
+aiosmtplib==3.0.1
+python-dotenv==1.0.0
+
+# WebSocket
+python-socketio==5.11.0
+websockets==12.0
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+aiofiles==23.2.1
+
+# Logging & Monitoring
+structlog==24.1.0
+python-json-logger==2.0.7
+
+# HTTP Client
+httpx==0.26.0
+aiohttp==3.9.1
+
+# Validation
+email-validator==2.1.0.post1
+
+# Message Queue (RabbitMQ)
+aio-pika==9.3.1
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+faker==22.0.0
+
+# Development
+black==23.12.1
+ruff==0.1.13
+mypy==1.8.0
+pre-commit==3.6.0
+
+# CORS
+fastapi-cors==0.0.6
+
+# Rate Limiting
+slowapi==0.1.9
+
+# File Upload
+python-magic==0.4.27
+
+# JWT
+PyJWT==2.8.0
+
+# Environment
+python-decouple==3.8
