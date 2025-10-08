@@ -1,5 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   AppBar,
   Toolbar,
@@ -23,11 +24,13 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSelector } from '../common/LanguageSelector';
 
 const drawerWidth = 240;
 
 export const Layout: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
@@ -41,22 +44,22 @@ export const Layout: React.FC = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Employees', icon: <PeopleIcon />, path: '/employees' },
-    { text: 'Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
-    { text: 'Leave', icon: <EventNoteIcon />, path: '/leave' },
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
+    { text: t('navigation.employees'), icon: <PeopleIcon />, path: '/employees' },
+    { text: t('navigation.attendance'), icon: <AccessTimeIcon />, path: '/attendance' },
+    { text: t('navigation.leave'), icon: <EventNoteIcon />, path: '/leave' },
   ];
 
   const drawer = (
     <div>
       <Toolbar>
         <Typography variant="h6" noWrap>
-          HR System
+          {t('common.appName')}
         </Typography>
       </Toolbar>
       <List>
         {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
+          <ListItem key={item.path} disablePadding>
             <ListItemButton onClick={() => navigate(item.path)}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
@@ -83,13 +86,14 @@ export const Layout: React.FC = () => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            HR Management System
+            {t('common.appName')}
           </Typography>
           <Typography variant="body2" sx={{ mr: 2 }}>
             {user?.username}
           </Typography>
+          <LanguageSelector />
           <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-            Logout
+            {t('auth.logout')}
           </Button>
         </Toolbar>
       </AppBar>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Paper,
@@ -13,10 +14,12 @@ import {
 } from '@mui/material';
 import { authApi, RegisterData } from '../../api/auth.api';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSelector } from '../../components/common/LanguageSelector';
 import type { ApiResponse, AuthResponse } from '../../types';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState<RegisterData>({
     organization_name: '',
@@ -52,8 +55,11 @@ export const Register: React.FC = () => {
     <Container maxWidth="md">
       <Box sx={{ mt: 8 }}>
         <Paper sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <LanguageSelector />
+          </Box>
           <Typography variant="h4" align="center" gutterBottom>
-            Register Organization
+            {t('auth.createAccount')}
           </Typography>
 
           <form onSubmit={handleSubmit}>
@@ -61,7 +67,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Organization Name"
+                  label={t('employees.department')}
                   value={formData.organization_name}
                   onChange={handleChange('organization_name')}
                   required
@@ -79,7 +85,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="First Name"
+                  label={t('employees.firstName')}
                   value={formData.first_name}
                   onChange={handleChange('first_name')}
                   required
@@ -88,7 +94,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Last Name"
+                  label={t('employees.lastName')}
                   value={formData.last_name}
                   onChange={handleChange('last_name')}
                   required
@@ -106,7 +112,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Email"
+                  label={t('auth.email')}
                   type="email"
                   value={formData.email}
                   onChange={handleChange('email')}
@@ -116,7 +122,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.password')}
                   type="password"
                   value={formData.password}
                   onChange={handleChange('password')}
@@ -126,7 +132,7 @@ export const Register: React.FC = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Phone Number"
+                  label={t('employees.phone')}
                   value={formData.phone_number}
                   onChange={handleChange('phone_number')}
                 />
@@ -137,7 +143,7 @@ export const Register: React.FC = () => {
               <Alert severity="error" sx={{ mt: 2 }}>
                 {registerMutation.error instanceof Error
                   ? registerMutation.error.message
-                  : 'Registration failed'}
+                  : t('auth.registerError')}
               </Alert>
             )}
 
@@ -149,14 +155,14 @@ export const Register: React.FC = () => {
               sx={{ mt: 3 }}
               disabled={registerMutation.isPending}
             >
-              {registerMutation.isPending ? 'Registering...' : 'Register'}
+              {registerMutation.isPending ? t('common.loading') : t('auth.register')}
             </Button>
 
             <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography variant="body2">
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link to="/login" style={{ textDecoration: 'none' }}>
-                  Login
+                  {t('auth.login')}
                 </Link>
               </Typography>
             </Box>
