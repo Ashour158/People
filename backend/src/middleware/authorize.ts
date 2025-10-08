@@ -2,15 +2,16 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
 
 export const authorize = (permissions: string[]) => {
-  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const user = req.user;
 
       if (!user) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           error: 'Authentication required'
         });
+        return;
       }
 
       const userPermissions = user.permissions || [];
@@ -21,10 +22,11 @@ export const authorize = (permissions: string[]) => {
       );
 
       if (!hasPermission) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           error: 'Insufficient permissions'
         });
+        return;
       }
 
       next();

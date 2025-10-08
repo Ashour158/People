@@ -28,7 +28,11 @@ export interface PayrollRunData {
 }
 
 export class PayrollRun {
-  private data: Required<PayrollRunData>;
+  private data: Omit<Required<PayrollRunData>, 'payment_date' | 'processed_at' | 'approved_at'> & {
+    payment_date: Date | null;
+    processed_at: Date | null;
+    approved_at: Date | null;
+  };
 
   constructor(data: PayrollRunData) {
     this.validate(data);
@@ -41,7 +45,7 @@ export class PayrollRun {
       period_month: data.period_month,
       pay_period_start: data.pay_period_start,
       pay_period_end: data.pay_period_end,
-      payment_date: data.payment_date || null as any,
+      payment_date: data.payment_date || null,
       run_name: data.run_name || this.generateRunName(data.period_year, data.period_month),
       run_type: data.run_type || PayrollRunType.REGULAR,
       status: data.status || PayrollRunStatus.DRAFT,
@@ -50,9 +54,9 @@ export class PayrollRun {
       total_deductions: data.total_deductions || 0,
       total_net: data.total_net || 0,
       processed_by: data.processed_by || '',
-      processed_at: data.processed_at || null as any,
+      processed_at: data.processed_at || null,
       approved_by: data.approved_by || '',
-      approved_at: data.approved_at || null as any,
+      approved_at: data.approved_at || null,
     };
   }
 
@@ -185,7 +189,7 @@ export class PayrollRun {
     this.data.total_net = net;
   }
 
-  toJSON(): Required<PayrollRunData> {
+  toJSON() {
     return { ...this.data };
   }
 }

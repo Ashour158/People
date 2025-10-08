@@ -9,18 +9,19 @@ export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Authentication required'
       });
+      return;
     }
 
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
 
     // Get user details with roles and permissions
     const userResult = await query(
@@ -45,16 +46,17 @@ export const authenticate = async (
     );
 
     if (userResult.rows.length === 0) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         error: 'Invalid token'
       });
+      return;
     }
 
-    (req as AuthRequest).user = userResult.rows[0];
+    (req as AuthRequest).user = userResult.rows[0] as AuthRequest['user'];
     next();
   } catch (error) {
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       error: 'Invalid or expired token'
     });

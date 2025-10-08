@@ -6,45 +6,48 @@ import { AuthRequest } from '../types';
 const attendanceService = new AttendanceService();
 
 export class AttendanceController {
-  async checkIn(req: Request, res: Response, next: NextFunction) {
+  async checkIn(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
       
       if (!organizationId || !employeeId) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
       }
       
-      const result = await attendanceService.checkIn(employeeId, organizationId, req.body);
-      return successResponse(res, result, 'Checked in successfully', undefined, 201);
+      const result = await attendanceService.checkIn(employeeId, organizationId, req.body as Record<string, unknown>);
+      successResponse(res, result, 'Checked in successfully', undefined, 201);
     } catch (error) {
       next(error);
     }
   }
 
-  async checkOut(req: Request, res: Response, next: NextFunction) {
+  async checkOut(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
       
       if (!organizationId || !employeeId) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
       }
       
-      const result = await attendanceService.checkOut(employeeId, organizationId, req.body);
-      return successResponse(res, result, 'Checked out successfully');
+      const result = await attendanceService.checkOut(employeeId, organizationId, req.body as Record<string, unknown>);
+      successResponse(res, result, 'Checked out successfully');
     } catch (error) {
       next(error);
     }
   }
 
-  async getAttendance(req: Request, res: Response, next: NextFunction) {
+  async getAttendance(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
-      const filters = req.query;
+      const filters = req.query as Record<string, unknown>;
       
       if (!organizationId) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
       }
       
       // If not admin, only show own attendance
@@ -53,23 +56,24 @@ export class AttendanceController {
       }
       
       const result = await attendanceService.getAttendance(organizationId, filters);
-      return successResponse(res, result.attendance, undefined, result.meta);
+      successResponse(res, result.attendance, undefined, result.meta);
     } catch (error) {
       next(error);
     }
   }
 
-  async requestRegularization(req: Request, res: Response, next: NextFunction) {
+  async requestRegularization(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const organizationId = (req as AuthRequest).user?.organization_id;
       const employeeId = (req as AuthRequest).user?.employee_id;
       
       if (!organizationId || !employeeId) {
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
+        res.status(401).json({ success: false, error: 'Unauthorized' });
+        return;
       }
       
-      const result = await attendanceService.requestRegularization(employeeId, organizationId, req.body);
-      return successResponse(res, result, 'Regularization request submitted', undefined, 201);
+      const result = await attendanceService.requestRegularization(employeeId, organizationId, req.body as Record<string, unknown>);
+      successResponse(res, result, 'Regularization request submitted', undefined, 201);
     } catch (error) {
       next(error);
     }

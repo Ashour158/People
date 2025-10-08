@@ -1,4 +1,4 @@
-import { Pool, PoolConfig } from 'pg';
+import { Pool, PoolConfig, QueryResult, PoolClient } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,6 +18,7 @@ const poolConfig: PoolConfig = {
 export const pool = new Pool(poolConfig);
 
 pool.on('connect', () => {
+  // eslint-disable-next-line no-console
   console.log('Database connected successfully');
 });
 
@@ -26,11 +27,12 @@ pool.on('error', (err) => {
   process.exit(-1);
 });
 
-export const query = async (text: string, params?: any[]) => {
+export const query = async (text: string, params?: unknown[]): Promise<QueryResult> => {
   const start = Date.now();
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
+    // eslint-disable-next-line no-console
     console.log('Executed query', { text, duration, rows: res.rowCount });
     return res;
   } catch (error) {
@@ -39,7 +41,7 @@ export const query = async (text: string, params?: any[]) => {
   }
 };
 
-export const transaction = async (callback: (client: any) => Promise<any>) => {
+export const transaction = async <T>(callback: (client: PoolClient) => Promise<T>): Promise<T> => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
