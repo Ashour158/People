@@ -10,6 +10,7 @@ import { Dashboard } from './pages/dashboard/Dashboard';
 import { EmployeeList } from './pages/employees/EmployeeList';
 import { AttendanceCheckIn } from './pages/attendance/AttendanceCheckIn';
 import { LeaveApply } from './pages/leave/LeaveApply';
+import { FileUploadDemo } from './pages/demo/FileUploadDemo';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 
@@ -55,6 +56,7 @@ function App() {
               <Route path="employees" element={<EmployeeList />} />
               <Route path="attendance" element={<AttendanceCheckIn />} />
               <Route path="leave" element={<LeaveApply />} />
+              <Route path="file-upload-demo" element={<FileUploadDemo />} />
             </Route>
           </Routes>
         </BrowserRouter>
