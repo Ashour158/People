@@ -21,6 +21,7 @@ import {
   EventNote as EventNoteIcon,
   Menu as MenuIcon,
   Logout as LogoutIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../store/authStore';
 
@@ -45,6 +46,7 @@ export const Layout: React.FC = () => {
     { text: 'Employees', icon: <PeopleIcon />, path: '/employees' },
     { text: 'Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
     { text: 'Leave', icon: <EventNoteIcon />, path: '/leave' },
+    { text: 'File Upload Demo', icon: <CloudUploadIcon />, path: '/file-upload-demo' },
   ];
 
   const drawer = (
