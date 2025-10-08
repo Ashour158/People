@@ -21,6 +21,7 @@ Each ADR follows this structure:
 - [ADR-0001: Database Choice - PostgreSQL](./0001-database-choice.md)
 - [ADR-0002: Authentication Strategy - JWT](./0002-authentication-strategy.md)
 - [ADR-0003: Multi-tenant Architecture](./0003-multi-tenant-architecture.md)
+- [ADR-0004: Microservices Architecture Strategy](./0004-microservices-architecture.md)
 
 ## Creating a New ADR
 
