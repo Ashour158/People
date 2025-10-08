@@ -13,15 +13,26 @@ import {
 } from '@mui/material';
 import { leaveApi } from '../../api';
 import toast from 'react-hot-toast';
+import type { LeaveFormData, LeaveType } from '../../types';
+import { getErrorMessage } from '../../utils';
+
+interface FormData extends LeaveFormData {
+  contact_details?: string;
+  is_half_day?: boolean;
+  from_date?: string;
+  to_date?: string;
+}
 
 export const LeaveApply: React.FC = () => {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     leave_type_id: '',
+    start_date: '',
+    end_date: '',
+    leave_reason: '',
+    is_half_day: false,
     from_date: '',
     to_date: '',
-    is_half_day: false,
-    reason: '',
     contact_details: '',
   });
 
@@ -37,21 +48,29 @@ export const LeaveApply: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['leaves'] });
       setFormData({
         leave_type_id: '',
+        start_date: '',
+        end_date: '',
+        leave_reason: '',
+        is_half_day: false,
         from_date: '',
         to_date: '',
-        is_half_day: false,
-        reason: '',
         contact_details: '',
       });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.error || 'Failed to apply leave');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Failed to apply leave');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    applyMutation.mutate(formData);
+    const submitData: LeaveFormData = {
+      leave_type_id: formData.leave_type_id,
+      start_date: formData.from_date || formData.start_date,
+      end_date: formData.to_date || formData.end_date,
+      leave_reason: formData.leave_reason,
+    };
+    applyMutation.mutate(submitData);
   };
 
   return (
@@ -74,7 +93,7 @@ export const LeaveApply: React.FC = () => {
                 }
                 required
               >
-                {leaveTypes?.data?.map((type: any) => (
+                {(leaveTypes?.data || []).map((type: LeaveType) => (
                   <MenuItem key={type.leave_type_id} value={type.leave_type_id}>
                     {type.leave_type_name}
                   </MenuItem>
@@ -116,9 +135,9 @@ export const LeaveApply: React.FC = () => {
                 multiline
                 rows={4}
                 label="Reason"
-                value={formData.reason}
+                value={formData.leave_reason}
                 onChange={(e) =>
-                  setFormData({ ...formData, reason: e.target.value })
+                  setFormData({ ...formData, leave_reason: e.target.value })
                 }
                 required
               />
@@ -138,7 +157,7 @@ export const LeaveApply: React.FC = () => {
 
           {applyMutation.isError && (
             <Alert severity="error" sx={{ mt: 2 }}>
-              {(applyMutation.error as any)?.response?.data?.error || 'Failed to apply leave'}
+              {getErrorMessage(applyMutation.error) || 'Failed to apply leave'}
             </Alert>
           )}
 

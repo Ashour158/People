@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { employeeApi } from '../../api';
+import type { Employee } from '../../types';
 
 export const EmployeeList: React.FC = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export const EmployeeList: React.FC = () => {
       }),
   });
 
-  const columns: GridColDef[] = [
+  const columns: GridColDef<Employee>[] = [
     { field: 'employee_code', headerName: 'Code', width: 120 },
     { field: 'first_name', headerName: 'First Name', width: 150 },
     { field: 'last_name', headerName: 'Last Name', width: 150 },
@@ -37,6 +38,8 @@ export const EmployeeList: React.FC = () => {
     { field: 'designation_name', headerName: 'Designation', width: 150 },
     { field: 'employee_status', headerName: 'Status', width: 120 },
   ];
+
+  const employees = data?.data || [];
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -52,7 +55,7 @@ export const EmployeeList: React.FC = () => {
 
       <Paper sx={{ p: 2, height: 600 }}>
         <DataGrid
-          rows={data?.data || []}
+          rows={employees}
           columns={columns}
           loading={isLoading}
           paginationModel={paginationModel}

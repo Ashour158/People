@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { authApi, RegisterData } from '../../api/auth.api';
 import { useAuthStore } from '../../store/authStore';
+import type { ApiResponse, AuthResponse } from '../../types';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export const Register: React.FC = () => {
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: (data: any) => {
+    onSuccess: (data: ApiResponse<AuthResponse>) => {
       setAuth(data.data.user, data.data.token);
       navigate('/dashboard');
     },
@@ -134,7 +135,9 @@ export const Register: React.FC = () => {
 
             {registerMutation.isError && (
               <Alert severity="error" sx={{ mt: 2 }}>
-                {(registerMutation.error as any)?.response?.data?.error || 'Registration failed'}
+                {registerMutation.error instanceof Error
+                  ? registerMutation.error.message
+                  : 'Registration failed'}
               </Alert>
             )}
 

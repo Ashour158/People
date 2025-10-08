@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { attendanceApi } from '../../api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils';
 
 export const AttendanceCheckIn: React.FC = () => {
   const queryClient = useQueryClient();
@@ -20,8 +21,8 @@ export const AttendanceCheckIn: React.FC = () => {
       toast.success('Checked in successfully!');
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.error || 'Check-in failed');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Check-in failed');
     },
   });
 
@@ -31,8 +32,8 @@ export const AttendanceCheckIn: React.FC = () => {
       toast.success('Checked out successfully!');
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.error || 'Check-out failed');
+    onError: (error: unknown) => {
+      toast.error(getErrorMessage(error) || 'Check-out failed');
     },
   });
 
