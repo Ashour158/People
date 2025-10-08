@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes';
 import employeeRoutes from './routes/employee.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import leaveRoutes from './routes/leave.routes';
+import healthRoutes from './routes/health.routes';
 
 const app = express();
 
@@ -22,14 +23,8 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 app.use('/api', apiLimiter);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is healthy',
-    timestamp: new Date().toISOString()
-  });
-});
+// Health check routes (no authentication required)
+app.use('/', healthRoutes);
 
 // API Routes
 const API_VERSION = process.env.API_VERSION || 'v1';
