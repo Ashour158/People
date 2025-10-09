@@ -490,3 +490,327 @@ async def sync_posting_metrics(
     job_board_service = JobBoardService(db)
     posting = await job_board_service.sync_posting_metrics(posting_id)
     return success_response({"message": "Metrics synced successfully", "posting": posting})
+
+
+# ==================== Payment Gateway Endpoints ====================
+
+@router.post("/payment-gateways", response_model=PaymentGatewayResponse, status_code=201)
+async def create_payment_gateway(
+    gateway_data: PaymentGatewayCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Configure payment gateway"""
+    from app.services.payment_gateway_service import PaymentGatewayService
+    
+    payment_service = PaymentGatewayService(db)
+    gateway = await payment_service.create_gateway(gateway_data)
+    return gateway
+
+
+@router.get("/payment-gateways", response_model=List[PaymentGatewayResponse])
+async def list_payment_gateways(
+    organization_id: UUID = Query(...),
+    is_active: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """List all payment gateways"""
+    from app.services.payment_gateway_service import PaymentGatewayService
+    
+    payment_service = PaymentGatewayService(db)
+    gateways = await payment_service.get_gateways_by_organization(organization_id, is_active)
+    return gateways
+
+
+@router.post("/payment-gateways/process-payroll")
+async def process_batch_payroll(
+    organization_id: UUID = Query(...),
+    payments: List[dict] = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Process batch payroll payments"""
+    from app.services.payment_gateway_service import PaymentGatewayService
+    
+    payment_service = PaymentGatewayService(db)
+    result = await payment_service.process_batch_payroll(organization_id, payments)
+    return success_response(result)
+
+
+# ==================== Biometric Device Endpoints ====================
+
+@router.post("/biometric/devices", response_model=BiometricDeviceResponse, status_code=201)
+async def create_biometric_device(
+    device_data: BiometricDeviceCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Register a new biometric device"""
+    from app.services.biometric_geofencing_service import BiometricService
+    
+    biometric_service = BiometricService(db)
+    device = await biometric_service.create_device(device_data)
+    return device
+
+
+@router.get("/biometric/devices", response_model=List[BiometricDeviceResponse])
+async def list_biometric_devices(
+    organization_id: UUID = Query(...),
+    is_active: Optional[bool] = Query(None),
+    is_online: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """List all biometric devices"""
+    from app.services.biometric_geofencing_service import BiometricService
+    
+    biometric_service = BiometricService(db)
+    devices = await biometric_service.get_devices_by_organization(organization_id, is_active, is_online)
+    return devices
+
+
+@router.post("/biometric/devices/{device_id}/ping")
+async def ping_biometric_device(
+    device_id: UUID = Path(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Check if biometric device is online"""
+    from app.services.biometric_geofencing_service import BiometricService
+    
+    biometric_service = BiometricService(db)
+    result = await biometric_service.ping_device(device_id)
+    return success_response(result)
+
+
+@router.post("/biometric/devices/{device_id}/sync")
+async def sync_biometric_attendance(
+    device_id: UUID = Path(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Sync attendance data from biometric device"""
+    from app.services.biometric_geofencing_service import BiometricService
+    
+    biometric_service = BiometricService(db)
+    logs = await biometric_service.sync_attendance_data(device_id)
+    return success_response({"synced_records": len(logs), "logs": logs})
+
+
+@router.post("/biometric/devices/{device_id}/enroll")
+async def enroll_employee_biometric(
+    device_id: UUID = Path(...),
+    employee_id: UUID = Body(...),
+    biometric_template: dict = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Enroll employee's biometric data"""
+    from app.services.biometric_geofencing_service import BiometricService
+    
+    biometric_service = BiometricService(db)
+    result = await biometric_service.enroll_employee(device_id, employee_id, biometric_template)
+    return success_response(result)
+
+
+# ==================== Geofencing Endpoints ====================
+
+@router.post("/geofences", response_model=GeofenceLocationResponse, status_code=201)
+async def create_geofence(
+    geofence_data: GeofenceLocationCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Create a new geofence location"""
+    from app.services.biometric_geofencing_service import GeofencingService
+    
+    geofencing_service = GeofencingService(db)
+    geofence = await geofencing_service.create_geofence(geofence_data)
+    return geofence
+
+
+@router.get("/geofences", response_model=List[GeofenceLocationResponse])
+async def list_geofences(
+    organization_id: UUID = Query(...),
+    is_active: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """List all geofence locations"""
+    from app.services.biometric_geofencing_service import GeofencingService
+    
+    geofencing_service = GeofencingService(db)
+    geofences = await geofencing_service.get_geofences_by_organization(organization_id, is_active)
+    return geofences
+
+
+@router.post("/geofences/verify-location")
+async def verify_location(
+    organization_id: UUID = Query(...),
+    latitude: float = Body(...),
+    longitude: float = Body(...),
+    location_type: Optional[str] = Body(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Verify if coordinates are within any geofence"""
+    from app.services.biometric_geofencing_service import GeofencingService
+    
+    geofencing_service = GeofencingService(db)
+    result = await geofencing_service.verify_location(organization_id, latitude, longitude, location_type)
+    return success_response(result)
+
+
+@router.post("/geofences/verify-check-in")
+async def verify_check_in_location(
+    organization_id: UUID = Query(...),
+    employee_id: UUID = Body(...),
+    latitude: float = Body(...),
+    longitude: float = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Verify employee check-in location"""
+    from app.services.biometric_geofencing_service import GeofencingService
+    
+    geofencing_service = GeofencingService(db)
+    result = await geofencing_service.verify_check_in(organization_id, employee_id, latitude, longitude)
+    return success_response(result)
+
+
+@router.get("/geofences/nearby")
+async def get_nearby_geofences(
+    organization_id: UUID = Query(...),
+    latitude: float = Query(...),
+    longitude: float = Query(...),
+    max_distance: int = Query(1000),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Get geofences within a certain distance"""
+    from app.services.biometric_geofencing_service import GeofencingService
+    
+    geofencing_service = GeofencingService(db)
+    nearby = await geofencing_service.get_nearby_geofences(organization_id, latitude, longitude, max_distance)
+    return success_response(nearby)
+
+
+# ==================== Holiday Calendar Endpoints ====================
+
+@router.post("/holiday-calendars", response_model=HolidayCalendarResponse, status_code=201)
+async def create_holiday_calendar(
+    calendar_data: HolidayCalendarCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Create a new holiday calendar"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    calendar = await holiday_service.create_calendar(calendar_data)
+    return calendar
+
+
+@router.get("/holiday-calendars", response_model=List[HolidayCalendarResponse])
+async def list_holiday_calendars(
+    organization_id: UUID = Query(...),
+    is_active: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """List all holiday calendars"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    calendars = await holiday_service.get_calendars_by_organization(organization_id, is_active)
+    return calendars
+
+
+@router.post("/holiday-calendars/{calendar_id}/holidays", response_model=HolidayResponse, status_code=201)
+async def add_holiday(
+    calendar_id: UUID = Path(...),
+    holiday_data: HolidayCreate = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Add a holiday to a calendar"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    holiday = await holiday_service.add_holiday(holiday_data)
+    return holiday
+
+
+@router.get("/holiday-calendars/{calendar_id}/holidays", response_model=List[HolidayResponse])
+async def list_holidays(
+    calendar_id: UUID = Path(...),
+    year: Optional[int] = Query(None),
+    month: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """List holidays for a calendar"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    holidays = await holiday_service.get_holidays_by_calendar(calendar_id, year, month)
+    return holidays
+
+
+@router.post("/holiday-calendars/{calendar_id}/sync")
+async def sync_holidays_from_api(
+    calendar_id: UUID = Path(...),
+    api_key: str = Body(...),
+    year: int = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Sync holidays from public API"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    result = await holiday_service.sync_from_api(calendar_id, api_key, year)
+    return success_response(result)
+
+
+@router.post("/holiday-calendars/create-preset")
+async def create_preset_calendar(
+    organization_id: UUID = Query(...),
+    country: str = Body(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Create a preset holiday calendar for a country"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    
+    holiday_service = HolidayCalendarService(db)
+    
+    if country.upper() in ["US", "USA", "UNITED STATES"]:
+        calendar = await holiday_service.create_us_calendar(organization_id)
+    elif country.upper() in ["UK", "GB", "UNITED KINGDOM"]:
+        calendar = await holiday_service.create_uk_calendar(organization_id)
+    elif country.upper() in ["IN", "IND", "INDIA"]:
+        calendar = await holiday_service.create_india_calendar(organization_id)
+    else:
+        from app.core.exceptions import ValidationError
+        raise ValidationError(f"Preset calendar not available for {country}")
+    
+    return success_response({"calendar": calendar})
+
+
+@router.get("/holidays/check")
+async def check_if_holiday(
+    organization_id: UUID = Query(...),
+    date: str = Query(...),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    """Check if a specific date is a holiday"""
+    from app.services.holiday_calendar_service import HolidayCalendarService
+    from datetime import datetime
+    
+    holiday_service = HolidayCalendarService(db)
+    check_date = datetime.strptime(date, "%Y-%m-%d").date()
+    result = await holiday_service.is_holiday(organization_id, check_date)
+    return success_response(result)
