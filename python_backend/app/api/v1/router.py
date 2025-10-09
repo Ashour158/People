@@ -1,7 +1,11 @@
 """API v1 router"""
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, employees, attendance, leave
+from app.api.v1.endpoints import (
+    auth, employees, attendance, leave, 
+    payroll, performance, workflows,
+    oauth, graphql_api, ai_analytics
+)
 
 api_router = APIRouter()
 
@@ -10,8 +14,13 @@ api_router.include_router(auth.router)
 api_router.include_router(employees.router)
 api_router.include_router(attendance.router)
 api_router.include_router(leave.router)
+api_router.include_router(payroll.router)
+api_router.include_router(performance.router)
+api_router.include_router(workflows.router)
+api_router.include_router(oauth.router)
+api_router.include_router(graphql_api.router)
+api_router.include_router(ai_analytics.router)
 
 # Add more routers as needed
-# api_router.include_router(payroll.router)
-# api_router.include_router(performance.router)
 # api_router.include_router(recruitment.router)
+# api_router.include_router(onboarding.router)
