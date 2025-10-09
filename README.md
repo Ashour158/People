@@ -2,6 +2,12 @@
 
 🎉 **Major Update**: Complete Python implementation with 145,000+ lines of production-ready code!
 
+> **⚠️ Backend Note**: This repository contains **two backend implementations**:
+> - **`python_backend/`** - **✅ Recommended** - FastAPI-based Python backend (Complete, tested, production-ready)
+> - **`backend/`** - TypeScript/Node.js backend (Legacy, being phased out)
+> 
+> **For new installations, use the Python backend**. It provides better performance, automatic API documentation, and comprehensive features. See [Python Backend Setup Instructions](python_backend/SETUP_INSTRUCTIONS.md) for details.
+
 An **enterprise-grade, multi-tenant HR Management System** with comprehensive features including Payroll, Performance Management, Custom Workflows, AI Analytics, OAuth 2.0, and GraphQL API.
 
 ## ⚡ Latest Enhancements (NEW)
@@ -88,16 +94,17 @@ The People HR Management System aims to be a comprehensive, open-source solution
 
 ## 📋 Prerequisites
 
-- Python 3.9+
-- Django 4.2+
-- PostgreSQL 13+
-- Redis 7+ (optional, for caching)
-- Node.js 18+ (for frontend)
-- Docker (optional)
+## 📋 Prerequisites
+
+- **Python 3.11+** (Python 3.12+ recommended)
+- **PostgreSQL 15+**
+- **Redis 7+** (optional, for caching)
+- **Node.js 18+** (for frontend)
+- **Docker** (optional, for containerized deployment)
 
 ## 🛠️ Installation
 
-### Option 1: Manual Setup
+### Option 1: Quick Start with Python Backend
 
 #### 1. Clone the repository
 ```bash
@@ -105,14 +112,14 @@ git clone https://github.com/Ashour158/People.git
 cd People
 ```
 
-#### 2. Setup Backend
+#### 2. Setup Python Backend
 ```bash
-cd backend
-python -m venv venv
+cd python_backend
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env with your configuration (DATABASE_URL, SECRET_KEY, etc.)
 ```
 
 #### 3. Setup Database
@@ -120,12 +127,8 @@ cp .env.example .env
 # Create database
 createdb hr_system
 
-# Run Django migrations
-cd backend
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
+# Run Alembic migrations
+alembic upgrade head
 ```
 
 #### 4. Setup Frontend
@@ -133,16 +136,16 @@ python manage.py createsuperuser
 cd ../frontend
 npm install
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env - set VITE_API_BASE_URL=http://localhost:5000/api/v1
 ```
 
 #### 5. Start Services
 
-Terminal 1 - Backend:
+Terminal 1 - Python Backend:
 ```bash
-cd backend
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-python manage.py runserver
+cd python_backend
+source venv/bin/activate
+uvicorn app.main:app --reload --port 5000
 ```
 
 Terminal 2 - Frontend:
