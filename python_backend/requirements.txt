@@ -96,3 +96,30 @@ cryptography==41.0.7
 
 # Performance Testing
 locust==2.20.0
+
+# PDF Generation
+weasyprint==60.1
+jinja2==3.1.2
+
+# Excel/CSV Export
+openpyxl==3.1.2
+
+# SMS Service
+twilio==8.11.1
+
+# Task Scheduling
+celery[redis]==5.3.6
+
+# NLP & AI (for resume parsing)
+spacy==3.7.2
+transformers==4.36.2
+torch==2.1.2
+pytesseract==0.3.10
+python-docx==1.1.0
+docx2txt==0.8
+PyPDF2==3.0.1
+Pillow==10.1.0
+
+# SAML 2.0 SSO
+python3-saml==1.16.0
+xmlsec==1.3.13
