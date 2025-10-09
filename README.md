@@ -154,35 +154,66 @@ cd frontend
 npm run dev
 ```
 
-Terminal 3 - Redis (optional):
+Access the application:
+- **Frontend**: http://localhost:5173
+- **API Documentation**: http://localhost:5000/api/v1/docs
+- **Backend API**: http://localhost:5000/api/v1
+
+### Option 2: Quick Start Script
+
+Use the automated setup script:
+
 ```bash
-redis-server
+./quickstart.sh
 ```
 
-### Option 2: Docker Setup
+This script will:
+- Check prerequisites
+- Set up Python virtual environment
+- Install all dependencies
+- Create configuration files
+- Optionally set up the database
 
-#### 1. Configure environment
+### Option 3: Docker Compose
+
 ```bash
+# Copy and edit environment file
 cp .env.example .env
 # Edit .env with your configuration
+
+# Start all services
+docker-compose -f docker-compose.python.yml up -d
+
+# View logs
+docker-compose -f docker-compose.python.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.python.yml down
 ```
 
-#### 2. Start all services
-```bash
-docker-compose up -d
-```
+Access the application:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000/api/v1
+- **API Documentation**: http://localhost:5000/api/v1/docs
+- **Database**: PostgreSQL on localhost:5432
+- **Redis**: localhost:6379
 
-#### 3. View logs
-```bash
-docker-compose logs -f
-```
+## 📚 Documentation
 
-#### 4. Stop services
-```bash
-docker-compose down
-```
+### Quick Links
+- **[Python Backend Setup Instructions](python_backend/SETUP_INSTRUCTIONS.md)** - Detailed setup guide
+- **[Frontend-Backend Integration](FRONTEND_BACKEND_INTEGRATION.md)** - Integration guide
+- **[Migration Guide](python_backend/MIGRATION_GUIDE.md)** - TypeScript to Python migration
+- **[API Documentation](python_backend/PROJECT_SUMMARY.md)** - Complete API reference
+- **[Executive Summary](python_backend/EXECUTIVE_SUMMARY.md)** - Project overview
 
-## 🌐 Access the Application
+### Live API Documentation
+When the backend is running, interactive API documentation is available at:
+- **Swagger UI**: http://localhost:5000/api/v1/docs - Interactive API testing
+- **ReDoc**: http://localhost:5000/api/v1/redoc - Clean documentation view
+- **OpenAPI JSON**: http://localhost:5000/api/v1/openapi.json - Machine-readable spec
+
+## 🌐 Access the Application (Legacy Backend)
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
