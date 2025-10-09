@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import { logger } from '../config/logger';
 
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
@@ -18,7 +18,7 @@ interface EmailOptions {
   text?: string;
 }
 
-export const sendEmail = async (options: EmailOptions) => {
+export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
@@ -34,7 +34,7 @@ export const sendEmail = async (options: EmailOptions) => {
   }
 };
 
-export const sendPasswordResetEmail = async (email: string, resetToken: string) => {
+export const sendPasswordResetEmail = async (email: string, resetToken: string): Promise<void> => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
   
   await sendEmail({
@@ -50,7 +50,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string) 
   });
 };
 
-export const sendWelcomeEmail = async (email: string, name: string) => {
+export const sendWelcomeEmail = async (email: string, name: string): Promise<void> => {
   await sendEmail({
     to: email,
     subject: 'Welcome to HR Management System',

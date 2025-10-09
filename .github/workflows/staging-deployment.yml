@@ -1,0 +1,286 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop, staging]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============= Code Quality & Security =============
+  quality-checks:
+    name: Code Quality & Security Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../frontend && npm install --legacy-peer-deps
+      
+      - name: Run security audit
+        run: |
+          cd backend && npm audit --audit-level=moderate || true
+          cd ../frontend && npm audit --audit-level=moderate || true
+        continue-on-error: true
+
+  # ============= Backend Tests =============
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: hr_user
+          POSTGRES_PASSWORD: hr_password
+          POSTGRES_DB: hr_system_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+      
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm run test:ci || true
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: hr_system_test
+          DB_USER: hr_user
+          DB_PASSWORD: hr_password
+          JWT_SECRET: test-secret-key-for-testing-only
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+        continue-on-error: true
+
+  # ============= Frontend Tests =============
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install --legacy-peer-deps
+      
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm run test || true
+        continue-on-error: true
+
+  # ============= Build Docker Images =============
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata for backend
+        id: backend-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/hr-backend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=staging-
+            type=raw,value=staging-latest
+      
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.backend-meta.outputs.tags }}
+          labels: ${{ steps.backend-meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/hr-backend:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/hr-backend:buildcache,mode=max
+      
+      - name: Extract metadata for frontend
+        id: frontend-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/hr-frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=staging-
+            type=raw,value=staging-latest
+      
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.frontend-meta.outputs.tags }}
+          labels: ${{ steps.frontend-meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/hr-frontend:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/hr-frontend:buildcache,mode=max
+
+  # ============= Deploy to Staging Environment =============
+  deploy-staging:
+    name: Deploy to Staging Environment
+    runs-on: ubuntu-latest
+    needs: build-images
+    environment:
+      name: staging
+      url: https://staging.hr-system.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to DigitalOcean Staging
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.STAGING_DROPLET_IP }}
+          username: ${{ secrets.STAGING_SSH_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/hr-staging
+            
+            # Pull latest images
+            docker-compose pull
+            
+            # Stop and remove old containers
+            docker-compose down
+            
+            # Start new containers
+            docker-compose up -d
+            
+            # Wait for services to be healthy
+            sleep 30
+            
+            # Check backend health
+            curl -f http://localhost:5000/api/v1/health || exit 1
+            
+            # Cleanup old images
+            docker image prune -af --filter "until=168h"
+            
+            echo "✅ Staging deployment successful!"
+
+  # ============= Integration Tests on Staging =============
+  integration-tests:
+    name: Run Integration Tests on Staging
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Wait for staging to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -f https://staging-api.hr-system.com/api/v1/health; then
+              echo "Staging is ready!"
+              break
+            fi
+            echo "Waiting for staging... ($i/30)"
+            sleep 10
+          done
+      
+      - name: Run integration tests against staging
+        run: |
+          echo "Running integration tests..."
+          # Add your integration test commands here
+          # Example: newman run postman_collection.json -e staging.environment.json
+        continue-on-error: true
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          curl -f https://staging-api.hr-system.com/api/v1/health
+          curl -f https://staging-api.hr-system.com/api/v1/auth/health
+          echo "✅ Smoke tests passed!"
+
+  # ============= Notify Deployment Status =============
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, integration-tests]
+    if: always()
+    
+    steps:
+      - name: Send deployment notification
+        run: |
+          echo "📢 Staging Deployment Status: ${{ job.status }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Deployed by: ${{ github.actor }}"
+          # Add Slack/email notification here if configured

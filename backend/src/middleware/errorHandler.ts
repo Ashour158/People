@@ -5,7 +5,7 @@ export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
 
-  constructor(statusCode: number, message: string, isOperational = true) {
+  constructor(message: string, statusCode: number, isOperational = true) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
@@ -14,14 +14,16 @@ export class AppError extends Error {
 }
 
 export const errorHandler = (
-  err: any,
+  err: Error | AppError,
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
-  let { statusCode = 500, message } = err;
+  _next: NextFunction
+): void => {
+  const appError = err as AppError;
+  let statusCode = appError.statusCode || 500;
+  let message = err.message;
 
-  if (!err.isOperational) {
+  if (!appError.isOperational) {
     logger.error('Unexpected error:', err);
     statusCode = 500;
     message = 'Internal server error';
