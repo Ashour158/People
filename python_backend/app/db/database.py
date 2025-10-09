@@ -10,14 +10,23 @@ from app.core.config import settings
 logger = structlog.get_logger()
 
 # Create async engine
-engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
-    echo=settings.DB_ECHO,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_timeout=settings.DB_POOL_TIMEOUT,
-    poolclass=QueuePool if not settings.DEBUG else NullPool,
-)
+if settings.DEBUG:
+    # In DEBUG mode, use NullPool without pool parameters
+    engine = create_async_engine(
+        settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+        echo=settings.DB_ECHO,
+        poolclass=NullPool,
+    )
+else:
+    # In production, use connection pooling
+    engine = create_async_engine(
+        settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+        echo=settings.DB_ECHO,
+        pool_size=settings.DB_POOL_SIZE,
+        max_overflow=settings.DB_MAX_OVERFLOW,
+        pool_timeout=settings.DB_POOL_TIMEOUT,
+        poolclass=QueuePool,
+    )
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
