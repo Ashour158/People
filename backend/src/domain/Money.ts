@@ -1,6 +1,8 @@
 // =====================================================
 // Value Object: Money
 // Immutable money value with currency validation
+// ⚠️ DEPRECATED: This TypeScript backend is legacy
+// Please use Python backend (python_backend/) for all new development
 // =====================================================
 
 export class Money {

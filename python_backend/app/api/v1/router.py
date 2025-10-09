@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, employees, attendance, leave, 
     payroll, performance, workflows,
-    oauth, graphql_api, ai_analytics
+    oauth, graphql_api, ai_analytics, recruitment
 )
 
 api_router = APIRouter()
@@ -20,7 +20,7 @@ api_router.include_router(workflows.router)
 api_router.include_router(oauth.router)
 api_router.include_router(graphql_api.router)
 api_router.include_router(ai_analytics.router)
+api_router.include_router(recruitment.router)
 
 # Add more routers as needed
-# api_router.include_router(recruitment.router)
 # api_router.include_router(onboarding.router)
