@@ -1,0 +1,399 @@
+# ========================================
+# Python HR System - Kubernetes Deployment
+# ========================================
+
+# Namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hr-system
+  labels:
+    name: hr-system
+    environment: production
+
+# ConfigMap for application configuration
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hr-system-config
+  namespace: hr-system
+data:
+  API_VERSION: "v1"
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  LOG_LEVEL: "info"
+  CORS_ORIGINS: '["https://hr.company.com", "https://app.company.com"]'
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "10"
+  REDIS_POOL_SIZE: "10"
+
+# Secret for sensitive data
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hr-system-secrets
+  namespace: hr-system
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://hr_user:changeme@postgres-service:5432/hr_system"
+  REDIS_URL: "redis://redis-service:6379/0"
+  JWT_SECRET_KEY: "your-super-secret-jwt-key-change-in-production"
+  SECRET_KEY: "your-super-secret-key-change-in-production"
+  GOOGLE_CLIENT_ID: "your-google-client-id"
+  GOOGLE_CLIENT_SECRET: "your-google-client-secret"
+  MICROSOFT_CLIENT_ID: "your-microsoft-client-id"
+  MICROSOFT_CLIENT_SECRET: "your-microsoft-client-secret"
+
+# PostgreSQL Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: hr-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: hr_system
+        - name: POSTGRES_USER
+          value: hr_user
+        - name: POSTGRES_PASSWORD
+          value: changeme
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+# PostgreSQL PVC
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: hr-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+# PostgreSQL Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: hr-system
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+
+# Redis Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: hr-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        command:
+        - redis-server
+        - --maxmemory
+        - "256mb"
+        - --maxmemory-policy
+        - allkeys-lru
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+
+# Redis Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: hr-system
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+  type: ClusterIP
+
+# HR System API Deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-api
+  namespace: hr-system
+  labels:
+    app: hr-api
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: hr-api
+  template:
+    metadata:
+      labels:
+        app: hr-api
+        version: v1
+    spec:
+      containers:
+      - name: hr-api
+        image: ashour158/hr-system:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+        env:
+        - name: PORT
+          value: "5000"
+        envFrom:
+        - configMapRef:
+            name: hr-system-config
+        - secretRef:
+            name: hr-system-secrets
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      # Init container to wait for database
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for postgres; sleep 2; done;']
+
+# HR API Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hr-api-service
+  namespace: hr-system
+  labels:
+    app: hr-api
+spec:
+  selector:
+    app: hr-api
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+    protocol: TCP
+  type: ClusterIP
+
+# Horizontal Pod Autoscaler
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hr-api-hpa
+  namespace: hr-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hr-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+# Ingress for external access
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hr-api-ingress
+  namespace: hr-system
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  tls:
+  - hosts:
+    - api.hr-system.com
+    secretName: hr-api-tls
+  rules:
+  - host: api.hr-system.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hr-api-service
+            port:
+              number: 80
+
+# Network Policy - Restrict traffic
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hr-api-network-policy
+  namespace: hr-system
+spec:
+  podSelector:
+    matchLabels:
+      app: hr-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 5000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS for external APIs
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS
+
+# Pod Disruption Budget
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hr-api-pdb
+  namespace: hr-system
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: hr-api
+
+# ServiceMonitor for Prometheus (if using Prometheus Operator)
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hr-api-metrics
+  namespace: hr-system
+  labels:
+    app: hr-api
+spec:
+  selector:
+    matchLabels:
+      app: hr-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
