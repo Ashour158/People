@@ -450,6 +450,381 @@ class HolidayCalendarService:
         await self.db.commit()
         return calendar
     
+    async def create_uae_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "UAE Public Holidays"
+    ) -> HolidayCalendar:
+        """Create UAE public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="ARE",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common UAE public holidays
+        uae_holidays = [
+            ("New Year's Day", "01-01", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),  # Varies by lunar calendar
+            ("Eid Al Adha", "06-28", "religious"),  # Varies by lunar calendar
+            ("Islamic New Year", "07-19", "religious"),  # Varies by lunar calendar
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),  # Varies by lunar calendar
+            ("Commemoration Day", "12-01", "national"),
+            ("National Day", "12-02", "national"),
+            ("National Day Holiday", "12-03", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in uae_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_saudi_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Saudi Arabia Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Saudi Arabia public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="SAU",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Saudi public holidays
+        saudi_holidays = [
+            ("Saudi National Day", "09-23", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),  # 3-4 days, varies by lunar calendar
+            ("Eid Al Fitr Day 2", "04-22", "religious"),
+            ("Eid Al Fitr Day 3", "04-23", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),  # 4-5 days, varies by lunar calendar
+            ("Eid Al Adha Day 2", "06-29", "religious"),
+            ("Eid Al Adha Day 3", "06-30", "religious"),
+            ("Eid Al Adha Day 4", "07-01", "religious"),
+            ("Foundation Day", "02-22", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in saudi_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_egypt_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Egypt Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Egypt public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="EGY",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Egypt public holidays
+        egypt_holidays = [
+            ("New Year's Day", "01-01", "national"),
+            ("Coptic Christmas", "01-07", "religious"),
+            ("Revolution Day (January 25)", "01-25", "national"),
+            ("Sinai Liberation Day", "04-25", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Labour Day", "05-01", "national"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("Islamic New Year", "07-19", "religious"),
+            ("Revolution Day (June 30)", "06-30", "national"),
+            ("Revolution Day (July 23)", "07-23", "national"),
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),
+            ("Armed Forces Day", "10-06", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in egypt_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_qatar_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Qatar Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Qatar public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="QAT",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Qatar public holidays
+        qatar_holidays = [
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("National Day", "12-18", "national"),
+            ("National Sports Day", "02-13", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in qatar_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_kuwait_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Kuwait Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Kuwait public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="KWT",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Kuwait public holidays
+        kuwait_holidays = [
+            ("New Year's Day", "01-01", "national"),
+            ("National Day", "02-25", "national"),
+            ("Liberation Day", "02-26", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("Islamic New Year", "07-19", "religious"),
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in kuwait_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_oman_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Oman Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Oman public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="OMN",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Oman public holidays
+        oman_holidays = [
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("Islamic New Year", "07-19", "religious"),
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),
+            ("National Day", "11-18", "national"),
+            ("National Day Holiday", "11-19", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in oman_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_bahrain_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Bahrain Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Bahrain public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="BHR",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Bahrain public holidays
+        bahrain_holidays = [
+            ("New Year's Day", "01-01", "national"),
+            ("Labour Day", "05-01", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("Islamic New Year", "07-19", "religious"),
+            ("Ashura", "07-28", "religious"),
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),
+            ("National Day", "12-16", "national"),
+            ("National Day Holiday", "12-17", "national"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in bahrain_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
+    async def create_jordan_calendar(
+        self,
+        organization_id: UUID,
+        calendar_name: str = "Jordan Public Holidays"
+    ) -> HolidayCalendar:
+        """Create Jordan public holiday calendar"""
+        calendar_data = HolidayCalendarCreate(
+            organization_id=organization_id,
+            calendar_name=calendar_name,
+            country_code="JOR",
+            source="manual",
+            is_default=True
+        )
+        
+        calendar = await self.create_calendar(calendar_data)
+        
+        # Add common Jordan public holidays
+        jordan_holidays = [
+            ("New Year's Day", "01-01", "national"),
+            ("Labour Day", "05-01", "national"),
+            ("Independence Day", "05-25", "national"),
+            ("Eid Al Fitr", "04-21", "religious"),
+            ("Eid Al Adha", "06-28", "religious"),
+            ("Islamic New Year", "07-19", "religious"),
+            ("Prophet Muhammad's Birthday", "09-27", "religious"),
+            ("Christmas Day", "12-25", "religious"),
+        ]
+        
+        current_year = datetime.utcnow().year
+        
+        for name, date_str, holiday_type in jordan_holidays:
+            holiday = Holiday(
+                calendar_id=calendar.calendar_id,
+                organization_id=organization_id,
+                holiday_name=name,
+                holiday_date=datetime.strptime(f"{current_year}-{date_str}", "%Y-%m-%d"),
+                holiday_type=holiday_type,
+                is_mandatory=True,
+                is_paid=True,
+                is_recurring=True,
+                description="Note: Islamic holidays vary by lunar calendar"
+            )
+            self.db.add(holiday)
+        
+        await self.db.commit()
+        return calendar
+    
     # ==================== Helper Methods ====================
     
     async def _fetch_holidays_from_calendarific(

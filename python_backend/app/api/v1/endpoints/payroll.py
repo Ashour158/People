@@ -164,6 +164,83 @@ class TaxCalculator:
             else:
                 return Decimal('112500') + (gross_annual - Decimal('1000000')) * Decimal('0.30')
     
+    @staticmethod
+    def calculate_uae_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate UAE Corporate Tax (0% for individuals, 5% VAT separate)"""
+        # UAE has no personal income tax
+        return Decimal(0)
+    
+    @staticmethod
+    def calculate_saudi_tax(gross_annual: Decimal, is_saudi: bool = False) -> Decimal:
+        """Calculate Saudi Arabia tax (for non-Saudis only, 20% flat)"""
+        if is_saudi:
+            # Saudi nationals pay no income tax
+            return Decimal(0)
+        else:
+            # Non-Saudis pay 20% flat tax
+            return gross_annual * Decimal('0.20')
+    
+    @staticmethod
+    def calculate_egypt_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Egyptian Income Tax (EGP, progressive)"""
+        if gross_annual <= 15000:
+            return Decimal(0)
+        elif gross_annual <= 30000:
+            return (gross_annual - Decimal('15000')) * Decimal('0.025')
+        elif gross_annual <= 45000:
+            return Decimal('375') + (gross_annual - Decimal('30000')) * Decimal('0.10')
+        elif gross_annual <= 60000:
+            return Decimal('1875') + (gross_annual - Decimal('45000')) * Decimal('0.15')
+        elif gross_annual <= 200000:
+            return Decimal('4125') + (gross_annual - Decimal('60000')) * Decimal('0.20')
+        elif gross_annual <= 400000:
+            return Decimal('32125') + (gross_annual - Decimal('200000')) * Decimal('0.225')
+        else:
+            return Decimal('77125') + (gross_annual - Decimal('400000')) * Decimal('0.25')
+    
+    @staticmethod
+    def calculate_kuwait_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Kuwait tax (no personal income tax)"""
+        return Decimal(0)
+    
+    @staticmethod
+    def calculate_qatar_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Qatar tax (no personal income tax)"""
+        return Decimal(0)
+    
+    @staticmethod
+    def calculate_oman_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Oman Income Tax (OMR, for high earners)"""
+        # Oman introduced personal income tax in 2022 for high earners
+        # Progressive rates starting from OMR 30,000 annual
+        if gross_annual <= 30000:
+            return Decimal(0)
+        elif gross_annual <= 45000:
+            return (gross_annual - Decimal('30000')) * Decimal('0.05')
+        elif gross_annual <= 60000:
+            return Decimal('750') + (gross_annual - Decimal('45000')) * Decimal('0.08')
+        else:
+            return Decimal('1950') + (gross_annual - Decimal('60000')) * Decimal('0.09')
+    
+    @staticmethod
+    def calculate_bahrain_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Bahrain tax (no personal income tax)"""
+        return Decimal(0)
+    
+    @staticmethod
+    def calculate_jordan_tax(gross_annual: Decimal) -> Decimal:
+        """Calculate Jordan Income Tax (JOD, progressive)"""
+        if gross_annual <= 5000:
+            return Decimal(0)
+        elif gross_annual <= 10000:
+            return (gross_annual - Decimal('5000')) * Decimal('0.07')
+        elif gross_annual <= 15000:
+            return Decimal('350') + (gross_annual - Decimal('10000')) * Decimal('0.14')
+        elif gross_annual <= 20000:
+            return Decimal('1050') + (gross_annual - Decimal('15000')) * Decimal('0.20')
+        else:
+            return Decimal('2050') + (gross_annual - Decimal('20000')) * Decimal('0.25')
+    
     @classmethod
     def calculate_tax(cls, gross_annual: Decimal, country_code: str, regime: str = "new") -> Decimal:
         """Calculate tax based on country"""
@@ -181,6 +258,23 @@ class TaxCalculator:
                 return Decimal('7540') + (gross_annual - Decimal('50270')) * Decimal('0.40')
             else:
                 return Decimal('37488') + (gross_annual - Decimal('125140')) * Decimal('0.45')
+        # MENA Region Tax Calculations
+        elif country_code == "AE" or country_code == "UAE":
+            return cls.calculate_uae_tax(gross_annual)
+        elif country_code == "SA" or country_code == "SAU":
+            return cls.calculate_saudi_tax(gross_annual, is_saudi=False)
+        elif country_code == "EG" or country_code == "EGY":
+            return cls.calculate_egypt_tax(gross_annual)
+        elif country_code == "KW" or country_code == "KWT":
+            return cls.calculate_kuwait_tax(gross_annual)
+        elif country_code == "QA" or country_code == "QAT":
+            return cls.calculate_qatar_tax(gross_annual)
+        elif country_code == "OM" or country_code == "OMN":
+            return cls.calculate_oman_tax(gross_annual)
+        elif country_code == "BH" or country_code == "BHR":
+            return cls.calculate_bahrain_tax(gross_annual)
+        elif country_code == "JO" or country_code == "JOR":
+            return cls.calculate_jordan_tax(gross_annual)
         else:
             # Default: 20% flat tax
             return gross_annual * Decimal('0.20')
