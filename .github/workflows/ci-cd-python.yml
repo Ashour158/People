@@ -142,7 +142,24 @@ jobs:
           ENVIRONMENT: test
         run: |
           cd python_backend
-          pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing
+          pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing --cov-report=html
+      
+      - name: Check Test Coverage
+        run: |
+          cd python_backend
+          # Extract coverage percentage and enforce minimum
+          COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])" 2>/dev/null || echo "0")
+          COVERAGE_PERCENT=$(python -c "print(int(float($COVERAGE) * 100))" 2>/dev/null || echo "0")
+          echo "Current test coverage: ${COVERAGE_PERCENT}%"
+          
+          # Enforce minimum 20% coverage for now (gradually increase)
+          if [ "$COVERAGE_PERCENT" -lt 20 ]; then
+            echo "❌ Test coverage ${COVERAGE_PERCENT}% is below minimum threshold of 20%"
+            echo "ℹ️  Target: 80% coverage. Add more tests to increase coverage."
+            exit 1
+          else
+            echo "✅ Test coverage ${COVERAGE_PERCENT}% meets minimum threshold"
+          fi
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
