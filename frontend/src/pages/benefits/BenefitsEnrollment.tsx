@@ -72,13 +72,15 @@ export const BenefitsEnrollment: React.FC = () => {
   });
 
 interface EnrollmentData {
-  employee_id: string;
-  selected_plans: Array<{
+  plan_id?: string;
+  employee_id?: string;
+  selected_plans?: Array<{
     plan_id: string;
     coverage_type: string;
   }>;
   dependents: Dependent[];
-  effective_date: string;
+  effective_date?: string;
+  enrollment_date?: string;
 }
 
   // Enrollment mutation

@@ -108,29 +108,27 @@ interface DashboardMetrics {
     trend: string;
   };
   new_joiners: number;
-  attendance_rate: {
-    value: number;
-    trend: string;
-  };
-  leave_utilization: number;
+  attendance_rate: number | { value: number; trend: string };
+  leave_utilization: number | { value: number };
   performance_avg: number;
-  timesheet_utilization: {
-    value: number;
-    trend: string;
-  };
+  timesheet_utilization: number | { value: number; trend: string };
   pending_approvals: {
     leaves: number;
     timesheets: number;
     expenses: number;
+    onboarding_tasks: number;
   };
 }
 
 interface DepartmentStat {
-  department_name: string;
+  department_name?: string;
+  department?: string;
   employee_count: number;
   avg_performance?: number;
   headcount: number;
   avg_tenure_years: number;
+  pending_leaves?: number;
+  pending_timesheets?: number;
 }
 
 interface AttritionRiskEmployee {
@@ -139,6 +137,7 @@ interface AttritionRiskEmployee {
   department: string;
   risk_score: number;
   factors: string[];
+  attrition_risk_score: number;
 }
 
 const AnalyticsDashboard: React.FC = () => {
@@ -285,17 +284,17 @@ const AnalyticsDashboard: React.FC = () => {
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2">Leave Requests</Typography>
                   <Chip
-                    label={metrics.pending_approvals.leave}
+                    label={metrics.pending_approvals.leaves}
                     size="small"
-                    color={metrics.pending_approvals.leave > 0 ? 'warning' : 'default'}
+                    color={metrics.pending_approvals.leaves > 0 ? 'warning' : 'default'}
                   />
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography variant="body2">Timesheets</Typography>
                   <Chip
-                    label={metrics.pending_approvals.timesheet}
+                    label={metrics.pending_approvals.timesheets}
                     size="small"
-                    color={metrics.pending_approvals.timesheet > 0 ? 'warning' : 'default'}
+                    color={metrics.pending_approvals.timesheets > 0 ? 'warning' : 'default'}
                   />
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
@@ -333,23 +332,23 @@ const AnalyticsDashboard: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {departmentStats.slice(0, 5).map((dept) => (
-                      <TableRow key={dept.department_name}>
+                      <TableRow key={dept.department}>
                         <TableCell component="th" scope="row">
-                          {dept.department_name || 'Unassigned'}
+                          {dept.department || 'Unassigned'}
                         </TableCell>
                         <TableCell align="right">{dept.headcount}</TableCell>
                         <TableCell align="right">
                           {dept.avg_tenure_years ? parseFloat(dept.avg_tenure_years).toFixed(1) : '-'}
                         </TableCell>
                         <TableCell align="right">
-                          {dept.avg_performance_rating ? (
+                          {dept.avg_performance ? (
                             <Chip
-                              label={parseFloat(dept.avg_performance_rating).toFixed(1)}
+                              label={parseFloat(dept.avg_performance).toFixed(1)}
                               size="small"
                               color={
-                                parseFloat(dept.avg_performance_rating) >= 4
+                                parseFloat(dept.avg_performance) >= 4
                                   ? 'success'
-                                  : parseFloat(dept.avg_performance_rating) >= 3
+                                  : parseFloat(dept.avg_performance) >= 3
                                   ? 'primary'
                                   : 'warning'
                               }
@@ -400,7 +399,7 @@ const AnalyticsDashboard: React.FC = () => {
                           {emp.employee_name}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {emp.department_name}
+                          {emp.department}
                         </Typography>
                       </Box>
                       <Chip
