@@ -5,7 +5,7 @@ from app.api.v1.endpoints import (
     auth, employees, attendance, leave, 
     payroll, performance, workflows,
     oauth, graphql_api, ai_analytics, recruitment,
-    expenses, helpdesk
+    expenses, helpdesk, esignature
 )
 
 api_router = APIRouter()
@@ -26,6 +26,7 @@ api_router.include_router(recruitment.router)
 # New feature routers
 api_router.include_router(expenses.router)
 api_router.include_router(helpdesk.router)
+api_router.include_router(esignature.router)
 
 # Add more routers as needed
 # api_router.include_router(onboarding.router)
