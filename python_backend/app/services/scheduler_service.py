@@ -67,6 +67,7 @@ class SchedulerService:
             "leave_balance_alerts": self._schedule_leave_alerts,
             "attendance_anomalies": self._schedule_attendance_checks,
             "performance_review_reminders": self._schedule_performance_reminders,
+            "workflow_escalations": self._schedule_workflow_escalations,
         }
         
         for name, schedule_func in schedules.items():
@@ -198,6 +199,16 @@ class SchedulerService:
             except Exception as e:
                 logger.error("performance_reminders_schedule_error", error=str(e))
                 await asyncio.sleep(3600)
+    
+    async def _schedule_workflow_escalations(self):
+        """Check and escalate overdue workflow approvals every 15 minutes"""
+        while True:
+            try:
+                await self.check_workflow_escalations()
+                await asyncio.sleep(900)  # Every 15 minutes
+            except Exception as e:
+                logger.error("workflow_escalations_schedule_error", error=str(e))
+                await asyncio.sleep(3600)  # Retry after 1 hour on error
     
     async def accrue_leave_balances(self):
         """
@@ -518,6 +529,27 @@ class SchedulerService:
         """Send performance review reminders"""
         # Implementation for performance review reminders
         logger.info("sending_performance_reminders")
+    
+    async def check_workflow_escalations(self):
+        """Check and escalate overdue workflow approvals"""
+        try:
+            logger.info("checking_workflow_escalations")
+            
+            # Import here to avoid circular dependency
+            from app.services.workflow_escalation_service import workflow_escalation_service
+            
+            # Run the escalation check
+            result = await workflow_escalation_service.check_and_escalate_workflows()
+            
+            logger.info(
+                "workflow_escalations_completed",
+                total_checked=result.get("total_checked", 0),
+                escalated=result.get("escalated", 0),
+                reminded=result.get("reminded", 0)
+            )
+            
+        except Exception as e:
+            logger.error("workflow_escalations_failed", error=str(e))
 
 
 # Singleton instance
@@ -543,6 +575,12 @@ def send_payroll_reminders_task():
     asyncio.run(scheduler_service.send_payroll_reminders())
 
 
+@celery_app.task(name="tasks.check_workflow_escalations")
+def check_workflow_escalations_task():
+    """Celery task for checking workflow escalations"""
+    asyncio.run(scheduler_service.check_workflow_escalations())
+
+
 # Celery Beat Schedule
 celery_app.conf.beat_schedule = {
     'accrue-leave-monthly': {
@@ -556,5 +594,9 @@ celery_app.conf.beat_schedule = {
     'send-payroll-reminders-monthly': {
         'task': 'tasks.send_payroll_reminders',
         'schedule': crontab(day_of_month='25', hour='9', minute='0'),
+    },
+    'check-workflow-escalations': {
+        'task': 'tasks.check_workflow_escalations',
+        'schedule': crontab(minute='*/15'),  # Every 15 minutes
     },
 }

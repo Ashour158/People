@@ -8,7 +8,7 @@ celery_app = Celery(
     "hr_management",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
-    include=["app.tasks"]
+    include=["app.tasks", "app.tasks.workflow_tasks"]
 )
 
 # Configuration
@@ -28,6 +28,8 @@ celery_app.conf.task_routes = {
     "app.tasks.email.*": {"queue": "email"},
     "app.tasks.reports.*": {"queue": "reports"},
     "app.tasks.notifications.*": {"queue": "notifications"},
+    "tasks.check_workflow_escalations": {"queue": "workflows"},
+    "tasks.send_escalation_reminder": {"queue": "workflows"},
 }
 
 if __name__ == "__main__":

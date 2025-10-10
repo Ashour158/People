@@ -41,6 +41,7 @@ aiofiles==23.2.1
 # Logging & Monitoring
 structlog==24.1.0
 python-json-logger==2.0.7
+prometheus-client==0.19.0
 
 # HTTP Client
 httpx==0.26.0
