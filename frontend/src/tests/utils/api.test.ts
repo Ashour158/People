@@ -1,4 +1,11 @@
+/// <reference types="vitest/globals" />
 import { describe, it, expect, vi } from 'vitest';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var fetch: typeof fetch;
+}
+
 
 // Mock API client
 class MockAPIClient {

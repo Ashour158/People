@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '../test-utils';
-import ProtectedRoute from '../../components/common/ProtectedRoute';
+import { render } from '../test-utils';
+import { ProtectedRoute } from '../../components/common/ProtectedRoute';
 
 // Mock child component
 const MockChild = () => <div>Protected Content</div>;

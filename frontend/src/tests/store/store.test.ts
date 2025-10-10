@@ -5,7 +5,7 @@ describe('Auth Store', () => {
     user: any;
     token: string | null;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => void;
+    login: (email: string, _password: string) => void;
     logout: () => void;
     setUser: (user: any) => void;
   };
@@ -16,7 +16,7 @@ describe('Auth Store', () => {
       user: null,
       token: null,
       isAuthenticated: false,
-      login: (email: string, password: string) => {
+      login: (email: string, _password: string) => {
         authStore.user = { email };
         authStore.token = 'mock-token';
         authStore.isAuthenticated = true;

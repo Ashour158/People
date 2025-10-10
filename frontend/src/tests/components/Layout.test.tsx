@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
-import Layout from '../../components/layout/Layout';
+import { Layout } from '../../components/layout/Layout';
 
 describe('Layout Component', () => {
   it('renders layout with children', () => {
@@ -38,7 +38,7 @@ describe('Layout Component', () => {
   });
 
   it('applies correct layout structure', () => {
-    const { container } = render(
+    const { container: _container } = render(
       <Layout>
         <div data-testid="child-content">Child Content</div>
       </Layout>

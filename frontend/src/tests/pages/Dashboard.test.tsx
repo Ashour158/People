@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '../test-utils';
-import { fireEvent } from '@testing-library/react';
+import { render, screen } from '../test-utils';
 
 // Mock the Dashboard component
 const MockDashboard = () => {

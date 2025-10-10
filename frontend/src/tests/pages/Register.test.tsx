@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '../test-utils';
 import { fireEvent, waitFor } from '@testing-library/react';
-import Register from '../../pages/auth/Register';
+import { Register } from '../../pages/auth/Register';
 
 describe('Register Page', () => {
   it('renders registration form', () => {

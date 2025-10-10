@@ -11,7 +11,6 @@ import {
   Button,
   ButtonGroup,
   TextField,
-  IconButton,
   Tooltip,
   Card,
   CardContent,
@@ -150,9 +149,9 @@ const OrganizationalChart: React.FC = () => {
       .enter()
       .append('path')
       .attr('class', 'link')
-      .attr('d', d3.linkVertical<any, any>()
-        .x((d: any) => d.x)
-        .y((d: any) => d.y)
+      .attr('d', d3.linkVertical<d3.HierarchyPointLink<OrgNode>, d3.HierarchyPointNode<OrgNode>>()
+        .x((d) => d.x)
+        .y((d) => d.y)
       )
       .style('fill', 'none')
       .style('stroke', '#ccc')
@@ -164,9 +163,9 @@ const OrganizationalChart: React.FC = () => {
       .enter()
       .append('g')
       .attr('class', 'node')
-      .attr('transform', (d: any) => `translate(${d.x},${d.y})`)
+      .attr('transform', (d) => `translate(${d.x},${d.y})`)
       .style('cursor', 'pointer')
-      .on('click', (event, d: any) => {
+      .on('click', (_event, d) => {
         setSelectedNode(d.data);
       });
 
@@ -200,7 +199,7 @@ const OrganizationalChart: React.FC = () => {
         setZoom(event.transform.k);
       });
 
-    svg.call(zoomBehavior as any);
+    svg.call(zoomBehavior);
   };
 
   useEffect(() => {

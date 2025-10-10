@@ -102,12 +102,35 @@ interface DashboardMetrics {
   avg_attendance: number;
   pending_leaves: number;
   performance_reviews_due: number;
+  headcount: {
+    current: number;
+    previous: number;
+    trend: string;
+  };
+  new_joiners: number;
+  attendance_rate: {
+    value: number;
+    trend: string;
+  };
+  leave_utilization: number;
+  performance_avg: number;
+  timesheet_utilization: {
+    value: number;
+    trend: string;
+  };
+  pending_approvals: {
+    leaves: number;
+    timesheets: number;
+    expenses: number;
+  };
 }
 
 interface DepartmentStat {
   department_name: string;
   employee_count: number;
   avg_performance?: number;
+  headcount: number;
+  avg_tenure_years: number;
 }
 
 interface AttritionRiskEmployee {
