@@ -7,6 +7,82 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  python-backend-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: hr_system_test
+          POSTGRES_USER: hr_user
+          POSTGRES_PASSWORD: hr_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: python_backend/requirements.txt
+    
+    - name: Install Python dependencies
+      working-directory: ./python_backend
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install black ruff mypy pytest-cov
+    
+    - name: Run Black (Code Formatter Check)
+      working-directory: ./python_backend
+      run: black --check app/ tests/ || true
+    
+    - name: Run Ruff (Linter)
+      working-directory: ./python_backend
+      run: ruff check app/ tests/ || true
+    
+    - name: Run Python tests with coverage
+      working-directory: ./python_backend
+      run: pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing -v
+      env:
+        DATABASE_URL: postgresql://hr_user:hr_password@localhost:5432/hr_system_test
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET_KEY: test-secret-key-for-ci
+        ENVIRONMENT: test
+    
+    - name: Upload Python backend coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./python_backend/coverage.xml
+        flags: python-backend
+        name: python-backend-coverage
+    
+    - name: Generate test report
+      if: always()
+      working-directory: ./python_backend
+      run: |
+        echo "## Python Backend Test Results" >> $GITHUB_STEP_SUMMARY
+        pytest --tb=no -v 2>&1 | grep -E "test_|PASSED|FAILED|ERROR" >> $GITHUB_STEP_SUMMARY || true
+
   backend-test:
     runs-on: ubuntu-latest
     
