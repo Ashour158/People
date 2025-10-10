@@ -15,6 +15,8 @@ import {
   Tabs,
 } from '@mui/material';
 import { Add as AddIcon, TrendingUp as TrendingUpIcon } from '@mui/icons-material';
+import { performanceApi } from '../../api/modules.api';
+import { useAuthStore } from '../../store/authStore';
 
 interface Goal {
   goal_id: string;
@@ -31,39 +33,18 @@ interface Goal {
 
 export const GoalsDashboard: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
+  const user = useAuthStore((state) => state.user);
 
-  const { data: goals, isLoading } = useQuery<Goal[]>({
-    queryKey: ['goals'],
+  const { data: goalsResponse, isLoading } = useQuery({
+    queryKey: ['performance-goals', user?.employee_id],
     queryFn: async () => {
-      // Mock data for now
-      return [
-        {
-          goal_id: '1',
-          title: 'Increase Sales Revenue',
-          description: 'Achieve 20% growth in Q4',
-          target_value: 100000,
-          current_value: 75000,
-          progress: 75,
-          status: 'in_progress',
-          due_date: '2025-12-31',
-          owner: 'John Doe',
-          category: 'Sales',
-        },
-        {
-          goal_id: '2',
-          title: 'Improve Customer Satisfaction',
-          description: 'Reach 90% satisfaction score',
-          target_value: 90,
-          current_value: 85,
-          progress: 94,
-          status: 'in_progress',
-          due_date: '2025-11-30',
-          owner: 'Jane Smith',
-          category: 'Customer Success',
-        },
-      ];
+      if (!user?.employee_id) return { data: { goals: [] } };
+      return performanceApi.getEmployeeGoals(user.employee_id);
     },
+    enabled: !!user?.employee_id,
   });
+
+  const goals: Goal[] = goalsResponse?.data?.goals || [];
 
   const getStatusColor = (status: Goal['status']) => {
     switch (status) {
