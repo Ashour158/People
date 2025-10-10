@@ -271,8 +271,8 @@ jobs:
   performance-test:
     name: Performance Testing
     runs-on: ubuntu-latest
-    needs: [deploy-staging]
-    if: github.ref == 'refs/heads/develop'
+    needs: [test]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
     
     steps:
       - name: Checkout code
@@ -283,11 +283,27 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       
-      - name: Install Locust
-        run: pip install locust
+      - name: Install dependencies
+        run: |
+          cd python_backend
+          pip install --upgrade pip
+          pip install locust httpx
       
       - name: Run performance tests
         run: |
-          echo "Running performance tests..."
-          # locust -f tests/performance/locustfile.py --headless --users 100 --spawn-rate 10 --run-time 5m
+          cd python_backend
+          if [ -f tests/performance/locustfile.py ]; then
+            echo "Running Locust performance tests..."
+            locust -f tests/performance/locustfile.py --headless --users 10 --spawn-rate 2 --run-time 2m --host=http://localhost:8000 || true
+          else
+            echo "Performance tests not yet implemented"
+          fi
         continue-on-error: true
+      
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: python_backend/performance-results.html
+          if-no-files-found: ignore
