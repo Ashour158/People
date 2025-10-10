@@ -75,6 +75,7 @@ git push origin main
 3. `project_status_report.md` - Project report
 4. `PR_69_ANALYSIS.md` - Conflict analysis
 5. `PR_69_RESOLUTION_SUMMARY.md` - Resolution guide
+6. `HOW_TO_COMPLETE_MERGE.md` - Merge instructions
 
 ### Code Status:
 - ✅ All 48 frontend pages preserved
@@ -142,7 +143,7 @@ Run these commands to verify everything is correct:
 
 ```bash
 # Count frontend pages (should be 48)
-find frontend/src/pages -type f | wc -l
+find frontend/src/pages -name '*.tsx' | wc -l
 
 # Check critical services exist
 ls frontend/src/services/websocket.service.ts
