@@ -1,0 +1,265 @@
+name: Coverage Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run coverage analysis weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20.x'
+
+jobs:
+  # ============= Backend Coverage Analysis =============
+  backend-coverage:
+    name: Backend Coverage Report
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: hr_user
+          POSTGRES_PASSWORD: hr_password
+          POSTGRES_DB: hr_system_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          cd python_backend
+          pip install --upgrade pip
+          pip install pytest pytest-asyncio pytest-cov httpx faker
+      
+      - name: Run tests with coverage
+        env:
+          DATABASE_URL: postgresql://hr_user:hr_password@localhost:5432/hr_system_test
+          REDIS_URL: redis://localhost:6379/0
+          JWT_SECRET_KEY: test_secret_key
+          SECRET_KEY: test_secret_key
+          ENVIRONMENT: test
+        run: |
+          cd python_backend
+          pytest --cov=app --cov-report=json --cov-report=html --cov-report=term -v
+      
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          cd python_backend
+          COVERAGE=$(python -c "import json; data=json.load(open('coverage.json')); print(f\"{data['totals']['percent_covered']:.1f}\")" 2>/dev/null || echo "0")
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Backend Coverage: $COVERAGE%"
+      
+      - name: Create coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: your-gist-id  # Replace with your Gist ID
+          filename: backend-coverage.json
+          label: Backend Coverage
+          message: ${{ steps.coverage.outputs.percentage }}%
+          color: ${{ steps.coverage.outputs.percentage > 80 && 'green' || steps.coverage.outputs.percentage > 50 && 'yellow' || 'red' }}
+        continue-on-error: true
+      
+      - name: Generate coverage report
+        run: |
+          cd python_backend
+          echo "## 📊 Backend Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Current Coverage**: ${{ steps.coverage.outputs.percentage }}%" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Coverage**: 80%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if we're meeting milestones
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            echo "✅ **Status**: Excellent! Target achieved!" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 70" | bc -l) )); then
+            echo "🟡 **Status**: Good progress, almost there!" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 50" | bc -l) )); then
+            echo "🟡 **Status**: Fair, keep improving" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 30" | bc -l) )); then
+            echo "🟠 **Status**: Needs improvement" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🔴 **Status**: Critical - needs immediate attention" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📈 Progress Toward Target" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Create a simple progress bar
+          PROGRESS=$(echo "$COVERAGE * 100 / 80" | bc)
+          echo "Progress: ${PROGRESS}% of target" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./python_backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+        continue-on-error: true
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-coverage-report
+          path: python_backend/htmlcov/
+          retention-days: 30
+
+  # ============= Frontend Coverage Analysis =============
+  frontend-coverage:
+    name: Frontend Coverage Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run tests with coverage
+        run: |
+          cd frontend
+          npm run test:coverage
+      
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          cd frontend
+          if [ -f "coverage/coverage-summary.json" ]; then
+            COVERAGE=$(node -e "const c = require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct.toFixed(1));" 2>/dev/null || echo "0")
+          else
+            COVERAGE="0"
+          fi
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "Frontend Coverage: $COVERAGE%"
+      
+      - name: Create coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.ref == 'refs/heads/main'
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: your-gist-id  # Replace with your Gist ID
+          filename: frontend-coverage.json
+          label: Frontend Coverage
+          message: ${{ steps.coverage.outputs.percentage }}%
+          color: ${{ steps.coverage.outputs.percentage > 70 && 'green' || steps.coverage.outputs.percentage > 50 && 'yellow' || 'red' }}
+        continue-on-error: true
+      
+      - name: Generate coverage report
+        run: |
+          cd frontend
+          echo "## 📊 Frontend Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Current Coverage**: ${{ steps.coverage.outputs.percentage }}%" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Coverage**: 70%" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check if we're meeting milestones
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          if (( $(echo "$COVERAGE >= 70" | bc -l) )); then
+            echo "✅ **Status**: Excellent! Target achieved!" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 60" | bc -l) )); then
+            echo "🟡 **Status**: Good progress, almost there!" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 40" | bc -l) )); then
+            echo "🟡 **Status**: Fair, keep improving" >> $GITHUB_STEP_SUMMARY
+          elif (( $(echo "$COVERAGE >= 20" | bc -l) )); then
+            echo "🟠 **Status**: Needs improvement" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🔴 **Status**: Critical - needs immediate attention" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+        continue-on-error: true
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-coverage-report
+          path: frontend/coverage/
+          retention-days: 30
+
+  # ============= Combined Coverage Report =============
+  combined-report:
+    name: Combined Coverage Report
+    runs-on: ubuntu-latest
+    needs: [backend-coverage, frontend-coverage]
+    if: always()
+    
+    steps:
+      - name: Create combined report
+        run: |
+          echo "# 📊 Combined Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Current | Target | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|---------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend   | TBD% | 80% | TBD |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend  | TBD% | 70% | TBD |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Coverage Improvement Roadmap" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Week 1-2: Foundation" >> $GITHUB_STEP_SUMMARY
+          echo "- Target: 30% coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- Focus: Core functionality tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Week 3-4: Integration" >> $GITHUB_STEP_SUMMARY
+          echo "- Target: 50% coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- Focus: Integration and E2E tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Week 5-6: Expansion" >> $GITHUB_STEP_SUMMARY
+          echo "- Target: 70% coverage" >> $GITHUB_STEP_SUMMARY
+          echo "- Focus: Comprehensive unit tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Week 7-8: Refinement" >> $GITHUB_STEP_SUMMARY
+          echo "- Target: 80% backend, 70% frontend" >> $GITHUB_STEP_SUMMARY
+          echo "- Focus: Fill coverage gaps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📥 Download detailed coverage reports from artifacts above" >> $GITHUB_STEP_SUMMARY

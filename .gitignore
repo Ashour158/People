@@ -79,6 +79,20 @@ coverage/
 .nyc_output/
 test-results/
 junit.xml
+htmlcov/
+.pytest_cache/
+.coverage
+playwright-report/
+performance-results.html
+*-report.json
+*-report.html
+safety-report.json
+bandit-report.json
+semgrep-report.json
+npm-audit-report.json
+eslint-report.json
+dependency-check-reports/
+trace.zip
 
 # Temporary files
 tmp/

@@ -1,0 +1,237 @@
+name: Security Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============= Python Security Scanning =============
+  python-security:
+    name: Python Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          cd python_backend
+          pip install --upgrade pip
+          # Install minimal dependencies for security scan
+          pip install safety bandit semgrep
+      
+      - name: Run Safety (Dependency Vulnerability Scanner)
+        run: |
+          cd python_backend
+          echo "## 🔒 Safety - Dependency Vulnerability Scan" >> $GITHUB_STEP_SUMMARY
+          safety check --json > safety-report.json || true
+          safety check || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: Run Bandit (Python Security Linter)
+        run: |
+          cd python_backend
+          echo "## 🛡️ Bandit - Security Issue Scanner" >> $GITHUB_STEP_SUMMARY
+          bandit -r app/ -f json -o bandit-report.json || true
+          bandit -r app/ -ll || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: Run Semgrep (SAST)
+        run: |
+          cd python_backend
+          echo "## 🔍 Semgrep - Static Analysis" >> $GITHUB_STEP_SUMMARY
+          semgrep --config=auto app/ --json -o semgrep-report.json || true
+          semgrep --config=auto app/ || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-security-reports
+          path: |
+            python_backend/safety-report.json
+            python_backend/bandit-report.json
+            python_backend/semgrep-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ============= Frontend Security Scanning =============
+  frontend-security:
+    name: Frontend Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run npm audit
+        run: |
+          cd frontend
+          echo "## 🔒 NPM Audit - Dependency Vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          npm audit --json > npm-audit-report.json || true
+          npm audit || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: Run ESLint Security Plugin
+        run: |
+          cd frontend
+          echo "## 🛡️ ESLint - Security Linting" >> $GITHUB_STEP_SUMMARY
+          npx eslint src/ --format json -o eslint-report.json || true
+          npx eslint src/ || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-security-reports
+          path: |
+            frontend/npm-audit-report.json
+            frontend/eslint-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ============= Secret Scanning =============
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for better secret detection
+      
+      - name: TruffleHog Secret Scanner
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --json --only-verified
+        continue-on-error: true
+      
+      - name: Check for common secrets patterns
+        run: |
+          echo "## 🔐 Secret Pattern Check" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for common secret patterns
+          if grep -r -E "(password|passwd|pwd|secret|token|api_key|apikey).*=.*['\"][^'\"]{20,}['\"]" --include="*.py" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" . || true; then
+            echo "⚠️ Warning: Potential hardcoded secrets found!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No obvious hardcoded secrets detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for AWS keys
+          if grep -r -E "AKIA[0-9A-Z]{16}" . || true; then
+            echo "⚠️ Warning: Potential AWS access key found!" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Check for private keys
+          if grep -r "BEGIN.*PRIVATE KEY" . || true; then
+            echo "⚠️ Warning: Private key found in repository!" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+  # ============= Dependency Review =============
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: always
+
+  # ============= OWASP Dependency Check =============
+  owasp-dependency-check:
+    name: OWASP Dependency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'HR-Management-System'
+          path: '.'
+          format: 'HTML'
+          out: 'dependency-check-reports'
+          args: >
+            --enableRetired
+            --enableExperimental
+        continue-on-error: true
+      
+      - name: Upload OWASP Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: owasp-dependency-check-report
+          path: dependency-check-reports
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ============= Security Report Summary =============
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [python-security, frontend-security, secret-scan]
+    if: always()
+    
+    steps:
+      - name: Create Security Summary
+        run: |
+          echo "# 🔒 Security Testing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Scans Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Python Security (Safety, Bandit, Semgrep)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Frontend Security (npm audit, ESLint)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Secret Detection (TruffleHog)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review security reports in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "2. Address any high/critical vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "3. Update dependencies regularly" >> $GITHUB_STEP_SUMMARY
+          echo "4. Follow security best practices" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Some checks may show warnings - review them carefully!" >> $GITHUB_STEP_SUMMARY
