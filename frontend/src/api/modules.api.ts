@@ -25,19 +25,26 @@ export interface PerformanceReview {
 export const performanceApi = {
   // Goals
   getEmployeeGoals: (employeeId: string, params?: any) =>
-    axios.get(`/performance/employees/${employeeId}/goals`, { params }),
+    axios.get(`/performance/goals/employee/${employeeId}`, { params }),
   
-  createGoal: (data: Partial<PerformanceGoal>) =>
+  getAllGoals: (params?: any) =>
+    axios.get('/performance/goals', { params }),
+  
+  getGoalById: (goalId: string) =>
+    axios.get(`/performance/goals/${goalId}`),
+  
+  createGoal: (data: any) =>
     axios.post('/performance/goals', data),
   
   updateGoalProgress: (goalId: string, data: any) =>
     axios.put(`/performance/goals/${goalId}/progress`, data),
   
-  // Reviews
-  getEmployeeReviews: (employeeId: string, params?: any) =>
-    axios.get(`/performance/employees/${employeeId}/reviews`, { params }),
+  // Review Cycles
+  createReviewCycle: (data: any) =>
+    axios.post('/performance/review-cycles', data),
   
-  createReview: (data: Partial<PerformanceReview>) =>
+  // Reviews
+  createReview: (data: any) =>
     axios.post('/performance/reviews', data),
   
   submitReview: (reviewId: string, data: any) =>
@@ -48,11 +55,28 @@ export const performanceApi = {
     axios.post('/performance/feedback', data),
   
   getEmployeeFeedback: (employeeId: string, params?: any) =>
-    axios.get(`/performance/employees/${employeeId}/feedback`, { params }),
+    axios.get(`/performance/feedback/employee/${employeeId}`, { params }),
+  
+  // KPIs
+  createKPI: (data: any) =>
+    axios.post('/performance/kpis', data),
+  
+  recordKPIData: (data: any) =>
+    axios.post('/performance/kpis/data', data),
+  
+  getEmployeeKPIs: (employeeId: string, params?: any) =>
+    axios.get(`/performance/kpis/employee/${employeeId}`, { params }),
+  
+  // Development Plan
+  createDevelopmentPlan: (data: any) =>
+    axios.post('/performance/development-plan', data),
   
   // Analytics
-  getAnalytics: (params?: any) =>
-    axios.get('/performance/analytics', { params }),
+  getPerformanceTrends: (params?: any) =>
+    axios.get('/performance/analytics/performance-trends', { params }),
+  
+  getCalibrationReport: (params?: any) =>
+    axios.get('/performance/reports/calibration', { params }),
 };
 
 // ==================== TIMESHEET ====================
@@ -217,6 +241,215 @@ export const analyticsApi = {
     axios.get('/analytics/export', { params: { report_type: reportType, format } }),
 };
 
+// ==================== RECRUITMENT ====================
+
+export interface JobPosting {
+  job_id: string;
+  job_title: string;
+  department: string;
+  location: string;
+  job_type: string;
+  status: string;
+  openings: number;
+}
+
+export interface Candidate {
+  candidate_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number?: string;
+  current_stage: string;
+  source: string;
+}
+
+export interface Application {
+  application_id: string;
+  job_id: string;
+  candidate_id: string;
+  status: string;
+  applied_date: string;
+  current_stage: string;
+}
+
+export const recruitmentApi = {
+  // Job Postings
+  getJobs: (params?: any) =>
+    axios.get('/recruitment/jobs', { params }),
+  
+  getJobById: (jobId: string) =>
+    axios.get(`/recruitment/jobs/${jobId}`),
+  
+  createJob: (data: any) =>
+    axios.post('/recruitment/jobs', data),
+  
+  updateJob: (jobId: string, data: any) =>
+    axios.put(`/recruitment/jobs/${jobId}`, data),
+  
+  publishJob: (jobId: string) =>
+    axios.post(`/recruitment/jobs/${jobId}/publish`),
+  
+  // Candidates
+  getCandidates: (params?: any) =>
+    axios.get('/recruitment/candidates', { params }),
+  
+  createCandidate: (data: any) =>
+    axios.post('/recruitment/candidates', data),
+  
+  // Applications
+  getApplications: (params?: any) =>
+    axios.get('/recruitment/applications', { params }),
+  
+  createApplication: (data: any) =>
+    axios.post('/recruitment/applications', data),
+  
+  updateApplication: (applicationId: string, data: any) =>
+    axios.put(`/recruitment/applications/${applicationId}`, data),
+  
+  shortlistApplication: (applicationId: string) =>
+    axios.post(`/recruitment/applications/${applicationId}/shortlist`),
+  
+  // Interviews
+  scheduleInterview: (data: any) =>
+    axios.post('/recruitment/interviews', data),
+  
+  submitInterviewFeedback: (interviewId: string, data: any) =>
+    axios.post(`/recruitment/interviews/${interviewId}/feedback`, data),
+  
+  // Offers
+  createOffer: (data: any) =>
+    axios.post('/recruitment/offers', data),
+  
+  // Pipeline
+  getPipeline: (params?: any) =>
+    axios.get('/recruitment/pipeline', { params }),
+};
+
+// ==================== PAYROLL ====================
+
+export interface SalaryStructure {
+  structure_id: string;
+  employee_id: string;
+  basic_salary: number;
+  allowances: any;
+  deductions: any;
+}
+
+export interface Payslip {
+  payslip_id: string;
+  employee_id: string;
+  month: number;
+  year: number;
+  gross_salary: number;
+  net_salary: number;
+  status: string;
+}
+
+export const payrollApi = {
+  // Salary Structure
+  createSalaryStructure: (data: any) =>
+    axios.post('/payroll/salary-structure', data),
+  
+  // Payroll Processing
+  processPayroll: (data: any) =>
+    axios.post('/payroll/process', data),
+  
+  getPayslip: (employeeId: string, params?: any) =>
+    axios.get(`/payroll/payslip/${employeeId}`, { params }),
+  
+  // Tax Calculation
+  calculateTax: (data: any) =>
+    axios.post('/payroll/calculate-tax', data),
+  
+  // Bonus
+  addBonus: (data: any) =>
+    axios.post('/payroll/bonus', data),
+  
+  // Loan
+  createLoan: (data: any) =>
+    axios.post('/payroll/loan', data),
+  
+  // Reimbursement
+  createReimbursement: (data: any) =>
+    axios.post('/payroll/reimbursement', data),
+  
+  // Reports
+  getMonthlySummary: (params?: any) =>
+    axios.get('/payroll/reports/monthly-summary', { params }),
+  
+  getYTDSummary: (employeeId: string, params?: any) =>
+    axios.get(`/payroll/reports/ytd-summary/${employeeId}`, { params }),
+};
+
+// ==================== EXPENSES ====================
+
+export interface ExpensePolicy {
+  policy_id: string;
+  policy_name: string;
+  category: string;
+  max_amount: number;
+  requires_receipt: boolean;
+}
+
+export interface Expense {
+  expense_id: string;
+  employee_id: string;
+  category: string;
+  amount: number;
+  expense_date: string;
+  status: string;
+  description?: string;
+}
+
+export const expenseApi = {
+  // Policies
+  createPolicy: (data: any) =>
+    axios.post('/expenses/policies', data),
+  
+  getPolicies: (params?: any) =>
+    axios.get('/expenses/policies', { params }),
+  
+  // Expenses
+  createExpense: (data: any) =>
+    axios.post('/expenses', data),
+  
+  getExpenses: (params?: any) =>
+    axios.get('/expenses', { params }),
+  
+  getExpenseById: (expenseId: string) =>
+    axios.get(`/expenses/${expenseId}`),
+  
+  updateExpense: (expenseId: string, data: any) =>
+    axios.patch(`/expenses/${expenseId}`, data),
+  
+  deleteExpense: (expenseId: string) =>
+    axios.delete(`/expenses/${expenseId}`),
+  
+  // Workflow
+  submitExpense: (data: any) =>
+    axios.post('/expenses/submit', data),
+  
+  approveExpense: (data: any) =>
+    axios.post('/expenses/approve', data),
+  
+  rejectExpense: (data: any) =>
+    axios.post('/expenses/reject', data),
+  
+  reimburseExpense: (data: any) =>
+    axios.post('/expenses/reimburse', data),
+  
+  // Comments
+  addComment: (expenseId: string, data: any) =>
+    axios.post(`/expenses/${expenseId}/comments`, data),
+  
+  getComments: (expenseId: string) =>
+    axios.get(`/expenses/${expenseId}/comments`),
+  
+  // Statistics
+  getExpenseStats: (params?: any) =>
+    axios.get('/expenses/summary/stats', { params }),
+};
+
 export default {
   performanceApi,
   timesheetApi,
@@ -224,4 +457,7 @@ export default {
   offboardingApi,
   complianceApi,
   analyticsApi,
+  recruitmentApi,
+  payrollApi,
+  expenseApi,
 };

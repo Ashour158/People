@@ -3,7 +3,7 @@ import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { theme } from '../theme';
+import { theme } from '../theme/modernTheme';
 
 // Create a new QueryClient for each test
 const createTestQueryClient = () =>
