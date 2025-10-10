@@ -333,6 +333,416 @@ services:
           policy: local
       - name: prometheus
 
+  # Wellness Service (NEW)
+  - name: wellness-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: wellness-routes
+        paths:
+          - /api/v1/wellness
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # Document Management Service (NEW)
+  - name: document-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: document-routes
+        paths:
+          - /api/v1/documents
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 50
+
+  # Social/Collaboration Service (NEW)
+  - name: social-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: social-routes
+        paths:
+          - /api/v1/social
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 120
+          policy: local
+      - name: prometheus
+
+  # Dashboard Service (NEW)
+  - name: dashboard-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: dashboard-routes
+        paths:
+          - /api/v1/dashboard
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 150
+          policy: local
+      - name: prometheus
+
+  # Expense Service (NEW)
+  - name: expense-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: expense-routes
+        paths:
+          - /api/v1/expenses
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # Helpdesk Service (NEW)
+  - name: helpdesk-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: helpdesk-routes
+        paths:
+          - /api/v1/helpdesk
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # E-Signature Service (NEW)
+  - name: esignature-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: esignature-routes
+        paths:
+          - /api/v1/esignature
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 80
+          policy: local
+      - name: prometheus
+
+  # Performance Service
+  - name: performance-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: performance-routes
+        paths:
+          - /api/v1/performance
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # Recruitment Service
+  - name: recruitment-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: recruitment-routes
+        paths:
+          - /api/v1/recruitment
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # Workflow Service
+  - name: workflow-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: workflow-routes
+        paths:
+          - /api/v1/workflows
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+
+  # AI Analytics Service
+  - name: ai-analytics-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: ai-analytics-routes
+        paths:
+          - /api/v1/ai-analytics
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 50
+          policy: local
+      - name: prometheus
+
+  # GraphQL Service
+  - name: graphql-service
+    url: http://python-backend:8000
+    protocol: http
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    routes:
+      - name: graphql-routes
+        paths:
+          - /api/v1/graphql
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          credentials: true
+      - name: jwt
+        config:
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: local
+      - name: prometheus
+      - name: request-size-limiting
+        config:
+          allowed_payload_size: 10
+
 # ==========================================
 # Global Plugins
 # ==========================================

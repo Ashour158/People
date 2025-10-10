@@ -147,13 +147,64 @@ class ChallengeLeaderboardResponse(BaseModel):
     entries: List[LeaderboardEntry]
 
 
+# Wellness Benefits
+class WellnessBenefitResponse(BaseModel):
+    """Wellness benefit response"""
+    benefit_id: UUID
+    organization_id: UUID
+    benefit_name: str
+    description: Optional[str]
+    benefit_category: Optional[str]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class BenefitEnrollmentCreate(BaseModel):
+    """Enroll in wellness benefit"""
+    benefit_id: UUID
+
+
+class BenefitEnrollmentResponse(BaseModel):
+    """Benefit enrollment response"""
+    enrollment_id: UUID
+    benefit_id: UUID
+    employee_id: UUID
+    enrollment_status: str
+    enrolled_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Leaderboard Response
+class LeaderboardResponse(BaseModel):
+    """Leaderboard response with rank"""
+    participant_id: UUID
+    challenge_id: UUID
+    employee_id: UUID
+    current_value: float
+    goal_value: Optional[float]
+    completion_percentage: float
+    status: str
+    points_earned: int
+    rank: int
+
+    class Config:
+        from_attributes = True
+
+
 # Burnout Assessment
 class BurnoutAssessmentCreate(BaseModel):
     """Submit burnout assessment"""
     assessment_date: date
-    exhaustion_score: int = Field(..., ge=0, le=100)
-    cynicism_score: int = Field(..., ge=0, le=100)
-    efficacy_score: int = Field(..., ge=0, le=100)
+    emotional_exhaustion_score: int = Field(..., ge=1, le=5)
+    depersonalization_score: int = Field(..., ge=1, le=5)
+    personal_accomplishment_score: int = Field(..., ge=1, le=5)
+    workload_perception: Optional[int] = Field(None, ge=1, le=5)
+    work_life_balance: Optional[int] = Field(None, ge=1, le=5)
     responses: Optional[dict] = None
     is_anonymous: bool = True
 
@@ -162,9 +213,10 @@ class BurnoutAssessmentResponse(BaseModel):
     """Burnout assessment response"""
     assessment_id: UUID
     assessment_date: date
-    overall_burnout_score: Optional[int]
+    emotional_exhaustion_score: int
+    depersonalization_score: int
+    personal_accomplishment_score: int
     risk_level: Optional[str]
-    recommended_actions: Optional[List[str]]
     created_at: datetime
 
     class Config:
