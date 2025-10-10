@@ -22,36 +22,61 @@ export interface PerformanceReview {
   review_status: string;
 }
 
+export interface GoalProgressUpdate {
+  progress_percentage: number;
+  notes?: string;
+}
+
+export interface ReviewSubmission {
+  ratings: Record<string, number>;
+  comments: string;
+  recommendations?: string;
+}
+
+export interface FeedbackData {
+  employee_id: string;
+  feedback_type: 'positive' | 'constructive' | 'general';
+  feedback_text: string;
+  is_anonymous?: boolean;
+}
+
+export interface QueryParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}
+
 export const performanceApi = {
   // Goals
-  getEmployeeGoals: (employeeId: string, params?: any) =>
+  getEmployeeGoals: (employeeId: string, params?: QueryParams) =>
     axios.get(`/performance/employees/${employeeId}/goals`, { params }),
   
   createGoal: (data: Partial<PerformanceGoal>) =>
     axios.post('/performance/goals', data),
   
-  updateGoalProgress: (goalId: string, data: any) =>
+  updateGoalProgress: (goalId: string, data: GoalProgressUpdate) =>
     axios.put(`/performance/goals/${goalId}/progress`, data),
   
   // Reviews
-  getEmployeeReviews: (employeeId: string, params?: any) =>
+  getEmployeeReviews: (employeeId: string, params?: QueryParams) =>
     axios.get(`/performance/employees/${employeeId}/reviews`, { params }),
   
   createReview: (data: Partial<PerformanceReview>) =>
     axios.post('/performance/reviews', data),
   
-  submitReview: (reviewId: string, data: any) =>
+  submitReview: (reviewId: string, data: ReviewSubmission) =>
     axios.post(`/performance/reviews/${reviewId}/submit`, data),
   
   // Feedback
-  provideFeedback: (data: any) =>
+  provideFeedback: (data: FeedbackData) =>
     axios.post('/performance/feedback', data),
   
-  getEmployeeFeedback: (employeeId: string, params?: any) =>
+  getEmployeeFeedback: (employeeId: string, params?: QueryParams) =>
     axios.get(`/performance/employees/${employeeId}/feedback`, { params }),
   
   // Analytics
-  getAnalytics: (params?: any) =>
+  getAnalytics: (params?: QueryParams) =>
     axios.get('/performance/analytics', { params }),
 };
 
@@ -78,7 +103,7 @@ export interface Project {
 
 export const timesheetApi = {
   // Projects
-  getProjects: (params?: any) =>
+  getProjects: (params?: QueryParams) =>
     axios.get('/timesheet/projects', { params }),
   
   getProjectById: (projectId: string) =>
@@ -88,7 +113,7 @@ export const timesheetApi = {
     axios.post('/timesheet/projects', data),
   
   // Timesheet Entries
-  getEntries: (employeeId?: string, params?: any) =>
+  getEntries: (employeeId?: string, params?: QueryParams) =>
     axios.get(`/timesheet/entries/${employeeId || ''}`, { params }),
   
   createEntry: (data: Partial<TimesheetEntry>) =>
@@ -131,8 +156,14 @@ export interface OnboardingTask {
   status: string;
 }
 
+export interface TaskCompletion {
+  notes?: string;
+  attachments?: string[];
+  completion_date?: string;
+}
+
 export const onboardingApi = {
-  getPrograms: (params?: any) =>
+  getPrograms: (params?: QueryParams) =>
     axios.get('/onboarding/programs', { params }),
   
   getEmployeeOnboarding: (employeeId: string) =>
@@ -141,7 +172,7 @@ export const onboardingApi = {
   getPendingTasks: (employeeId: string) =>
     axios.get(`/onboarding/employees/${employeeId}/pending`),
   
-  completeTask: (progressId: string, data: any) =>
+  completeTask: (progressId: string, data: TaskCompletion) =>
     axios.post(`/onboarding/tasks/${progressId}/complete`, data),
   
   getStatistics: () =>
@@ -150,17 +181,31 @@ export const onboardingApi = {
 
 // ==================== OFFBOARDING ====================
 
+export interface OffboardingInitiation {
+  employee_id: string;
+  last_working_date: string;
+  offboarding_reason: string;
+  notes?: string;
+}
+
+export interface ExitInterviewData {
+  interview_date: string;
+  interviewer_id: string;
+  responses: Record<string, string>;
+  overall_feedback?: string;
+}
+
 export const offboardingApi = {
   getEmployeeOffboarding: (employeeId: string) =>
     axios.get(`/offboarding/employees/${employeeId}`),
   
-  initiateOffboarding: (data: any) =>
+  initiateOffboarding: (data: OffboardingInitiation) =>
     axios.post('/offboarding/initiate', data),
   
   completeTask: (progressId: string, notes?: string) =>
     axios.post(`/offboarding/tasks/${progressId}/complete`, { notes }),
   
-  conductExitInterview: (offboardingId: string, data: any) =>
+  conductExitInterview: (offboardingId: string, data: ExitInterviewData) =>
     axios.post(`/offboarding/${offboardingId}/exit-interview`, data),
   
   getPendingClearances: () =>
@@ -172,20 +217,33 @@ export const offboardingApi = {
 
 // ==================== COMPLIANCE ====================
 
+export interface DocumentVerification {
+  is_verified: boolean;
+  verifier_notes?: string;
+  verification_date: string;
+}
+
+export interface ConsentRecord {
+  employee_id: string;
+  consent_type: string;
+  consent_given: boolean;
+  consent_date: string;
+}
+
 export const complianceApi = {
-  getAuditLogs: (params?: any) =>
+  getAuditLogs: (params?: QueryParams) =>
     axios.get('/compliance/audit-logs', { params }),
   
-  getEmployeeDocuments: (employeeId: string, params?: any) =>
+  getEmployeeDocuments: (employeeId: string, params?: QueryParams) =>
     axios.get(`/compliance/documents/employee/${employeeId}`, { params }),
   
-  verifyDocument: (documentId: string, data: any) =>
+  verifyDocument: (documentId: string, data: DocumentVerification) =>
     axios.post(`/compliance/documents/${documentId}/verify`, data),
   
   getExpiringDocuments: (days?: number) =>
     axios.get('/compliance/documents/expiring', { params: { days } }),
   
-  recordConsent: (data: any) =>
+  recordConsent: (data: ConsentRecord) =>
     axios.post('/compliance/gdpr/consent', data),
   
   exportEmployeeData: (employeeId: string) =>

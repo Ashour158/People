@@ -71,9 +71,19 @@ export const BenefitsEnrollment: React.FC = () => {
     },
   });
 
+interface EnrollmentData {
+  employee_id: string;
+  selected_plans: Array<{
+    plan_id: string;
+    coverage_type: string;
+  }>;
+  dependents: Dependent[];
+  effective_date: string;
+}
+
   // Enrollment mutation
   const enrollMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: EnrollmentData) => {
       const response = await fetch('/api/v1/benefits/enrollments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,7 +222,7 @@ export const BenefitsEnrollment: React.FC = () => {
 
             {dependents.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                No dependents added. You can skip this step if you don't want to add dependents.
+                No dependents added. You can skip this step if you don&apos;t want to add dependents.
               </Alert>
             )}
 

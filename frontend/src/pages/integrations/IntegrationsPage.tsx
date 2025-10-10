@@ -2,7 +2,7 @@
  * Integration Management Dashboard
  * Central hub for managing all third-party integrations
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -15,9 +15,6 @@ import {
   Chip,
   IconButton,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Alert,
   CircularProgress,
   Tab,
@@ -30,7 +27,7 @@ import {
   Add as AddIcon,
   Sync as SyncIcon,
 } from '@mui/icons-material';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 // Import individual integration components
@@ -60,7 +57,6 @@ const IntegrationsPage: React.FC = () => {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [selectedIntegrationType, setSelectedIntegrationType] = useState<string | null>(null);
   
-  const queryClient = useQueryClient();
   const organizationId = localStorage.getItem('organization_id');
 
   // Fetch all integrations

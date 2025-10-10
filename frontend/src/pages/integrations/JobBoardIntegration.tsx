@@ -6,7 +6,7 @@ interface JobBoardIntegrationProps {
   type?: string;
 }
 
-const JobBoardIntegration: React.FC<JobBoardIntegrationProps> = ({ onClose, type }) => {
+const JobBoardIntegration: React.FC<JobBoardIntegrationProps> = ({ onClose, type: _type }) => {
   return (
     <>
       <DialogTitle>JobBoardIntegration</DialogTitle>

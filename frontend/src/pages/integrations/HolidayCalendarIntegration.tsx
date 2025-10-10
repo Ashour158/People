@@ -6,7 +6,7 @@ interface HolidayCalendarIntegrationProps {
   type?: string;
 }
 
-const HolidayCalendarIntegration: React.FC<HolidayCalendarIntegrationProps> = ({ onClose, type }) => {
+const HolidayCalendarIntegration: React.FC<HolidayCalendarIntegrationProps> = ({ onClose, type: _type }) => {
   return (
     <>
       <DialogTitle>HolidayCalendarIntegration</DialogTitle>

@@ -24,7 +24,6 @@ import {
   ExitToApp,
   Assessment,
   Schedule,
-  Task,
 } from '@mui/icons-material';
 import { analyticsApi } from '../../api/modules.api';
 
@@ -96,10 +95,33 @@ const MetricCard: React.FC<MetricCardProps> = ({
   );
 };
 
+interface DashboardMetrics {
+  total_employees: number;
+  new_hires_month: number;
+  attrition_rate: number;
+  avg_attendance: number;
+  pending_leaves: number;
+  performance_reviews_due: number;
+}
+
+interface DepartmentStat {
+  department_name: string;
+  employee_count: number;
+  avg_performance?: number;
+}
+
+interface AttritionRiskEmployee {
+  employee_id: string;
+  employee_name: string;
+  department: string;
+  risk_score: number;
+  factors: string[];
+}
+
 const AnalyticsDashboard: React.FC = () => {
-  const [metrics, setMetrics] = useState<any>(null);
-  const [departmentStats, setDepartmentStats] = useState<any[]>([]);
-  const [attritionRisk, setAttritionRisk] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
+  const [attritionRisk, setAttritionRisk] = useState<AttritionRiskEmployee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,8 +143,9 @@ const AnalyticsDashboard: React.FC = () => {
       setMetrics(metricsRes.data.data);
       setDepartmentStats(deptRes.data.data);
       setAttritionRisk(riskRes.data.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error.response?.data?.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -154,7 +177,7 @@ const AnalyticsDashboard: React.FC = () => {
         HR Analytics Dashboard
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={4}>
-        Real-time insights into your organization's HR metrics
+        Real-time insights into your organization&apos;s HR metrics
       </Typography>
 
       {/* Key Metrics */}

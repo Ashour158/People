@@ -6,7 +6,7 @@ interface GeofencingIntegrationProps {
   type?: string;
 }
 
-const GeofencingIntegration: React.FC<GeofencingIntegrationProps> = ({ onClose, type }) => {
+const GeofencingIntegration: React.FC<GeofencingIntegrationProps> = ({ onClose, type: _type }) => {
   return (
     <>
       <DialogTitle>GeofencingIntegration</DialogTitle>

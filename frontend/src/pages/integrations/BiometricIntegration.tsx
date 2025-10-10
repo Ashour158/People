@@ -6,7 +6,7 @@ interface BiometricIntegrationProps {
   type?: string;
 }
 
-const BiometricIntegration: React.FC<BiometricIntegrationProps> = ({ onClose, type }) => {
+const BiometricIntegration: React.FC<BiometricIntegrationProps> = ({ onClose, type: _type }) => {
   return (
     <>
       <DialogTitle>BiometricIntegration</DialogTitle>

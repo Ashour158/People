@@ -6,7 +6,7 @@ interface PaymentGatewayIntegrationProps {
   type?: string;
 }
 
-const PaymentGatewayIntegration: React.FC<PaymentGatewayIntegrationProps> = ({ onClose, type }) => {
+const PaymentGatewayIntegration: React.FC<PaymentGatewayIntegrationProps> = ({ onClose, type: _type }) => {
   return (
     <>
       <DialogTitle>PaymentGatewayIntegration</DialogTitle>

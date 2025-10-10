@@ -67,7 +67,6 @@ const SlackIntegration: React.FC<SlackIntegrationProps> = ({ onClose }) => {
     is_active: true,
     default_channel: '#general',
   });
-  const [testMessage, setTestMessage] = useState('');
   
   const queryClient = useQueryClient();
   const organizationId = localStorage.getItem('organization_id');
