@@ -12,10 +12,10 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     API_VERSION: str = "v1"
-    PORT: int = 5000
+    PORT: int = 8000
     
     # Database
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/hr_system"
+    DATABASE_URL: str = "postgresql://postgres:hrms_secure_password_123@localhost:5432/hr_system"
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     BCRYPT_ROUNDS: int = 12
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://143.110.227.18:3000", "http://143.110.227.18"]
     
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = True
