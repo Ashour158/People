@@ -80,7 +80,7 @@ describe('String Utilities', () => {
   };
 
   const truncate = (str: string, length: number): string => {
-    return str.length > length ? str.substring(0, length) + '...' : str;
+    return str.length > length ? `${str.substring(0, length)  }...` : str;
   };
 
   it('capitalizes string', () => {
@@ -98,7 +98,7 @@ describe('Number Formatting Utilities', () => {
   const formatCurrency = (amount: number, currency: string = 'USD'): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency,
     }).format(amount);
   };
 

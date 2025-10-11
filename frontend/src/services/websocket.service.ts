@@ -105,7 +105,7 @@ class WebSocketService {
     this.socket.on('system.maintenance', (data) => {
       const store = useGlobalStore.getState();
       store.addNotification({
-        id: 'maintenance-' + Date.now(),
+        id: `maintenance-${  Date.now()}`,
         type: 'warning',
         title: 'System Maintenance',
         message: data.message || 'System will be under maintenance',

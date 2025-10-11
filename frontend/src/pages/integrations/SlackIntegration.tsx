@@ -174,7 +174,7 @@ const SlackIntegration: React.FC<SlackIntegrationProps> = ({ onClose }) => {
           <Box>
             <Alert severity="info" sx={{ mb: 3 }}>
               To integrate Slack, you need to create a Slack App and install it in your workspace.
-              Follow the instructions at <a href="https://api.slack.com/start" target="_blank">Slack API</a>.
+              Follow the instructions at <a href="https://api.slack.com/start" target="_blank" rel="noreferrer">Slack API</a>.
             </Alert>
             
             <Grid container spacing={3}>
