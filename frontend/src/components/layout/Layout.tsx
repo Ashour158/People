@@ -33,8 +33,14 @@ import {
   Settings as SettingsIcon,
   ExpandLess,
   ExpandMore,
+  Search as SearchIcon,
+  Help as HelpIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../../store/authStore';
+import { GlobalSearch } from '../common/GlobalSearch';
+import { OnboardingTour } from '../onboarding/OnboardingTour';
+import { HelpSystem } from '../help/HelpSystem';
+import { ContextualHelp } from '../help/ContextualHelp';
 
 const drawerWidth = 240;
 
@@ -50,6 +56,17 @@ export const Layout: React.FC = () => {
   const { user, logout } = useAuthStore();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [openMenus, setOpenMenus] = React.useState<Record<string, boolean>>({});
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [onboardingOpen, setOnboardingOpen] = React.useState(false);
+  const [helpOpen, setHelpOpen] = React.useState(false);
+
+  // Check if user needs onboarding
+  React.useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hrms-onboarding-completed');
+    if (!hasSeenOnboarding && user) {
+      setOnboardingOpen(true);
+    }
+  }, [user]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -60,100 +77,42 @@ export const Layout: React.FC = () => {
     navigate('/login');
   };
 
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hrms-onboarding-completed', 'true');
+    setOnboardingOpen(false);
+  };
+
   const handleMenuToggle = (text: string) => {
     setOpenMenus((prev) => ({ ...prev, [text]: !prev[text] }));
   };
 
-  const menuItems: MenuItem[] = [
+  // Ultra-simplified navigation - MAX 3 items for any role
+  const getMenuItems = (userRole: string): MenuItem[] => {
+    if (userRole === 'employee') {
+      return [
+        { text: 'My Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+        { text: 'Time & Leave', icon: <AccessTimeIcon />, path: '/attendance' },
+        { text: 'My Profile', icon: <PeopleIcon />, path: '/profile' },
+      ];
+    }
+
+    if (userRole === 'hr_manager') {
+      return [
+        { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+        { text: 'Team Management', icon: <PeopleIcon />, path: '/employees' },
+        { text: 'HR Operations', icon: <SettingsIcon />, path: '/hr-operations' },
+      ];
+    }
+
+    // Admin/Manager - Still simplified
+    return [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Employees', icon: <PeopleIcon />, path: '/employees' },
-    { text: 'Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
-    { text: 'Leave', icon: <EventNoteIcon />, path: '/leave' },
-    {
-      text: 'Performance',
-      icon: <TrendingUpIcon />,
-      children: [
-        { text: 'Goals & OKRs', icon: <TrendingUpIcon />, path: '/performance/goals' },
-        { text: 'Reviews', icon: <TrendingUpIcon />, path: '/performance/reviews' },
-        { text: '360 Feedback', icon: <TrendingUpIcon />, path: '/performance/feedback' },
-        { text: 'KPI Tracking', icon: <TrendingUpIcon />, path: '/performance/kpi' },
-      ],
-    },
-    {
-      text: 'Recruitment',
-      icon: <WorkIcon />,
-      children: [
-        { text: 'Job Postings', icon: <WorkIcon />, path: '/recruitment/jobs' },
-        { text: 'Candidates', icon: <WorkIcon />, path: '/recruitment/pipeline' },
-        { text: 'Interviews', icon: <WorkIcon />, path: '/recruitment/interviews' },
-        { text: 'Offers', icon: <WorkIcon />, path: '/recruitment/offers' },
-      ],
-    },
-    {
-      text: 'Payroll',
-      icon: <AttachMoneyIcon />,
-      children: [
-        { text: 'Dashboard', icon: <AttachMoneyIcon />, path: '/payroll/dashboard' },
-        { text: 'Salary Slips', icon: <AttachMoneyIcon />, path: '/payroll/slips' },
-        { text: 'Processing', icon: <AttachMoneyIcon />, path: '/payroll/processing' },
-      ],
-    },
-    {
-      text: 'Surveys',
-      icon: <PollIcon />,
-      children: [
-        { text: 'Builder', icon: <PollIcon />, path: '/surveys/builder' },
-        { text: 'Survey List', icon: <PollIcon />, path: '/surveys/list' },
-        { text: 'Results', icon: <PollIcon />, path: '/surveys/results' },
-      ],
-    },
-    {
-      text: 'Workflows',
-      icon: <AccountTreeIcon />,
-      children: [
-        { text: 'Designer', icon: <AccountTreeIcon />, path: '/workflows/designer' },
-        { text: 'Active', icon: <AccountTreeIcon />, path: '/workflows/active' },
-        { text: 'Templates', icon: <AccountTreeIcon />, path: '/workflows/templates' },
-      ],
-    },
-    {
-      text: 'Expenses',
-      icon: <ReceiptIcon />,
-      children: [
-        { text: 'Claims', icon: <ReceiptIcon />, path: '/expenses/claims' },
-        { text: 'Approval', icon: <ReceiptIcon />, path: '/expenses/approval' },
-        { text: 'Reports', icon: <ReceiptIcon />, path: '/expenses/reports' },
-        { text: 'Categories', icon: <ReceiptIcon />, path: '/expenses/categories' },
-      ],
-    },
-    {
-      text: 'Helpdesk',
-      icon: <HelpCenterIcon />,
-      children: [
-        { text: 'Tickets', icon: <HelpCenterIcon />, path: '/helpdesk/tickets' },
-        { text: 'Create Ticket', icon: <HelpCenterIcon />, path: '/helpdesk/create' },
-        { text: 'Knowledge Base', icon: <HelpCenterIcon />, path: '/helpdesk/kb' },
-      ],
-    },
-    {
-      text: 'Documents',
-      icon: <FolderIcon />,
-      children: [
-        { text: 'Library', icon: <FolderIcon />, path: '/documents/library' },
-        { text: 'Upload', icon: <FolderIcon />, path: '/documents/upload' },
-      ],
-    },
-    {
-      text: 'Settings',
-      icon: <SettingsIcon />,
-      children: [
-        { text: 'Company', icon: <SettingsIcon />, path: '/settings/company' },
-        { text: 'Users', icon: <SettingsIcon />, path: '/settings/users' },
-        { text: 'Roles', icon: <SettingsIcon />, path: '/settings/roles' },
-        { text: 'System', icon: <SettingsIcon />, path: '/settings/system' },
-      ],
-    },
-  ];
+      { text: 'People', icon: <PeopleIcon />, path: '/employees' },
+      { text: 'Operations', icon: <SettingsIcon />, path: '/operations' },
+    ];
+  };
+
+  const menuItems = getMenuItems(user?.role || 'employee');
 
   const renderMenuItem = (item: MenuItem) => {
     if (item.children) {
@@ -222,6 +181,22 @@ export const Layout: React.FC = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             HR Management System
           </Typography>
+          <IconButton
+            color="inherit"
+            onClick={() => setSearchOpen(true)}
+            sx={{ mr: 1 }}
+            title="Search (Ctrl+K)"
+          >
+            <SearchIcon />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={() => setHelpOpen(true)}
+            sx={{ mr: 1 }}
+            title="Help & Support"
+          >
+            <HelpIcon />
+          </IconButton>
           <Typography variant="body2" sx={{ mr: 2 }}>
             {user?.username}
           </Typography>
@@ -270,6 +245,15 @@ export const Layout: React.FC = () => {
         <Toolbar />
         <Outlet />
       </Box>
+
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <OnboardingTour 
+        open={onboardingOpen} 
+        onClose={() => setOnboardingOpen(false)}
+        onComplete={handleOnboardingComplete}
+      />
+      <HelpSystem open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <ContextualHelp context="dashboard" />
     </Box>
   );
 };

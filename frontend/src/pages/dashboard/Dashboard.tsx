@@ -21,6 +21,7 @@ import {
 import { authApi } from '../../api/auth.api';
 import { employeeApi, attendanceApi, leaveApi } from '../../api';
 import type { LeaveBalance } from '../../types';
+import { useNavigate } from 'react-router-dom';
 
 interface StatCardProps {
   title: string;
@@ -31,6 +32,7 @@ interface StatCardProps {
 }
 
 export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { data: userData } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authApi.getCurrentUser,
@@ -151,6 +153,130 @@ export const Dashboard: React.FC = () => {
               icon={<TrendingUpIcon sx={{ fontSize: 32 }} />}
               color="#8b5cf6"
             />
+          </Grid>
+        </Grid>
+
+        {/* Unified Employee Hub */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 4, borderRadius: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+                🎯 Your HR Hub
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
+                Everything you need in one place
+              </Typography>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3 }}>
+                {/* Time & Attendance Card */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      bgcolor: 'rgba(255,255,255,0.25)',
+                    },
+                  }}
+                  onClick={() => navigate('/attendance')}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <AccessTimeIcon sx={{ fontSize: 32, mr: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Time & Attendance
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
+                    Check in/out, view your hours, request time off
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Last check-in: Today 9:00 AM
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      →
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Leave & Benefits Card */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      bgcolor: 'rgba(255,255,255,0.25)',
+                    },
+                  }}
+                  onClick={() => navigate('/leave')}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <EventNoteIcon sx={{ fontSize: 32, mr: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Leave & Benefits
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
+                    Apply for leave, view your balance, check benefits
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Available: 15 days
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      →
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Pay & Performance Card */}
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      bgcolor: 'rgba(255,255,255,0.25)',
+                    },
+                  }}
+                  onClick={() => navigate('/payroll')}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <AttachMoneyIcon sx={{ fontSize: 32, mr: 2 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Pay & Performance
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9, mb: 2 }}>
+                    View payslips, track performance, set goals
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Next pay: Dec 15
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      →
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Paper>
           </Grid>
         </Grid>
 
