@@ -1,0 +1,57 @@
+services:
+  # Backend API Service
+  - type: web
+    name: hrms-backend
+    env: python
+    plan: free
+    buildCommand: |
+      cd python_backend
+      pip install -r requirements.txt
+    startCommand: |
+      cd python_backend
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hrms-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: hrms-redis
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: CORS_ORIGINS
+        value: https://hrms-frontend.onrender.com
+
+  # Frontend React App
+  - type: web
+    name: hrms-frontend
+    env: static
+    plan: free
+    buildCommand: |
+      cd frontend
+      npm ci
+      npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: hrms-backend
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: hrms-db
+    plan: free
+    databaseName: hr_system
+    user: hr_user
+
+  - name: hrms-redis
+    type: redis
+    plan: free
