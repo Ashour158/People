@@ -70,6 +70,12 @@ services:
     networks:
       - hr_network
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
 
   # Frontend
   frontend:
