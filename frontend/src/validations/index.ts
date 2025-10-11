@@ -23,7 +23,7 @@ export const loginSchema = object().shape({
     .required('Email is required')
     .email('Invalid email format')
     .matches(VALIDATION_RULES.EMAIL_REGEX, 'Invalid email format'),
-  password: yup
+  password: string()
     .string()
     .required('Password is required')
     .min(
@@ -33,7 +33,7 @@ export const loginSchema = object().shape({
 });
 
 export const registerSchema = object().shape({
-  username: yup
+  username: string()
     .string()
     .required('Username is required')
     .min(
@@ -44,31 +44,31 @@ export const registerSchema = object().shape({
       VALIDATION_RULES.USERNAME_MAX_LENGTH,
       `Username must not exceed ${VALIDATION_RULES.USERNAME_MAX_LENGTH} characters`
     ),
-  email: yup
+  email: string()
     .string()
     .required('Email is required')
     .email('Invalid email format')
     .matches(VALIDATION_RULES.EMAIL_REGEX, 'Invalid email format'),
-  password: yup
+  password: string()
     .string()
     .required('Password is required')
     .min(
       VALIDATION_RULES.PASSWORD_MIN_LENGTH,
       `Password must be at least ${VALIDATION_RULES.PASSWORD_MIN_LENGTH} characters`
     ),
-  confirmPassword: yup
+  confirmPassword: string()
     .string()
     .required('Please confirm your password')
     .oneOf([ref('password')], 'Passwords must match'),
-  organization_name: yup
+  organization_name: string()
     .string()
     .required('Organization name is required')
     .min(2, 'Organization name must be at least 2 characters'),
-  first_name: yup
+  first_name: string()
     .string()
     .required('First name is required')
     .min(2, 'First name must be at least 2 characters'),
-  last_name: yup
+  last_name: string()
     .string()
     .required('Last name is required')
     .min(2, 'Last name must be at least 2 characters'),
@@ -80,26 +80,26 @@ export const registerSchema = object().shape({
 
 export const employeeSchema = object().shape({
   employee_code: string().optional(),
-  first_name: yup
+  first_name: string()
     .string()
     .required('First name is required')
     .min(2, 'First name must be at least 2 characters')
     .max(50, 'First name must not exceed 50 characters'),
-  last_name: yup
+  last_name: string()
     .string()
     .required('Last name is required')
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must not exceed 50 characters'),
-  email: yup
+  email: string()
     .string()
     .required('Email is required')
     .email('Invalid email format')
     .matches(VALIDATION_RULES.EMAIL_REGEX, 'Invalid email format'),
-  phone_number: yup
+  phone_number: string()
     .string()
     .optional()
     .matches(VALIDATION_RULES.PHONE_REGEX, 'Invalid phone number format'),
-  date_of_birth: yup
+  date_of_birth: string()
     .date()
     .optional()
     .max(new Date(), 'Date of birth cannot be in the future')
@@ -330,22 +330,22 @@ export const jobPostingSchema = object().shape({
 });
 
 export const candidateSchema = object().shape({
-  first_name: yup
+  first_name: string()
     .string()
     .required('First name is required')
     .min(2, 'First name must be at least 2 characters')
     .max(50, 'First name must not exceed 50 characters'),
-  last_name: yup
+  last_name: string()
     .string()
     .required('Last name is required')
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must not exceed 50 characters'),
-  email: yup
+  email: string()
     .string()
     .required('Email is required')
     .email('Invalid email format')
     .matches(VALIDATION_RULES.EMAIL_REGEX, 'Invalid email format'),
-  phone_number: yup
+  phone_number: string()
     .string()
     .optional()
     .matches(VALIDATION_RULES.PHONE_REGEX, 'Invalid phone number format'),
