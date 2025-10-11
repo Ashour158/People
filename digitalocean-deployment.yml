@@ -1,0 +1,103 @@
+# DigitalOcean App Platform Deployment Configuration
+# This file configures the HRMS system for deployment on DigitalOcean App Platform
+
+name: hrms-system
+region: nyc
+services:
+  # Backend API Service
+  - name: hrms-backend
+    source_dir: /python_backend
+    github:
+      repo: your-username/hrms-system
+      branch: main
+      deploy_on_push: true
+    run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+    environment_slug: python
+    instance_count: 2
+    instance_size_slug: basic-xxs
+    http_port: 8080
+    health_check:
+      http_path: /health
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: REDIS_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: ENVIRONMENT
+        value: production
+        scope: RUN_TIME
+      - key: LOG_LEVEL
+        value: INFO
+        scope: RUN_TIME
+
+  # Frontend React App
+  - name: hrms-frontend
+    source_dir: /frontend
+    github:
+      repo: your-username/hrms-system
+      branch: main
+      deploy_on_push: true
+    run_command: npm run build && npx serve -s build -l 3000
+    environment_slug: node-js
+    instance_count: 2
+    instance_size_slug: basic-xxs
+    http_port: 3000
+    health_check:
+      http_path: /
+    envs:
+      - key: REACT_APP_API_URL
+        value: ${hrms-backend.PUBLIC_URL}
+        scope: RUN_TIME
+      - key: REACT_APP_ENVIRONMENT
+        value: production
+        scope: RUN_TIME
+
+  # Mobile API Service (if needed)
+  - name: hrms-mobile-api
+    source_dir: /mobile_app
+    github:
+      repo: your-username/hrms-system
+      branch: main
+      deploy_on_push: true
+    run_command: python mobile_api.py
+    environment_slug: python
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 8081
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: REDIS_URL
+        scope: RUN_TIME
+        type: SECRET
+
+databases:
+  - name: hrms-postgres
+    engine: PG
+    version: "14"
+    size: db-s-1vcpu-1gb
+    num_nodes: 1
+
+  - name: hrms-redis
+    engine: REDIS
+    version: "7"
+    size: db-s-1vcpu-1gb
+    num_nodes: 1
+
+static_sites:
+  - name: hrms-docs
+    source_dir: /docs
+    github:
+      repo: your-username/hrms-system
+      branch: main
+      deploy_on_push: true
+    build_command: npm run build
+    output_dir: /docs/dist
+    routes:
+      - path: /docs

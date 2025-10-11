@@ -39,26 +39,20 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend API (Django)
+  # Backend API (FastAPI)
   backend:
     build:
-      context: ./backend
+      context: ./python_backend
       dockerfile: Dockerfile
     container_name: hr_backend
     environment:
       DEBUG: ${DEBUG:-False}
-      SECRET_KEY: ${SECRET_KEY}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: hr_system
-      DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_HOST: postgres
-      DB_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_DB: 0
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      SECRET_KEY: ${SECRET_KEY:-django_secret_key_123456789}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-jwt_secret_key_123456789}
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-hrms_secure_password_123}@postgres:5432/hr_system
+      REDIS_URL: redis://redis:6379/0
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,143.110.227.18}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://143.110.227.18:3000}
       EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
       EMAIL_PORT: ${EMAIL_PORT:-587}
       EMAIL_HOST_USER: ${EMAIL_HOST_USER}
@@ -83,7 +77,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${API_BASE_URL:-http://localhost:8000/api/v1}
+        VITE_API_BASE_URL: ${API_BASE_URL:-http://143.110.227.18:8000/api/v1}
     container_name: hr_frontend
     ports:
       - "3000:80"
