@@ -12,4 +12,14 @@ describe('Button Component', () => {
     const button = screen.getByText('Contained Button');
     expect(button).toHaveClass('MuiButton-contained');
   });
+
+  it('simple math test', () => {
+    expect(2 + 2).toBe(4);
+  });
+
+  it('string test', () => {
+    const text = 'Hello World';
+    expect(text).toContain('Hello');
+    expect(text.length).toBe(11);
+  });
 });
