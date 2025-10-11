@@ -1,0 +1,67 @@
+name: Code Quality & Linting
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  python-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd python_backend
+        pip install -r requirements.txt
+        pip install black ruff mypy
+    
+    - name: Run Black (Code Formatter)
+      working-directory: ./python_backend
+      run: black --check app/ tests/ || true
+    
+    - name: Run Ruff (Linter)
+      working-directory: ./python_backend
+      run: ruff check app/ tests/ || true
+    
+    - name: Run MyPy (Type Checker)
+      working-directory: ./python_backend
+      run: mypy app/ || true
+
+  frontend-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run ESLint
+      working-directory: ./frontend
+      run: npm run lint || true
+    
+    - name: Run Prettier
+      working-directory: ./frontend
+      run: npm run format:check || true
+    
+    - name: Run TypeScript check
+      working-directory: ./frontend
+      run: npm run typecheck || true

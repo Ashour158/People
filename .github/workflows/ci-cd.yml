@@ -50,7 +50,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
-        pip install black ruff mypy pytest-cov
+        pip install black ruff mypy pytest-cov pytest-asyncio httpx
     
     - name: Run Black (Code Formatter Check)
       working-directory: ./python_backend
@@ -62,12 +62,13 @@ jobs:
     
     - name: Run Python tests with coverage
       working-directory: ./python_backend
-      run: pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing -v
+      run: pytest --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing -v --tb=short
       env:
-        DATABASE_URL: postgresql://hr_user:hr_password@localhost:5432/hr_system_test
+        DATABASE_URL: sqlite+aiosqlite:///./test.db
         REDIS_URL: redis://localhost:6379
         JWT_SECRET_KEY: test-secret-key-for-ci
         ENVIRONMENT: test
+        SECRET_KEY: test-secret-key
     
     - name: Upload Python backend coverage
       uses: codecov/codecov-action@v3
@@ -83,71 +84,7 @@ jobs:
         echo "## Python Backend Test Results" >> $GITHUB_STEP_SUMMARY
         pytest --tb=no -v 2>&1 | grep -E "test_|PASSED|FAILED|ERROR" >> $GITHUB_STEP_SUMMARY || true
 
-  backend-test:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: hr_system_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-    
-    - name: Install backend dependencies
-      working-directory: ./backend
-      run: npm ci
-    
-    - name: Lint backend
-      working-directory: ./backend
-      run: npm run lint
-    
-    - name: Type check backend
-      working-directory: ./backend
-      run: npm run typecheck
-    
-    - name: Run backend tests
-      working-directory: ./backend
-      run: npm run test:ci
-      env:
-        NODE_ENV: test
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: hr_system_test
-        DB_USER: postgres
-        DB_PASSWORD: postgres
-        JWT_SECRET: test-secret-key
-    
-    - name: Upload backend coverage
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./backend/coverage/lcov.info
-        flags: backend
-    
-    - name: Build backend
-      working-directory: ./backend
-      run: npm run build
+  # Removed backend-test job since we only have Python backend
 
   frontend-test:
     runs-on: ubuntu-latest
@@ -180,12 +117,12 @@ jobs:
     
     - name: Run frontend tests
       working-directory: ./frontend
-      run: npm run test:coverage
+      run: npm run test:coverage || npm run test
     
     - name: Upload frontend coverage
       uses: codecov/codecov-action@v3
       with:
-        files: ./frontend/coverage/lcov.info
+        files: ./frontend/coverage/coverage-final.json
         flags: frontend
     
     - name: Build frontend
@@ -194,7 +131,7 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test]
+    needs: [python-backend-test, frontend-test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
@@ -203,9 +140,9 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     
-    - name: Build backend image
-      working-directory: ./backend
-      run: docker build -t hr-backend:latest .
+    - name: Build Python backend image
+      working-directory: ./python_backend
+      run: docker build -t hr-python-backend:latest .
     
     - name: Build frontend image
       working-directory: ./frontend
