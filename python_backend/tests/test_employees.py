@@ -1,193 +1,154 @@
-"""Test employee management endpoints"""
+"""
+Employee management tests for HR Management System
+"""
 import pytest
 from httpx import AsyncClient
-from faker import Faker
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.models import Employee, User, Organization
 
-fake = Faker()
 
-
-@pytest.mark.asyncio
 @pytest.mark.employee
-@pytest.mark.integration
 class TestEmployeeManagement:
-    """Test suite for employee management endpoints"""
-
+    """Test employee management endpoints"""
+    
     async def test_list_employees(self, authenticated_client: AsyncClient):
-        """Test listing employees"""
-        response = await authenticated_client.get("/api/v1/employees")
+        """Test list employees endpoint"""
+        response = await authenticated_client.get("/employees")
+        assert response.status_code == 200
         
-        assert response.status_code in [200, 500]
-        
-        if response.status_code == 200:
-            data = response.json()
-            assert isinstance(data, (list, dict))
-
+        data = response.json()
+        assert "data" in data
+        assert "pagination" in data
+        assert isinstance(data["data"], list)
+    
     async def test_list_employees_with_pagination(self, authenticated_client: AsyncClient):
-        """Test listing employees with pagination"""
-        response = await authenticated_client.get(
-            "/api/v1/employees?page=1&limit=10"
-        )
+        """Test list employees with pagination"""
+        response = await authenticated_client.get("/employees?page=1&limit=5")
+        assert response.status_code == 200
         
-        assert response.status_code in [200, 500]
+        data = response.json()
+        assert "pagination" in data
+        assert data["pagination"]["page"] == 1
+        assert data["pagination"]["limit"] == 5
+    
+    async def test_list_employees_with_search(self, authenticated_client: AsyncClient):
+        """Test list employees with search"""
+        response = await authenticated_client.get("/employees?search=test")
+        assert response.status_code == 200
         
-        if response.status_code == 200:
-            data = response.json()
-            assert "employees" in data or isinstance(data, list)
-
-    async def test_list_employees_with_search(self, authenticated_client: AsyncClient, test_employee):
-        """Test searching employees"""
-        response = await authenticated_client.get(
-            f"/api/v1/employees?search={test_employee.first_name}"
-        )
+        data = response.json()
+        assert "data" in data
+    
+    async def test_list_employees_with_filters(self, authenticated_client: AsyncClient):
+        """Test list employees with filters"""
+        response = await authenticated_client.get("/employees?department_id=123&status=active")
+        assert response.status_code == 200
         
-        assert response.status_code in [200, 500]
-
-    async def test_get_employee_by_id(self, authenticated_client: AsyncClient, test_employee):
-        """Test getting employee by ID"""
-        response = await authenticated_client.get(
-            f"/api/v1/employees/{test_employee.employee_id}"
-        )
+        data = response.json()
+        assert "data" in data
+    
+    async def test_get_employee_by_id(self, authenticated_client: AsyncClient, test_employee: Employee):
+        """Test get employee by ID"""
+        response = await authenticated_client.get(f"/employees/{test_employee.employee_id}")
+        assert response.status_code == 200
         
-        assert response.status_code in [200, 404, 500]
+        data = response.json()
+        assert data["employee_id"] == str(test_employee.employee_id)
+        assert "first_name" in data
+        assert "last_name" in data
+    
+    async def test_get_employee_not_found(self, authenticated_client: AsyncClient):
+        """Test get employee with invalid ID"""
+        response = await authenticated_client.get("/employees/00000000-0000-0000-0000-000000000000")
+        assert response.status_code == 404
         
-        if response.status_code == 200:
-            data = response.json()
-            assert data["employee_id"] == test_employee.employee_id
-
+        data = response.json()
+        assert "Employee not found" in data["detail"]
+    
     async def test_create_employee(self, authenticated_client: AsyncClient):
-        """Test creating new employee"""
+        """Test create employee"""
         employee_data = {
-            "first_name": fake.first_name(),
-            "last_name": fake.last_name(),
-            "email": fake.email(),
-            "phone": fake.phone_number(),
-            "date_of_birth": str(fake.date_of_birth(minimum_age=22, maximum_age=65)),
-            "hire_date": str(fake.date_this_decade()),
-            "employment_type": "FULL_TIME",
-            "status": "ACTIVE",
-            "job_title": fake.job(),
-            "department_id": "test-dept-001"
+            "employee_code": "EMP001",
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@example.com",
+            "phone": "+1234567890",
+            "job_title": "Software Engineer",
+            "employment_type": "full_time",
+            "hire_date": "2024-01-01"
         }
         
-        response = await authenticated_client.post(
-            "/api/v1/employees",
-            json=employee_data
-        )
+        response = await authenticated_client.post("/employees", json=employee_data)
+        assert response.status_code == 201
         
-        assert response.status_code in [201, 200, 400, 500]
-        
-        if response.status_code in [201, 200]:
-            data = response.json()
-            assert "employee_id" in data
-            assert data["email"] == employee_data["email"]
-
-    async def test_update_employee(self, authenticated_client: AsyncClient, test_employee):
-        """Test updating employee"""
-        update_data = {
-            "job_title": "Senior Developer",
-            "phone": "+1987654321"
+        data = response.json()
+        assert data["success"] is True
+        assert "message" in data
+    
+    async def test_create_employee_duplicate_email(self, authenticated_client: AsyncClient, test_employee: Employee):
+        """Test create employee with duplicate email"""
+        employee_data = {
+            "employee_code": "EMP002",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "email": test_employee.user.email,
+            "phone": "+1234567890",
+            "job_title": "Designer"
         }
         
-        response = await authenticated_client.put(
-            f"/api/v1/employees/{test_employee.employee_id}",
-            json=update_data
-        )
+        response = await authenticated_client.post("/employees", json=employee_data)
+        assert response.status_code == 400
         
-        assert response.status_code in [200, 404, 500]
-
-    async def test_delete_employee(self, authenticated_client: AsyncClient):
-        """Test soft-deleting employee"""
-        # Create a new employee to delete
+        data = response.json()
+        assert "Email already exists" in data["detail"]
+    
+    async def test_create_employee_missing_fields(self, authenticated_client: AsyncClient):
+        """Test create employee with missing required fields"""
         employee_data = {
-            "first_name": "Delete",
-            "last_name": "Test",
-            "email": fake.email(),
-            "employment_type": "FULL_TIME",
-            "status": "ACTIVE"
-        }
-        
-        create_response = await authenticated_client.post(
-            "/api/v1/employees",
-            json=employee_data
-        )
-        
-        if create_response.status_code in [201, 200]:
-            employee_id = create_response.json()["employee_id"]
-            
-            delete_response = await authenticated_client.delete(
-                f"/api/v1/employees/{employee_id}"
-            )
-            
-            assert delete_response.status_code in [200, 204, 404, 500]
-
-    async def test_get_employee_by_invalid_id(self, authenticated_client: AsyncClient):
-        """Test getting employee with invalid ID"""
-        response = await authenticated_client.get("/api/v1/employees/invalid-id-999")
-        
-        assert response.status_code in [404, 400, 500]
-
-    async def test_create_employee_duplicate_email(self, authenticated_client: AsyncClient, test_employee):
-        """Test creating employee with duplicate email"""
-        employee_data = {
-            "first_name": "Duplicate",
-            "last_name": "Test",
-            "email": test_employee.email,  # Duplicate email
-            "employment_type": "FULL_TIME",
-            "status": "ACTIVE"
-        }
-        
-        response = await authenticated_client.post(
-            "/api/v1/employees",
-            json=employee_data
-        )
-        
-        assert response.status_code in [400, 409, 500]
-
-    async def test_create_employee_missing_required_fields(self, authenticated_client: AsyncClient):
-        """Test creating employee with missing required fields"""
-        employee_data = {
-            "first_name": "Test"
+            "first_name": "John"
             # Missing required fields
         }
         
-        response = await authenticated_client.post(
-            "/api/v1/employees",
-            json=employee_data
-        )
-        
-        assert response.status_code in [400, 422, 500]
-
-    async def test_update_employee_not_found(self, authenticated_client: AsyncClient):
-        """Test updating non-existent employee"""
+        response = await authenticated_client.post("/employees", json=employee_data)
+        assert response.status_code == 422
+    
+    async def test_update_employee(self, authenticated_client: AsyncClient, test_employee: Employee):
+        """Test update employee"""
         update_data = {
-            "job_title": "Manager"
+            "first_name": "Updated Name",
+            "job_title": "Senior Software Engineer"
         }
         
-        response = await authenticated_client.put(
-            "/api/v1/employees/nonexistent-id",
-            json=update_data
-        )
+        response = await authenticated_client.put(f"/employees/{test_employee.employee_id}", json=update_data)
+        assert response.status_code == 200
         
-        assert response.status_code in [404, 500]
-
-    async def test_employee_list_filtering_by_department(self, authenticated_client: AsyncClient):
-        """Test filtering employees by department"""
-        response = await authenticated_client.get(
-            "/api/v1/employees?department_id=test-dept-001"
-        )
+        data = response.json()
+        assert data["success"] is True
+    
+    async def test_update_employee_not_found(self, authenticated_client: AsyncClient):
+        """Test update employee with invalid ID"""
+        update_data = {"first_name": "Updated Name"}
         
-        assert response.status_code in [200, 500]
-
-    async def test_employee_list_filtering_by_status(self, authenticated_client: AsyncClient):
-        """Test filtering employees by status"""
-        response = await authenticated_client.get(
-            "/api/v1/employees?status=ACTIVE"
-        )
+        response = await authenticated_client.put("/employees/00000000-0000-0000-0000-000000000000", json=update_data)
+        assert response.status_code == 404
+    
+    async def test_delete_employee(self, authenticated_client: AsyncClient, test_employee: Employee):
+        """Test delete employee (soft delete)"""
+        response = await authenticated_client.delete(f"/employees/{test_employee.employee_id}")
+        assert response.status_code == 200
         
-        assert response.status_code in [200, 500]
-
-    async def test_unauthorized_employee_access(self, client: AsyncClient):
-        """Test accessing employee endpoints without authentication"""
-        response = await client.get("/api/v1/employees")
+        data = response.json()
+        assert data["success"] is True
+    
+    async def test_delete_employee_not_found(self, authenticated_client: AsyncClient):
+        """Test delete employee with invalid ID"""
+        response = await authenticated_client.delete("/employees/00000000-0000-0000-0000-000000000000")
+        assert response.status_code == 404
+    
+    async def test_employee_unauthorized_access(self, client: AsyncClient):
+        """Test employee endpoints without authentication"""
+        response = await client.get("/employees")
+        assert response.status_code == 401
         
-        assert response.status_code in [401, 403]
+        response = await client.post("/employees", json={})
+        assert response.status_code == 401
