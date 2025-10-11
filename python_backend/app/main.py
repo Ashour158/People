@@ -26,28 +26,28 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events"""
     # Startup
-    logger.info("🚀 Starting HR Management System")
+    logger.info("Starting HR Management System")
     
     # Initialize database
     await init_db()
-    logger.info("✅ Database connected successfully")
+    logger.info("Database connected successfully")
     
     # Initialize Redis
     try:
         await init_redis()
-        logger.info("✅ Redis connected successfully")
+        logger.info("Redis connected successfully")
     except Exception as e:
-        logger.warning(f"⚠️  Redis connection failed: {e}")
+        logger.warning(f"Redis connection failed: {e}")
     
     # Initialize event dispatcher
     EventDispatcher.initialize()
-    logger.info("✅ Event dispatcher initialized")
+    logger.info("Event dispatcher initialized")
     
-    logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    logger.info(f"🚀 Server is running on port {settings.PORT}")
-    logger.info(f"📦 Environment: {settings.ENVIRONMENT}")
-    logger.info(f"📡 API Version: {settings.API_VERSION}")
-    logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    logger.info("=" * 50)
+    logger.info(f"Server is running on port {settings.PORT}")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"API Version: {settings.API_VERSION}")
+    logger.info("=" * 50)
     
     yield
     
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down HR Management System")
     await close_db()
     await close_redis()
-    logger.info("✅ Graceful shutdown completed")
+    logger.info("Graceful shutdown completed")
 
 
 # Create FastAPI application
