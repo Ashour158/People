@@ -2,6 +2,12 @@
 
 🎉 **Major Update**: Complete Python implementation with 145,000+ lines of production-ready code!
 
+> **🚨 PR #69 Conflict Notice**: If you're seeing conflict messages about `render.yaml` in PR #69:
+> - ✅ **Solution**: Close PR #69 (do NOT merge)
+> - 📖 **Details**: See [CONFLICT_QUICK_FIX.md](CONFLICT_QUICK_FIX.md) for quick fix
+> - 📋 **Full Guide**: See [RENDER_YAML_CONFLICT_RESOLUTION.md](RENDER_YAML_CONFLICT_RESOLUTION.md) for complete analysis
+> - **Reason**: PR #69 is outdated and would delete 31 working pages. Main branch has the correct, production-ready code.
+
 > **✅ Backend**: This repository now uses **Python FastAPI exclusively**
 > - **`python_backend/`** - ✅ **Production Ready** - FastAPI-based Python backend (Complete, tested, with 123+ test cases)
 > - **TypeScript files in root** - Reference implementations only (not executed)
