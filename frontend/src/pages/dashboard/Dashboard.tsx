@@ -17,6 +17,8 @@ import {
   CheckCircle as CheckCircleIcon,
   EventNote as EventNoteIcon,
   TrendingUp as TrendingUpIcon,
+  AccessTime as AccessTimeIcon,
+  AttachMoney as AttachMoneyIcon,
 } from '@mui/icons-material';
 import { authApi } from '../../api/auth.api';
 import { employeeApi, attendanceApi, leaveApi } from '../../api';
