@@ -1,245 +1,154 @@
 import { io, Socket } from 'socket.io-client';
-
-interface NotificationData {
-  notification_id: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: any;
-  timestamp: string;
-  is_read: boolean;
-}
-
-type EventCallback = (data: any) => void;
+import { API_CONFIG } from '../constants';
+import { useGlobalStore } from '../store/globalStore';
 
 class WebSocketService {
   private socket: Socket | null = null;
-  private listeners: Map<string, EventCallback[]> = new Map();
-  private connected: boolean = false;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
 
-  /**
-   * Connect to WebSocket server
-   * @param token - JWT authentication token
-   */
-  connect(token: string): void {
+  connect(token: string) {
     if (this.socket?.connected) {
-      console.log('WebSocket already connected');
       return;
     }
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-    this.socket = io(baseUrl, {
-      auth: { token },
+    this.socket = io(API_CONFIG.WS_URL, {
+      auth: {
+        token,
+      },
       transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
+      timeout: 20000,
     });
 
-    this.setupEventHandlers();
+    this.setupEventListeners();
   }
 
-  /**
-   * Setup default WebSocket event handlers
-   */
-  private setupEventHandlers(): void {
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+
+  subscribe(channels: string[]) {
+    if (this.socket) {
+      this.socket.emit('subscribe', channels);
+    }
+  }
+
+  unsubscribe(channels: string[]) {
+    if (this.socket) {
+      this.socket.emit('unsubscribe', channels);
+    }
+  }
+
+  private setupEventListeners() {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
       console.log('WebSocket connected');
-      this.connected = true;
-      this.emit('connected', { connected: true });
+      this.reconnectAttempts = 0;
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('WebSocket disconnected:', reason);
-      this.connected = false;
-      this.emit('disconnected', { connected: false, reason });
+      this.handleReconnect();
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('WebSocket connection error:', error);
-      this.emit('error', { error: error.message });
+      this.handleReconnect();
     });
 
-    // Notification events
-    this.socket.on('notification', (data: NotificationData) => {
-      console.log('Received notification:', data);
-      this.emit('notification', data);
+    // Real-time notifications
+    this.socket.on('notification', (data) => {
+      const store = useGlobalStore.getState();
+      store.addNotification({
+        id: Date.now().toString(),
+        type: data.type || 'info',
+        title: data.title || 'Notification',
+        message: data.message || '',
+        timestamp: new Date(),
+        read: false,
+      });
     });
 
-    // Real-time attendance updates
-    this.socket.on('attendance:update', (data) => {
-      console.log('Attendance update:', data);
-      this.emit('attendance:update', data);
+    // Employee updates
+    this.socket.on('employee.updated', (data) => {
+      const store = useGlobalStore.getState();
+      const employees = store.employees.map(emp => 
+        emp.employee_id === data.employee_id ? { ...emp, ...data } : emp
+      );
+      store.setEmployees(employees);
     });
 
-    // Real-time leave updates
-    this.socket.on('leave:update', (data) => {
-      console.log('Leave update:', data);
-      this.emit('leave:update', data);
+    // Attendance updates
+    this.socket.on('attendance.updated', (data) => {
+      const store = useGlobalStore.getState();
+      const attendance = store.attendance.map(att => 
+        att.attendance_id === data.attendance_id ? { ...att, ...data } : att
+      );
+      store.setAttendance(attendance);
     });
 
-    // Real-time leave approval
-    this.socket.on('leave:approved', (data) => {
-      console.log('Leave approved:', data);
-      this.emit('leave:approved', data);
+    // Leave updates
+    this.socket.on('leave.updated', (data) => {
+      const store = useGlobalStore.getState();
+      const requests = store.leaveRequests.map(req => 
+        req.leave_id === data.leave_id ? { ...req, ...data } : req
+      );
+      store.setLeaveRequests(requests);
     });
 
-    this.socket.on('leave:rejected', (data) => {
-      console.log('Leave rejected:', data);
-      this.emit('leave:rejected', data);
-    });
-
-    // Real-time expense updates
-    this.socket.on('expense:update', (data) => {
-      console.log('Expense update:', data);
-      this.emit('expense:update', data);
-    });
-
-    // Real-time payroll updates
-    this.socket.on('payroll:update', (data) => {
-      console.log('Payroll update:', data);
-      this.emit('payroll:update', data);
-    });
-
-    // Server messages
-    this.socket.on('message', (data) => {
-      console.log('WebSocket server message:', data);
-      this.emit('message', data);
+    // System events
+    this.socket.on('system.maintenance', (data) => {
+      const store = useGlobalStore.getState();
+      store.addNotification({
+        id: 'maintenance-' + Date.now(),
+        type: 'warning',
+        title: 'System Maintenance',
+        message: data.message || 'System will be under maintenance',
+        timestamp: new Date(),
+        read: false,
+      });
     });
   }
 
-  /**
-   * Disconnect from WebSocket server
-   */
-  disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.connected = false;
-      this.listeners.clear();
-      console.log('WebSocket disconnected');
-    }
-  }
-
-  /**
-   * Check if WebSocket is connected
-   */
-  isConnected(): boolean {
-    return this.connected && this.socket?.connected === true;
-  }
-
-  /**
-   * Subscribe to specific channels
-   * @param channels - Array of channel names to subscribe to
-   */
-  subscribe(channels: string[]): void {
-    if (!this.socket) {
-      console.error('WebSocket not connected');
-      return;
-    }
-    this.socket.emit('subscribe', channels);
-    console.log('Subscribed to channels:', channels);
-  }
-
-  /**
-   * Unsubscribe from specific channels
-   * @param channels - Array of channel names to unsubscribe from
-   */
-  unsubscribe(channels: string[]): void {
-    if (!this.socket) {
-      console.error('WebSocket not connected');
-      return;
-    }
-    this.socket.emit('unsubscribe', channels);
-    console.log('Unsubscribed from channels:', channels);
-  }
-
-  /**
-   * Mark notification as read
-   * @param notificationId - ID of the notification to mark as read
-   */
-  markNotificationAsRead(notificationId: string): void {
-    if (!this.socket) {
-      console.error('WebSocket not connected');
-      return;
-    }
-    this.socket.emit('notification:read', notificationId);
-  }
-
-  /**
-   * Get unread notification count
-   */
-  getUnreadCount(): void {
-    if (!this.socket) {
-      console.error('WebSocket not connected');
-      return;
-    }
-    this.socket.emit('notification:count');
-  }
-
-  /**
-   * Register event listener
-   * @param event - Event name to listen to
-   * @param callback - Callback function to execute when event is received
-   */
-  on(event: string, callback: EventCallback): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
-    this.listeners.get(event)?.push(callback);
-  }
-
-  /**
-   * Unregister event listener
-   * @param event - Event name
-   * @param callback - Callback function to remove
-   */
-  off(event: string, callback: EventCallback): void {
-    const callbacks = this.listeners.get(event);
-    if (callbacks) {
-      const index = callbacks.indexOf(callback);
-      if (index > -1) {
-        callbacks.splice(index, 1);
-      }
-    }
-  }
-
-  /**
-   * Emit event to all registered listeners
-   * @param event - Event name
-   * @param data - Event data
-   */
-  private emit(event: string, data: any): void {
-    const callbacks = this.listeners.get(event);
-    if (callbacks) {
-      callbacks.forEach((callback) => {
-        try {
-          callback(data);
-        } catch (error) {
-          console.error(`Error in ${event} callback:`, error);
-        }
+  private handleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+      
+      setTimeout(() => {
+        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        this.socket?.connect();
+      }, delay);
+    } else {
+      console.error('Max reconnection attempts reached');
+      const store = useGlobalStore.getState();
+      store.addNotification({
+        id: 'connection-lost',
+        type: 'error',
+        title: 'Connection Lost',
+        message: 'Unable to connect to server. Please refresh the page.',
+        timestamp: new Date(),
+        read: false,
       });
     }
   }
 
-  /**
-   * Send custom event to server
-   * @param event - Event name
-   * @param data - Event data
-   */
-  send(event: string, data?: any): void {
-    if (!this.socket) {
-      console.error('WebSocket not connected');
-      return;
+  // Send events to server
+  emit(event: string, data?: any) {
+    if (this.socket) {
+      this.socket.emit(event, data);
     }
-    this.socket.emit(event, data);
+  }
+
+  // Check connection status
+  isConnected(): boolean {
+    return this.socket?.connected || false;
   }
 }
 
-// Export singleton instance
 export const websocketService = new WebSocketService();
-export default websocketService;

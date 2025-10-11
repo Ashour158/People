@@ -23,8 +23,55 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Response interceptor with retry logic
 axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    
+    // Handle 401 errors (token expired)
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Try to refresh token
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+          const response = await axios.post('/auth/refresh', {
+            refresh_token: refreshToken
+          });
+          
+          const { access_token } = response.data;
+          localStorage.setItem('token', access_token);
+          
+          // Retry original request
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          return axiosInstance(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, redirect to login
+        localStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    // Handle network errors with retry
+    if (!error.response && originalRequest._retryCount < API_CONFIG.RETRY_ATTEMPTS) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      
+      await new Promise(resolve => 
+        setTimeout(resolve, API_CONFIG.RETRY_DELAY * originalRequest._retryCount)
+      );
+      
+      return axiosInstance(originalRequest);
+    }
+    
+    return Promise.reject(error);
+  }
+);(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
