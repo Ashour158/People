@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
 
 describe('useAuth Hook', () => {
   let queryClient: QueryClient;

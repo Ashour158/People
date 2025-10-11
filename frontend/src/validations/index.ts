@@ -104,7 +104,7 @@ export const employeeSchema = object().shape({
     .optional()
     .max(new Date(), 'Date of birth cannot be in the future')
     .nullable(),
-  gender: yup
+  gender: string()
     .string()
     .optional()
     .oneOf(['Male', 'Female', 'Other'], 'Invalid gender'),
@@ -117,14 +117,14 @@ export const employeeSchema = object().shape({
   department_id: string().optional().nullable(),
   designation_id: string().optional().nullable(),
   reporting_manager_id: string().optional().nullable(),
-  employment_type: yup
+  employment_type: string()
     .string()
     .optional()
     .oneOf(
       ['Full-time', 'Part-time', 'Contract', 'Intern'],
       'Invalid employment type'
     ),
-  employee_status: yup
+  employee_status: string()
     .string()
     .optional()
     .oneOf(
@@ -139,15 +139,15 @@ export const employeeSchema = object().shape({
 
 export const leaveSchema = object().shape({
   leave_type_id: string().required('Leave type is required'),
-  start_date: yup
+  start_date: string()
     .date()
     .required('Start date is required')
     .min(new Date(), 'Start date cannot be in the past'),
-  end_date: yup
+  end_date: string()
     .date()
     .required('End date is required')
     .min(ref('start_date'), 'End date must be after start date'),
-  leave_reason: yup
+  leave_reason: string()
     .string()
     .required('Leave reason is required')
     .min(10, 'Leave reason must be at least 10 characters')
@@ -160,14 +160,14 @@ export const leaveSchema = object().shape({
 
 export const checkInSchema = object().shape({
   notes: string().optional().max(200, 'Notes must not exceed 200 characters'),
-  location: yup
+  location: string()
     .object()
     .shape({
-      latitude: yup
+      latitude: string()
         .number()
         .min(-90, 'Invalid latitude')
         .max(90, 'Invalid latitude'),
-      longitude: yup
+      longitude: string()
         .number()
         .min(-180, 'Invalid longitude')
         .max(180, 'Invalid longitude'),
@@ -178,14 +178,14 @@ export const checkInSchema = object().shape({
 
 export const checkOutSchema = object().shape({
   notes: string().optional().max(200, 'Notes must not exceed 200 characters'),
-  location: yup
+  location: string()
     .object()
     .shape({
-      latitude: yup
+      latitude: string()
         .number()
         .min(-90, 'Invalid latitude')
         .max(90, 'Invalid latitude'),
-      longitude: yup
+      longitude: string()
         .number()
         .min(-180, 'Invalid longitude')
         .max(180, 'Invalid longitude'),
@@ -199,37 +199,37 @@ export const checkOutSchema = object().shape({
 // ============================================
 
 export const goalSchema = object().shape({
-  title: yup
+  title: string()
     .string()
     .required('Goal title is required')
     .min(3, 'Goal title must be at least 3 characters')
     .max(200, 'Goal title must not exceed 200 characters'),
-  description: yup
+  description: string()
     .string()
     .required('Goal description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(1000, 'Description must not exceed 1000 characters'),
-  goal_type: yup
+  goal_type: string()
     .string()
     .required('Goal type is required')
     .oneOf(['individual', 'team', 'organizational'], 'Invalid goal type'),
-  category: yup
+  category: string()
     .string()
     .required('Category is required')
     .oneOf(['revenue', 'customer', 'process', 'learning'], 'Invalid category'),
-  target_value: yup
+  target_value: string()
     .number()
     .optional()
     .min(0, 'Target value must be positive')
     .nullable(),
-  start_date: yup
+  start_date: string()
     .date()
     .required('Start date is required'),
-  end_date: yup
+  end_date: string()
     .date()
     .required('End date is required')
     .min(ref('start_date'), 'End date must be after start date'),
-  weight: yup
+  weight: string()
     .number()
     .optional()
     .min(1, 'Weight must be at least 1')
@@ -239,25 +239,25 @@ export const goalSchema = object().shape({
 export const performanceReviewSchema = object().shape({
   employee_id: string().required('Employee is required'),
   reviewer_id: string().required('Reviewer is required'),
-  review_type: yup
+  review_type: string()
     .string()
     .required('Review type is required')
     .oneOf(['self', 'manager', 'peer', 'subordinate', '360'], 'Invalid review type'),
-  overall_rating: yup
+  overall_rating: string()
     .number()
     .optional()
     .min(1, 'Rating must be at least 1')
     .max(5, 'Rating must not exceed 5')
     .nullable(),
-  strengths: yup
+  strengths: string()
     .string()
     .optional()
     .max(1000, 'Strengths must not exceed 1000 characters'),
-  areas_of_improvement: yup
+  areas_of_improvement: string()
     .string()
     .optional()
     .max(1000, 'Areas of improvement must not exceed 1000 characters'),
-  comments: yup
+  comments: string()
     .string()
     .optional()
     .max(2000, 'Comments must not exceed 2000 characters'),
@@ -265,11 +265,11 @@ export const performanceReviewSchema = object().shape({
 
 export const feedbackSchema = object().shape({
   employee_id: string().required('Employee is required'),
-  feedback_type: yup
+  feedback_type: string()
     .string()
     .required('Feedback type is required')
     .oneOf(['praise', 'constructive', 'improvement', 'general'], 'Invalid feedback type'),
-  feedback_text: yup
+  feedback_text: string()
     .string()
     .required('Feedback is required')
     .min(10, 'Feedback must be at least 10 characters')
@@ -282,47 +282,47 @@ export const feedbackSchema = object().shape({
 // ============================================
 
 export const jobPostingSchema = object().shape({
-  job_title: yup
+  job_title: string()
     .string()
     .required('Job title is required')
     .min(3, 'Job title must be at least 3 characters')
     .max(100, 'Job title must not exceed 100 characters'),
-  department: yup
+  department: string()
     .string()
     .required('Department is required'),
-  location: yup
+  location: string()
     .string()
     .required('Location is required')
     .max(100, 'Location must not exceed 100 characters'),
-  job_type: yup
+  job_type: string()
     .string()
     .required('Job type is required')
     .oneOf(['Full-time', 'Part-time', 'Contract', 'Intern', 'Temporary'], 'Invalid job type'),
-  experience_level: yup
+  experience_level: string()
     .string()
     .required('Experience level is required')
     .oneOf(['Entry Level', 'Mid Level', 'Senior Level', 'Executive'], 'Invalid experience level'),
-  openings: yup
+  openings: string()
     .number()
     .required('Number of openings is required')
     .min(1, 'Must have at least 1 opening')
     .max(100, 'Cannot exceed 100 openings'),
-  job_description: yup
+  job_description: string()
     .string()
     .required('Job description is required')
     .min(50, 'Job description must be at least 50 characters')
     .max(5000, 'Job description must not exceed 5000 characters'),
-  requirements: yup
+  requirements: string()
     .string()
     .required('Requirements are required')
     .min(20, 'Requirements must be at least 20 characters')
     .max(3000, 'Requirements must not exceed 3000 characters'),
-  salary_range_min: yup
+  salary_range_min: string()
     .number()
     .optional()
     .min(0, 'Salary must be positive')
     .nullable(),
-  salary_range_max: yup
+  salary_range_max: string()
     .number()
     .optional()
     .min(ref('salary_range_min'), 'Max salary must be greater than min salary')
@@ -349,21 +349,21 @@ export const candidateSchema = object().shape({
     .string()
     .optional()
     .matches(VALIDATION_RULES.PHONE_REGEX, 'Invalid phone number format'),
-  current_company: yup
+  current_company: string()
     .string()
     .optional()
     .max(100, 'Company name must not exceed 100 characters'),
-  current_designation: yup
+  current_designation: string()
     .string()
     .optional()
     .max(100, 'Designation must not exceed 100 characters'),
-  total_experience_years: yup
+  total_experience_years: string()
     .number()
     .optional()
     .min(0, 'Experience must be positive')
     .max(50, 'Experience must not exceed 50 years')
     .nullable(),
-  source: yup
+  source: string()
     .string()
     .required('Source is required')
     .oneOf(['referral', 'job_board', 'website', 'social_media', 'agency', 'direct'], 'Invalid source'),
@@ -371,28 +371,28 @@ export const candidateSchema = object().shape({
 
 export const interviewScheduleSchema = object().shape({
   application_id: string().required('Application is required'),
-  interview_type: yup
+  interview_type: string()
     .string()
     .required('Interview type is required')
     .oneOf(['phone_screening', 'technical', 'hr', 'managerial', 'panel', 'final'], 'Invalid interview type'),
-  interview_date: yup
+  interview_date: string()
     .date()
     .required('Interview date is required')
     .min(new Date(), 'Interview date cannot be in the past'),
-  duration_minutes: yup
+  duration_minutes: string()
     .number()
     .required('Duration is required')
     .min(15, 'Duration must be at least 15 minutes')
     .max(480, 'Duration cannot exceed 8 hours'),
-  interviewer_ids: yup
+  interviewer_ids: string()
     .array()
     .of(string())
     .min(1, 'At least one interviewer is required'),
-  location: yup
+  location: string()
     .string()
     .optional()
     .max(200, 'Location must not exceed 200 characters'),
-  interview_mode: yup
+  interview_mode: string()
     .string()
     .required('Interview mode is required')
     .oneOf(['in_person', 'video', 'phone'], 'Invalid interview mode'),
@@ -404,24 +404,24 @@ export const interviewScheduleSchema = object().shape({
 
 export const salaryStructureSchema = object().shape({
   employee_id: string().required('Employee is required'),
-  effective_from: yup
+  effective_from: string()
     .date()
     .required('Effective date is required'),
-  basic_salary: yup
+  basic_salary: string()
     .number()
     .required('Basic salary is required')
     .min(0, 'Basic salary must be positive'),
-  hra: yup
+  hra: string()
     .number()
     .optional()
     .min(0, 'HRA must be positive')
     .nullable(),
-  transport_allowance: yup
+  transport_allowance: string()
     .number()
     .optional()
     .min(0, 'Transport allowance must be positive')
     .nullable(),
-  special_allowance: yup
+  special_allowance: string()
     .number()
     .optional()
     .min(0, 'Special allowance must be positive')
@@ -430,18 +430,18 @@ export const salaryStructureSchema = object().shape({
 
 export const bonusSchema = object().shape({
   employee_id: string().required('Employee is required'),
-  bonus_type: yup
+  bonus_type: string()
     .string()
     .required('Bonus type is required')
     .oneOf(['performance', 'festive', 'retention', 'referral', 'other'], 'Invalid bonus type'),
-  amount: yup
+  amount: string()
     .number()
     .required('Bonus amount is required')
     .min(0, 'Bonus amount must be positive'),
-  bonus_date: yup
+  bonus_date: string()
     .date()
     .required('Bonus date is required'),
-  reason: yup
+  reason: string()
     .string()
     .optional()
     .max(500, 'Reason must not exceed 500 characters'),
@@ -452,22 +452,22 @@ export const bonusSchema = object().shape({
 // ============================================
 
 export const expensePolicySchema = object().shape({
-  policy_name: yup
+  policy_name: string()
     .string()
     .required('Policy name is required')
     .min(3, 'Policy name must be at least 3 characters')
     .max(100, 'Policy name must not exceed 100 characters'),
-  category: yup
+  category: string()
     .string()
     .required('Category is required')
     .oneOf(['travel', 'food', 'accommodation', 'transport', 'equipment', 'other'], 'Invalid category'),
-  max_amount: yup
+  max_amount: string()
     .number()
     .required('Maximum amount is required')
     .min(0, 'Maximum amount must be positive'),
   requires_receipt: boolean().required(),
   requires_manager_approval: boolean().required(),
-  description: yup
+  description: string()
     .string()
     .optional()
     .max(500, 'Description must not exceed 500 characters'),
@@ -475,25 +475,25 @@ export const expensePolicySchema = object().shape({
 
 export const expenseSchema = object().shape({
   policy_id: string().required('Policy is required'),
-  category: yup
+  category: string()
     .string()
     .required('Category is required')
     .oneOf(['travel', 'food', 'accommodation', 'transport', 'equipment', 'other'], 'Invalid category'),
-  amount: yup
+  amount: string()
     .number()
     .required('Amount is required')
     .min(0, 'Amount must be positive')
     .max(1000000, 'Amount seems too high'),
-  expense_date: yup
+  expense_date: string()
     .date()
     .required('Expense date is required')
     .max(new Date(), 'Expense date cannot be in the future'),
-  merchant_name: yup
+  merchant_name: string()
     .string()
     .required('Merchant name is required')
     .min(2, 'Merchant name must be at least 2 characters')
     .max(100, 'Merchant name must not exceed 100 characters'),
-  description: yup
+  description: string()
     .string()
     .required('Description is required')
     .min(10, 'Description must be at least 10 characters')
@@ -507,55 +507,55 @@ export const expenseSchema = object().shape({
 
 export const timesheetEntrySchema = object().shape({
   project_id: string().required('Project is required'),
-  work_date: yup
+  work_date: string()
     .date()
     .required('Work date is required')
     .max(new Date(), 'Work date cannot be in the future'),
-  hours_worked: yup
+  hours_worked: string()
     .number()
     .required('Hours worked is required')
     .min(0.5, 'Minimum 0.5 hours')
     .max(24, 'Maximum 24 hours per day'),
   is_billable: boolean().required(),
-  description: yup
+  description: string()
     .string()
     .required('Description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description must not exceed 500 characters'),
-  task_category: yup
+  task_category: string()
     .string()
     .optional()
     .oneOf(['development', 'testing', 'documentation', 'meeting', 'review', 'other'], 'Invalid task category'),
 });
 
 export const projectSchema = object().shape({
-  project_name: yup
+  project_name: string()
     .string()
     .required('Project name is required')
     .min(3, 'Project name must be at least 3 characters')
     .max(100, 'Project name must not exceed 100 characters'),
-  project_code: yup
+  project_code: string()
     .string()
     .required('Project code is required')
     .min(2, 'Project code must be at least 2 characters')
     .max(20, 'Project code must not exceed 20 characters'),
-  client_name: yup
+  client_name: string()
     .string()
     .optional()
     .max(100, 'Client name must not exceed 100 characters'),
-  project_type: yup
+  project_type: string()
     .string()
     .required('Project type is required')
     .oneOf(['internal', 'external', 'billable', 'non_billable'], 'Invalid project type'),
-  start_date: yup
+  start_date: string()
     .date()
     .required('Start date is required'),
-  end_date: yup
+  end_date: string()
     .date()
     .optional()
     .min(ref('start_date'), 'End date must be after start date')
     .nullable(),
-  budget_hours: yup
+  budget_hours: string()
     .number()
     .optional()
     .min(0, 'Budget hours must be positive')
