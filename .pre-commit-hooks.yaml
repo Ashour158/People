@@ -1,0 +1,47 @@
+# Pre-commit hooks for HRMS project
+- id: eslint
+  name: ESLint
+  description: Run ESLint on TypeScript/React files
+  entry: bash -c 'cd frontend && npm run lint'
+  language: system
+  files: \.(ts|tsx)$
+  pass_filenames: false
+
+- id: prettier
+  name: Prettier
+  description: Format code with Prettier
+  entry: bash -c 'cd frontend && npm run format'
+  language: system
+  files: \.(ts|tsx|js|jsx|json|css|md)$
+  pass_filenames: false
+
+- id: typescript
+  name: TypeScript Check
+  description: Run TypeScript type checking
+  entry: bash -c 'cd frontend && npm run typecheck'
+  language: system
+  files: \.(ts|tsx)$
+  pass_filenames: false
+
+- id: black
+  name: Black
+  description: Format Python code with Black
+  entry: black
+  language: python
+  files: \.py$
+  args: [--line-length=100]
+
+- id: ruff
+  name: Ruff
+  description: Lint Python code with Ruff
+  entry: ruff check --fix
+  language: python
+  files: \.py$
+
+- id: mypy
+  name: MyPy
+  description: Type check Python code with MyPy
+  entry: mypy
+  language: python
+  files: \.py$
+  args: [--ignore-missing-imports]
