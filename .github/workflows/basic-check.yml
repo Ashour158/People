@@ -38,5 +38,15 @@ jobs:
           echo "❌ Frontend directory not found"
         fi
     
+    - name: Test Python installation
+      run: |
+        python3 --version
+        echo "✅ Python is available"
+    
+    - name: Test Node.js installation
+      run: |
+        node --version
+        echo "✅ Node.js is available"
+    
     - name: Success
       run: echo "🎉 Basic check completed successfully!"
