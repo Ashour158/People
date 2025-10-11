@@ -1,8 +1,9 @@
 name: Deploy to Production
 
 on:
-  push:
-    branches: [ main ]
+  # Temporarily disabled
+  # push:
+  #   branches: [ main ]
   workflow_dispatch:
 
 jobs:

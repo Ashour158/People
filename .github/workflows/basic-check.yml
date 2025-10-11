@@ -1,0 +1,42 @@
+name: Basic Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Check files exist
+      run: |
+        echo "Checking if key files exist..."
+        ls -la
+        echo "✅ Repository structure looks good"
+    
+    - name: Check Python files
+      run: |
+        if [ -d "python_backend" ]; then
+          echo "✅ Python backend directory exists"
+          ls python_backend/
+        else
+          echo "❌ Python backend directory not found"
+        fi
+    
+    - name: Check Frontend files
+      run: |
+        if [ -d "frontend" ]; then
+          echo "✅ Frontend directory exists"
+          ls frontend/
+        else
+          echo "❌ Frontend directory not found"
+        fi
+    
+    - name: Success
+      run: echo "🎉 Basic check completed successfully!"

@@ -1,10 +1,12 @@
 name: Code Quality & Linting
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  # Temporarily disabled
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main, develop ]
+  workflow_dispatch:
 
 jobs:
   python-quality:

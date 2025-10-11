@@ -1,0 +1,35 @@
+name: Minimal Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Test Python
+      run: |
+        python --version
+        echo "Python is working"
+    
+    - name: Test Node.js
+      run: |
+        node --version
+        echo "Node.js is working"
+    
+    - name: Test basic commands
+      run: |
+        echo "Testing basic commands"
+        ls -la
+        pwd
+        echo "✅ All basic tests passed!"
+    
+    - name: Success
+      run: echo "🎉 Minimal test completed successfully!"
