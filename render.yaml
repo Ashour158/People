@@ -4,12 +4,7 @@ services:
     name: hrms-backend
     env: python
     plan: free
-    buildCommand: |
-      cd python_backend
-      pip install -r requirements.txt
-    startCommand: |
-      cd python_backend
-      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./python_backend/Dockerfile
     envVars:
       - key: DATABASE_URL
         fromDatabase:
