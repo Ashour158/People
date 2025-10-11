@@ -74,7 +74,8 @@ export const Feedback360: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Submitting 360 feedback:', ratings);
+    // Submit 360 feedback
+    // Implementation will be added here
   };
 
   const renderStepContent = () => {

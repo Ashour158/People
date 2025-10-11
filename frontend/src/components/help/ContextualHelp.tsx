@@ -55,14 +55,18 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({ context }) => {
           title: 'Dashboard Overview',
           description: 'Learn how to navigate your personal dashboard',
           type: 'tip',
-          action: () => console.log('Dashboard help'),
+          action: () => {
+            // Navigate to dashboard help
+          },
         },
         {
           id: 'quick-actions',
           title: 'Quick Actions Guide',
           description: 'Master the quick action buttons',
           type: 'video',
-          action: () => console.log('Quick actions video'),
+          action: () => {
+            // Open quick actions video
+          },
         },
       ],
       attendance: [
@@ -71,14 +75,18 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({ context }) => {
           title: 'How to Check In/Out',
           description: 'Step-by-step guide for time tracking',
           type: 'article',
-          action: () => console.log('Check-in guide'),
+          action: () => {
+            // Open check-in guide
+          },
         },
         {
           id: 'attendance-rules',
           title: 'Attendance Policies',
           description: 'Understand your company\'s attendance rules',
           type: 'tip',
-          action: () => console.log('Attendance policies'),
+          action: () => {
+            // Open attendance policies
+          },
         },
       ],
       leave: [
@@ -87,14 +95,18 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({ context }) => {
           title: 'Apply for Leave',
           description: 'How to request time off',
           type: 'video',
-          action: () => console.log('Leave application'),
+          action: () => {
+            // Open leave application guide
+          },
         },
         {
           id: 'leave-balance',
           title: 'Check Leave Balance',
           description: 'View your available leave days',
           type: 'tip',
-          action: () => console.log('Leave balance'),
+          action: () => {
+            // Open leave balance info
+          },
         },
       ],
       employees: [
@@ -103,14 +115,18 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({ context }) => {
           title: 'Add New Employee',
           description: 'Complete guide to adding team members',
           type: 'article',
-          action: () => console.log('Add employee'),
+          action: () => {
+            // Open add employee guide
+          },
         },
         {
           id: 'employee-management',
           title: 'Employee Management',
           description: 'Best practices for managing your team',
           type: 'tip',
-          action: () => console.log('Employee management'),
+          action: () => {
+            // Open employee management guide
+          },
         },
       ],
     };
@@ -121,7 +137,9 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({ context }) => {
         title: 'General Help',
         description: 'Get help with this feature',
         type: 'chat',
-        action: () => console.log('General help'),
+        action: () => {
+          // Open general help
+        },
       },
     ];
   };

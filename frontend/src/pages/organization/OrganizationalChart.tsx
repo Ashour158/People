@@ -26,7 +26,18 @@ import {
   Person,
   Download,
 } from '@mui/icons-material';
-import * as d3 from 'd3';
+import {
+  select,
+  scaleLinear,
+  scaleOrdinal,
+  hierarchy,
+  tree,
+  linkHorizontal,
+  linkVertical,
+  zoom,
+  zoomIdentity,
+  event as d3Event,
+} from 'd3';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -127,9 +138,9 @@ const OrganizationalChart: React.FC = () => {
     const height = svgRef.current.clientHeight;
 
     // Clear previous chart
-    d3.select(svgRef.current).selectAll('*').remove();
+select(svgRef.current).selectAll('*').remove();
 
-    const svg = d3.select(svgRef.current)
+    const svg = select(svgRef.current)
       .attr('width', width)
       .attr('height', height);
 
@@ -137,11 +148,11 @@ const OrganizationalChart: React.FC = () => {
       .attr('transform', `translate(${width / 2}, 50)`);
 
     // Create tree layout
-    const treeLayout = d3.tree<OrgNode>()
+    const treeLayout = tree<OrgNode>()
       .size([width - 100, height - 200])
       .separation((a, b) => (a.parent === b.parent ? 1 : 2));
 
-    const root = d3.hierarchy(data);
+    const root = hierarchy(data);
     treeLayout(root);
 
     // Draw links
@@ -150,7 +161,7 @@ const OrganizationalChart: React.FC = () => {
       .enter()
       .append('path')
       .attr('class', 'link')
-      .attr('d', d3.linkVertical<any, any>()
+      .attr('d', linkVertical<any, any>()
         .x((d: any) => d.x)
         .y((d: any) => d.y)
       )
@@ -193,7 +204,7 @@ const OrganizationalChart: React.FC = () => {
       .style('fill', '#666');
 
     // Add zoom behavior
-    const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.5, 3])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
@@ -213,18 +224,18 @@ const OrganizationalChart: React.FC = () => {
   }, [employees]);
 
   const handleZoomIn = () => {
-    const svg = d3.select(svgRef.current);
-    svg.transition().call(d3.zoom().scaleBy as any, 1.2);
+    const svg = select(svgRef.current);
+    svg.transition().call(zoom().scaleBy as any, 1.2);
   };
 
   const handleZoomOut = () => {
-    const svg = d3.select(svgRef.current);
-    svg.transition().call(d3.zoom().scaleBy as any, 0.8);
+    const svg = select(svgRef.current);
+    svg.transition().call(zoom().scaleBy as any, 0.8);
   };
 
   const handleFitScreen = () => {
-    const svg = d3.select(svgRef.current);
-    svg.transition().call(d3.zoom().scaleTo as any, 1);
+    const svg = select(svgRef.current);
+    svg.transition().call(zoom().scaleTo as any, 1);
   };
 
   const handleExport = () => {

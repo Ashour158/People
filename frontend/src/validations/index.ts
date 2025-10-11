@@ -1,13 +1,25 @@
-import * as yup from 'yup';
+import {
+  object,
+  string,
+  number,
+  boolean,
+  array,
+  date,
+  mixed,
+  ref,
+  lazy,
+  when,
+  test,
+  ValidationError,
+} from 'yup';
 import { VALIDATION_RULES } from '../constants';
 
 // ============================================
 // AUTH VALIDATION SCHEMAS
 // ============================================
 
-export const loginSchema = yup.object().shape({
-  email: yup
-    .string()
+export const loginSchema = object().shape({
+  email: string()
     .required('Email is required')
     .email('Invalid email format')
     .matches(VALIDATION_RULES.EMAIL_REGEX, 'Invalid email format'),
@@ -20,7 +32,7 @@ export const loginSchema = yup.object().shape({
     ),
 });
 
-export const registerSchema = yup.object().shape({
+export const registerSchema = object().shape({
   username: yup
     .string()
     .required('Username is required')
@@ -47,7 +59,7 @@ export const registerSchema = yup.object().shape({
   confirmPassword: yup
     .string()
     .required('Please confirm your password')
-    .oneOf([yup.ref('password')], 'Passwords must match'),
+    .oneOf([ref('password')], 'Passwords must match'),
   organization_name: yup
     .string()
     .required('Organization name is required')
@@ -66,8 +78,8 @@ export const registerSchema = yup.object().shape({
 // EMPLOYEE VALIDATION SCHEMAS
 // ============================================
 
-export const employeeSchema = yup.object().shape({
-  employee_code: yup.string().optional(),
+export const employeeSchema = object().shape({
+  employee_code: string().optional(),
   first_name: yup
     .string()
     .required('First name is required')
@@ -96,15 +108,15 @@ export const employeeSchema = yup.object().shape({
     .string()
     .optional()
     .oneOf(['Male', 'Female', 'Other'], 'Invalid gender'),
-  address: yup.string().optional().max(200, 'Address is too long'),
-  city: yup.string().optional().max(50, 'City name is too long'),
-  state: yup.string().optional().max(50, 'State name is too long'),
-  country: yup.string().optional().max(50, 'Country name is too long'),
-  postal_code: yup.string().optional().max(10, 'Postal code is too long'),
-  hire_date: yup.date().required('Hire date is required'),
-  department_id: yup.string().optional().nullable(),
-  designation_id: yup.string().optional().nullable(),
-  reporting_manager_id: yup.string().optional().nullable(),
+  address: string().optional().max(200, 'Address is too long'),
+  city: string().optional().max(50, 'City name is too long'),
+  state: string().optional().max(50, 'State name is too long'),
+  country: string().optional().max(50, 'Country name is too long'),
+  postal_code: string().optional().max(10, 'Postal code is too long'),
+  hire_date: date().required('Hire date is required'),
+  department_id: string().optional().nullable(),
+  designation_id: string().optional().nullable(),
+  reporting_manager_id: string().optional().nullable(),
   employment_type: yup
     .string()
     .optional()
@@ -125,8 +137,8 @@ export const employeeSchema = yup.object().shape({
 // LEAVE VALIDATION SCHEMAS
 // ============================================
 
-export const leaveSchema = yup.object().shape({
-  leave_type_id: yup.string().required('Leave type is required'),
+export const leaveSchema = object().shape({
+  leave_type_id: string().required('Leave type is required'),
   start_date: yup
     .date()
     .required('Start date is required')
@@ -134,7 +146,7 @@ export const leaveSchema = yup.object().shape({
   end_date: yup
     .date()
     .required('End date is required')
-    .min(yup.ref('start_date'), 'End date must be after start date'),
+    .min(ref('start_date'), 'End date must be after start date'),
   leave_reason: yup
     .string()
     .required('Leave reason is required')
@@ -146,8 +158,8 @@ export const leaveSchema = yup.object().shape({
 // ATTENDANCE VALIDATION SCHEMAS
 // ============================================
 
-export const checkInSchema = yup.object().shape({
-  notes: yup.string().optional().max(200, 'Notes must not exceed 200 characters'),
+export const checkInSchema = object().shape({
+  notes: string().optional().max(200, 'Notes must not exceed 200 characters'),
   location: yup
     .object()
     .shape({
@@ -164,8 +176,8 @@ export const checkInSchema = yup.object().shape({
     .nullable(),
 });
 
-export const checkOutSchema = yup.object().shape({
-  notes: yup.string().optional().max(200, 'Notes must not exceed 200 characters'),
+export const checkOutSchema = object().shape({
+  notes: string().optional().max(200, 'Notes must not exceed 200 characters'),
   location: yup
     .object()
     .shape({
@@ -186,7 +198,7 @@ export const checkOutSchema = yup.object().shape({
 // PERFORMANCE VALIDATION SCHEMAS
 // ============================================
 
-export const goalSchema = yup.object().shape({
+export const goalSchema = object().shape({
   title: yup
     .string()
     .required('Goal title is required')
@@ -216,7 +228,7 @@ export const goalSchema = yup.object().shape({
   end_date: yup
     .date()
     .required('End date is required')
-    .min(yup.ref('start_date'), 'End date must be after start date'),
+    .min(ref('start_date'), 'End date must be after start date'),
   weight: yup
     .number()
     .optional()
@@ -224,9 +236,9 @@ export const goalSchema = yup.object().shape({
     .max(100, 'Weight must not exceed 100'),
 });
 
-export const performanceReviewSchema = yup.object().shape({
-  employee_id: yup.string().required('Employee is required'),
-  reviewer_id: yup.string().required('Reviewer is required'),
+export const performanceReviewSchema = object().shape({
+  employee_id: string().required('Employee is required'),
+  reviewer_id: string().required('Reviewer is required'),
   review_type: yup
     .string()
     .required('Review type is required')
@@ -251,8 +263,8 @@ export const performanceReviewSchema = yup.object().shape({
     .max(2000, 'Comments must not exceed 2000 characters'),
 });
 
-export const feedbackSchema = yup.object().shape({
-  employee_id: yup.string().required('Employee is required'),
+export const feedbackSchema = object().shape({
+  employee_id: string().required('Employee is required'),
   feedback_type: yup
     .string()
     .required('Feedback type is required')
@@ -262,14 +274,14 @@ export const feedbackSchema = yup.object().shape({
     .required('Feedback is required')
     .min(10, 'Feedback must be at least 10 characters')
     .max(1000, 'Feedback must not exceed 1000 characters'),
-  is_anonymous: yup.boolean().optional(),
+  is_anonymous: boolean().optional(),
 });
 
 // ============================================
 // RECRUITMENT VALIDATION SCHEMAS
 // ============================================
 
-export const jobPostingSchema = yup.object().shape({
+export const jobPostingSchema = object().shape({
   job_title: yup
     .string()
     .required('Job title is required')
@@ -313,11 +325,11 @@ export const jobPostingSchema = yup.object().shape({
   salary_range_max: yup
     .number()
     .optional()
-    .min(yup.ref('salary_range_min'), 'Max salary must be greater than min salary')
+    .min(ref('salary_range_min'), 'Max salary must be greater than min salary')
     .nullable(),
 });
 
-export const candidateSchema = yup.object().shape({
+export const candidateSchema = object().shape({
   first_name: yup
     .string()
     .required('First name is required')
@@ -357,8 +369,8 @@ export const candidateSchema = yup.object().shape({
     .oneOf(['referral', 'job_board', 'website', 'social_media', 'agency', 'direct'], 'Invalid source'),
 });
 
-export const interviewScheduleSchema = yup.object().shape({
-  application_id: yup.string().required('Application is required'),
+export const interviewScheduleSchema = object().shape({
+  application_id: string().required('Application is required'),
   interview_type: yup
     .string()
     .required('Interview type is required')
@@ -374,7 +386,7 @@ export const interviewScheduleSchema = yup.object().shape({
     .max(480, 'Duration cannot exceed 8 hours'),
   interviewer_ids: yup
     .array()
-    .of(yup.string())
+    .of(string())
     .min(1, 'At least one interviewer is required'),
   location: yup
     .string()
@@ -390,8 +402,8 @@ export const interviewScheduleSchema = yup.object().shape({
 // PAYROLL VALIDATION SCHEMAS
 // ============================================
 
-export const salaryStructureSchema = yup.object().shape({
-  employee_id: yup.string().required('Employee is required'),
+export const salaryStructureSchema = object().shape({
+  employee_id: string().required('Employee is required'),
   effective_from: yup
     .date()
     .required('Effective date is required'),
@@ -416,8 +428,8 @@ export const salaryStructureSchema = yup.object().shape({
     .nullable(),
 });
 
-export const bonusSchema = yup.object().shape({
-  employee_id: yup.string().required('Employee is required'),
+export const bonusSchema = object().shape({
+  employee_id: string().required('Employee is required'),
   bonus_type: yup
     .string()
     .required('Bonus type is required')
@@ -439,7 +451,7 @@ export const bonusSchema = yup.object().shape({
 // EXPENSE VALIDATION SCHEMAS
 // ============================================
 
-export const expensePolicySchema = yup.object().shape({
+export const expensePolicySchema = object().shape({
   policy_name: yup
     .string()
     .required('Policy name is required')
@@ -453,16 +465,16 @@ export const expensePolicySchema = yup.object().shape({
     .number()
     .required('Maximum amount is required')
     .min(0, 'Maximum amount must be positive'),
-  requires_receipt: yup.boolean().required(),
-  requires_manager_approval: yup.boolean().required(),
+  requires_receipt: boolean().required(),
+  requires_manager_approval: boolean().required(),
   description: yup
     .string()
     .optional()
     .max(500, 'Description must not exceed 500 characters'),
 });
 
-export const expenseSchema = yup.object().shape({
-  policy_id: yup.string().required('Policy is required'),
+export const expenseSchema = object().shape({
+  policy_id: string().required('Policy is required'),
   category: yup
     .string()
     .required('Category is required')
@@ -486,15 +498,15 @@ export const expenseSchema = yup.object().shape({
     .required('Description is required')
     .min(10, 'Description must be at least 10 characters')
     .max(500, 'Description must not exceed 500 characters'),
-  has_receipt: yup.boolean().required(),
+  has_receipt: boolean().required(),
 });
 
 // ============================================
 // TIMESHEET VALIDATION SCHEMAS
 // ============================================
 
-export const timesheetEntrySchema = yup.object().shape({
-  project_id: yup.string().required('Project is required'),
+export const timesheetEntrySchema = object().shape({
+  project_id: string().required('Project is required'),
   work_date: yup
     .date()
     .required('Work date is required')
@@ -504,7 +516,7 @@ export const timesheetEntrySchema = yup.object().shape({
     .required('Hours worked is required')
     .min(0.5, 'Minimum 0.5 hours')
     .max(24, 'Maximum 24 hours per day'),
-  is_billable: yup.boolean().required(),
+  is_billable: boolean().required(),
   description: yup
     .string()
     .required('Description is required')
@@ -516,7 +528,7 @@ export const timesheetEntrySchema = yup.object().shape({
     .oneOf(['development', 'testing', 'documentation', 'meeting', 'review', 'other'], 'Invalid task category'),
 });
 
-export const projectSchema = yup.object().shape({
+export const projectSchema = object().shape({
   project_name: yup
     .string()
     .required('Project name is required')
@@ -541,7 +553,7 @@ export const projectSchema = yup.object().shape({
   end_date: yup
     .date()
     .optional()
-    .min(yup.ref('start_date'), 'End date must be after start date')
+    .min(ref('start_date'), 'End date must be after start date')
     .nullable(),
   budget_hours: yup
     .number()

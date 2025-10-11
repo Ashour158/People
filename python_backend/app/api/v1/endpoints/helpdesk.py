@@ -584,8 +584,33 @@ async def get_ticket_statistics(
         resolved_tickets=len([t for t in tickets if t.status == TicketStatus.RESOLVED]),
         closed_tickets=len([t for t in tickets if t.status == TicketStatus.CLOSED]),
         avg_resolution_time_hours=avg_resolution_time,
-        sla_compliance_rate=None,  # TODO: Calculate based on SLA
-        avg_satisfaction_rating=None  # TODO: Calculate from ratings
+        sla_compliance_rate=calculate_sla_compliance_rate(tickets),
+        avg_satisfaction_rating=calculate_avg_satisfaction_rating(tickets)
     )
     
     return stats
+
+
+def calculate_sla_compliance_rate(tickets: List[Ticket]) -> float:
+    """Calculate SLA compliance rate based on ticket resolution times"""
+    if not tickets:
+        return 0.0
+    
+    sla_compliant = 0
+    for ticket in tickets:
+        if ticket.resolved_at and ticket.created_at:
+            resolution_time = (ticket.resolved_at - ticket.created_at).total_seconds() / 3600  # hours
+            # Assuming 24-hour SLA for now
+            if resolution_time <= 24:
+                sla_compliant += 1
+    
+    return (sla_compliant / len(tickets)) * 100 if tickets else 0.0
+
+
+def calculate_avg_satisfaction_rating(tickets: List[Ticket]) -> float:
+    """Calculate average satisfaction rating from ticket ratings"""
+    if not tickets:
+        return 0.0
+    
+    ratings = [ticket.satisfaction_rating for ticket in tickets if ticket.satisfaction_rating is not None]
+    return sum(ratings) / len(ratings) if ratings else 0.0

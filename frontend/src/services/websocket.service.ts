@@ -47,12 +47,12 @@ class WebSocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('WebSocket connected');
+      // WebSocket connected successfully
       this.reconnectAttempts = 0;
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+      // WebSocket disconnected, attempting reconnection
       this.handleReconnect();
     });
 
@@ -121,7 +121,7 @@ class WebSocketService {
       const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
       
       setTimeout(() => {
-        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+        // Attempting to reconnect
         this.socket?.connect();
       }, delay);
     } else {

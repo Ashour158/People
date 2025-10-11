@@ -272,7 +272,8 @@ async def request_password_reset(
     
     await db.commit()
     
-    # TODO: Send email with reset link
+    # Send email with reset link
+    await send_password_reset_email(user.email, reset_token)
     
     await EventDispatcher.dispatch(Events.PASSWORD_RESET, {
         "user_id": str(user.user_id),
@@ -286,6 +287,19 @@ async def request_password_reset(
         success=True,
         message="If the email exists, a reset link will be sent"
     )
+
+
+async def send_password_reset_email(email: str, reset_token: str):
+    """Send password reset email to user"""
+    # Implementation for sending password reset email
+    # This would integrate with your email service (SendGrid, AWS SES, etc.)
+    reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+    
+    # For now, just log the reset link (in production, send actual email)
+    print(f"Password reset link for {email}: {reset_link}")
+    
+    # TODO: Implement actual email sending
+    # await email_service.send_password_reset_email(email, reset_link)
 
 
 @router.post("/password-reset/confirm", response_model=BaseResponse)

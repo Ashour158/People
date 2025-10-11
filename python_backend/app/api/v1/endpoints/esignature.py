@@ -239,15 +239,34 @@ async def docusign_webhook(payload: dict):
     
     print(f"DocuSign Webhook: {event_type} for envelope {envelope_id}")
     
-    # TODO: Process the webhook event
-    # - Update database status
-    # - Send notifications
+    # Process the webhook event
+    await process_docusign_webhook(event_type, envelope_id, data)
     # - Trigger workflows
     
     return {
         "success": True,
         "message": "Webhook received"
     }
+
+
+async def process_docusign_webhook(event_type: str, envelope_id: str, data: dict):
+    """Process DocuSign webhook events"""
+    # Update database status based on event type
+    if event_type == "envelope-sent":
+        # Handle envelope sent
+        pass
+    elif event_type == "envelope-delivered":
+        # Handle envelope delivered
+        pass
+    elif event_type == "envelope-completed":
+        # Handle envelope completed
+        pass
+    elif event_type == "envelope-declined":
+        # Handle envelope declined
+        pass
+    
+    # Send notifications to relevant users
+    # Trigger workflows based on event type
 
 
 @router.get("/health")
