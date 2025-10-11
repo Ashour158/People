@@ -1,0 +1,552 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1234567890ABCDEF001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF000 /* AppDelegate.swift */; };
+		A1234567890ABCDEF003 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF002 /* SceneDelegate.swift */; };
+		A1234567890ABCDEF005 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF004 /* ContentView.swift */; };
+		A1234567890ABCDEF007 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF006 /* Assets.xcassets */; };
+		A1234567890ABCDEF00A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF009 /* Preview Assets.xcassets */; };
+		A1234567890ABCDEF00C /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF00B /* Alamofire */; };
+		A1234567890ABCDEF00E /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF00D /* SwiftyJSON */; };
+		A1234567890ABCDEF010 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF00F /* KeychainAccess */; };
+		A1234567890ABCDEF012 /* LocalAuthentication in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF011 /* LocalAuthentication */; };
+		A1234567890ABCDEF014 /* UserNotifications in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF013 /* UserNotifications */; };
+		A1234567890ABCDEF016 /* CoreData in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF015 /* CoreData */; };
+		A1234567890ABCDEF018 /* Network in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF017 /* Network */; };
+		A1234567890ABCDEF01A /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF019 /* Charts */; };
+		A1234567890ABCDEF01C /* PDFKit in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF01B /* PDFKit */; };
+		A1234567890ABCDEF01E /* AVFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF01D /* AVFoundation */; };
+		A1234567890ABCDEF020 /* Photos in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF01F /* Photos */; };
+		A1234567890ABCDEF022 /* MapKit in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF021 /* MapKit */; };
+		A1234567890ABCDEF024 /* CoreLocation in Frameworks */ = {isa = PBXBuildFile; productRef = A1234567890ABCDEF023 /* CoreLocation */; };
+		A1234567890ABCDEF026 /* BiometricAuthentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF025 /* BiometricAuthentication.swift */; };
+		A1234567890ABCDEF028 /* OfflineSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF027 /* OfflineSyncManager.swift */; };
+		A1234567890ABCDEF02A /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF029 /* NetworkManager.swift */; };
+		A1234567890ABCDEF02C /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF02B /* APIService.swift */; };
+		A1234567890ABCDEF02E /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF02D /* Models.swift */; };
+		A1234567890ABCDEF030 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF02F /* KeychainManager.swift */; };
+		A1234567890ABCDEF032 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF031 /* LocationManager.swift */; };
+		A1234567890ABCDEF034 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF033 /* NotificationManager.swift */; };
+		A1234567890ABCDEF036 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF035 /* CoreDataManager.swift */; };
+		A1234567890ABCDEF038 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF037 /* LoginView.swift */; };
+		A1234567890ABCDEF03A /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF039 /* DashboardView.swift */; };
+		A1234567890ABCDEF03C /* AttendanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF03B /* AttendanceView.swift */; };
+		A1234567890ABCDEF03E /* LeaveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF03D /* LeaveView.swift */; };
+		A1234567890ABCDEF040 /* PayrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF03F /* PayrollView.swift */; };
+		A1234567890ABCDEF042 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF041 /* ProfileView.swift */; };
+		A1234567890ABCDEF044 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF043 /* SettingsView.swift */; };
+		A1234567890ABCDEF046 /* DocumentScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF045 /* DocumentScanner.swift */; };
+		A1234567890ABCDEF048 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF047 /* CameraManager.swift */; };
+		A1234567890ABCDEF04A /* BiometricSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF049 /* BiometricSetupView.swift */; };
+		A1234567890ABCDEF04C /* OfflineDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF04B /* OfflineDataView.swift */; };
+		A1234567890ABCDEF04E /* SyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF04D /* SyncStatusView.swift */; };
+		A1234567890ABCDEF050 /* PushNotificationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF04F /* PushNotificationHandler.swift */; };
+		A1234567890ABCDEF052 /* BackgroundSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF051 /* BackgroundSync.swift */; };
+		A1234567890ABCDEF054 /* HRMSApp.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF053 /* HRMSApp.entitlements */; };
+		A1234567890ABCDEF056 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890ABCDEF055 /* Info.plist */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1234567890ABCDEF000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF002 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1234567890ABCDEF009 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A1234567890ABCDEF025 /* BiometricAuthentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthentication.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF027 /* OfflineSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF029 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF02B /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF02D /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF02F /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF031 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF033 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF035 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF037 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF039 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF03B /* AttendanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttendanceView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF03D /* LeaveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaveView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF03F /* PayrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayrollView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF041 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF043 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF045 /* DocumentScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScanner.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF047 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF049 /* BiometricSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricSetupView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF04B /* OfflineDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineDataView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF04D /* SyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusView.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF04F /* PushNotificationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationHandler.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF051 /* BackgroundSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSync.swift; sourceTree = "<group>"; };
+		A1234567890ABCDEF053 /* HRMSApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HRMSApp.entitlements; sourceTree = "<group>"; };
+		A1234567890ABCDEF055 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1234567890ABCDEF057 /* HRMSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HRMSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1234567890ABCDEF054 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1234567890ABCDEF00C /* Alamofire in Frameworks */,
+				A1234567890ABCDEF00E /* SwiftyJSON in Frameworks */,
+				A1234567890ABCDEF010 /* KeychainAccess in Frameworks */,
+				A1234567890ABCDEF012 /* LocalAuthentication in Frameworks */,
+				A1234567890ABCDEF014 /* UserNotifications in Frameworks */,
+				A1234567890ABCDEF016 /* CoreData in Frameworks */,
+				A1234567890ABCDEF018 /* Network in Frameworks */,
+				A1234567890ABCDEF01A /* Charts in Frameworks */,
+				A1234567890ABCDEF01C /* PDFKit in Frameworks */,
+				A1234567890ABCDEF01E /* AVFoundation in Frameworks */,
+				A1234567890ABCDEF020 /* Photos in Frameworks */,
+				A1234567890ABCDEF022 /* MapKit in Frameworks */,
+				A1234567890ABCDEF024 /* CoreLocation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1234567890ABCDEF058 /* HRMSApp */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF000 /* AppDelegate.swift */,
+				A1234567890ABCDEF002 /* SceneDelegate.swift */,
+				A1234567890ABCDEF004 /* ContentView.swift */,
+				A1234567890ABCDEF006 /* Assets.xcassets */,
+				A1234567890ABCDEF053 /* HRMSApp.entitlements */,
+				A1234567890ABCDEF055 /* Info.plist */,
+				A1234567890ABCDEF059 /* Managers */,
+				A1234567890ABCDEF060 /* Services */,
+				A1234567890ABCDEF061 /* Models */,
+				A1234567890ABCDEF062 /* Views */,
+				A1234567890ABCDEF063 /* Utils */,
+				A1234567890ABCDEF064 /* Resources */,
+				A1234567890ABCDEF065 /* Preview Content */,
+			);
+			path = HRMSApp;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF059 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF02F /* KeychainManager.swift */,
+				A1234567890ABCDEF031 /* LocationManager.swift */,
+				A1234567890ABCDEF033 /* NotificationManager.swift */,
+				A1234567890ABCDEF035 /* CoreDataManager.swift */,
+				A1234567890ABCDEF027 /* OfflineSyncManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF060 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF029 /* NetworkManager.swift */,
+				A1234567890ABCDEF02B /* APIService.swift */,
+				A1234567890ABCDEF025 /* BiometricAuthentication.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF061 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF02D /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF062 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF037 /* LoginView.swift */,
+				A1234567890ABCDEF039 /* DashboardView.swift */,
+				A1234567890ABCDEF03B /* AttendanceView.swift */,
+				A1234567890ABCDEF03D /* LeaveView.swift */,
+				A1234567890ABCDEF03F /* PayrollView.swift */,
+				A1234567890ABCDEF041 /* ProfileView.swift */,
+				A1234567890ABCDEF043 /* SettingsView.swift */,
+				A1234567890ABCDEF049 /* BiometricSetupView.swift */,
+				A1234567890ABCDEF04B /* OfflineDataView.swift */,
+				A1234567890ABCDEF04D /* SyncStatusView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF063 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF045 /* DocumentScanner.swift */,
+				A1234567890ABCDEF047 /* CameraManager.swift */,
+				A1234567890ABCDEF04F /* PushNotificationHandler.swift */,
+				A1234567890ABCDEF051 /* BackgroundSync.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF064 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF065 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF009 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF066 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF057 /* HRMSApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1234567890ABCDEF067 = {
+			isa = PBXGroup;
+			children = (
+				A1234567890ABCDEF058 /* HRMSApp */,
+				A1234567890ABCDEF066 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1234567890ABCDEF056 /* HRMSApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1234567890ABCDEF068 /* Build configuration list for PBXNativeTarget "HRMSApp" */;
+			buildPhases = (
+				A1234567890ABCDEF069 /* Sources */,
+				A1234567890ABCDEF054 /* Frameworks */,
+				A1234567890ABCDEF06A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HRMSApp;
+			packageProductDependencies = (
+				A1234567890ABCDEF00B /* Alamofire */,
+				A1234567890ABCDEF00D /* SwiftyJSON */,
+				A1234567890ABCDEF00F /* KeychainAccess */,
+				A1234567890ABCDEF011 /* LocalAuthentication */,
+				A1234567890ABCDEF013 /* UserNotifications */,
+				A1234567890ABCDEF015 /* CoreData */,
+				A1234567890ABCDEF017 /* Network */,
+				A1234567890ABCDEF019 /* Charts */,
+				A1234567890ABCDEF01B /* PDFKit */,
+				A1234567890ABCDEF01D /* AVFoundation */,
+				A1234567890ABCDEF01F /* Photos */,
+				A1234567890ABCDEF021 /* MapKit */,
+				A1234567890ABCDEF023 /* CoreLocation */,
+			);
+			productName = HRMSApp;
+			productReference = A1234567890ABCDEF057 /* HRMSApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1234567890ABCDEF06B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A1234567890ABCDEF056 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A1234567890ABCDEF06C /* Build configuration list for PBXProject "HRMSApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1234567890ABCDEF067;
+			productRefGroup = A1234567890ABCDEF066 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1234567890ABCDEF056 /* HRMSApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1234567890ABCDEF06A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1234567890ABCDEF00A /* Preview Assets.xcassets in Resources */,
+				A1234567890ABCDEF007 /* Assets.xcassets in Resources */,
+				A1234567890ABCDEF054 /* HRMSApp.entitlements in Resources */,
+				A1234567890ABCDEF056 /* Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1234567890ABCDEF069 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1234567890ABCDEF005 /* ContentView.swift in Sources */,
+				A1234567890ABCDEF001 /* AppDelegate.swift in Sources */,
+				A1234567890ABCDEF003 /* SceneDelegate.swift in Sources */,
+				A1234567890ABCDEF026 /* BiometricAuthentication.swift in Sources */,
+				A1234567890ABCDEF028 /* OfflineSyncManager.swift in Sources */,
+				A1234567890ABCDEF02A /* NetworkManager.swift in Sources */,
+				A1234567890ABCDEF02C /* APIService.swift in Sources */,
+				A1234567890ABCDEF02E /* Models.swift in Sources */,
+				A1234567890ABCDEF030 /* KeychainManager.swift in Sources */,
+				A1234567890ABCDEF032 /* LocationManager.swift in Sources */,
+				A1234567890ABCDEF034 /* NotificationManager.swift in Sources */,
+				A1234567890ABCDEF036 /* CoreDataManager.swift in Sources */,
+				A1234567890ABCDEF038 /* LoginView.swift in Sources */,
+				A1234567890ABCDEF03A /* DashboardView.swift in Sources */,
+				A1234567890ABCDEF03C /* AttendanceView.swift in Sources */,
+				A1234567890ABCDEF03E /* LeaveView.swift in Sources */,
+				A1234567890ABCDEF040 /* PayrollView.swift in Sources */,
+				A1234567890ABCDEF042 /* ProfileView.swift in Sources */,
+				A1234567890ABCDEF044 /* SettingsView.swift in Sources */,
+				A1234567890ABCDEF046 /* DocumentScanner.swift in Sources */,
+				A1234567890ABCDEF048 /* CameraManager.swift in Sources */,
+				A1234567890ABCDEF04A /* BiometricSetupView.swift in Sources */,
+				A1234567890ABCDEF04C /* OfflineDataView.swift in Sources */,
+				A1234567890ABCDEF04E /* SyncStatusView.swift in Sources */,
+				A1234567890ABCDEF050 /* PushNotificationHandler.swift in Sources */,
+				A1234567890ABCDEF052 /* BackgroundSync.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1234567890ABCDEF06D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1234567890ABCDEF06E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1234567890ABCDEF06F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HRMSApp/HRMSApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"HRMSApp/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HRMSApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HRMS Mobile";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hrms.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1234567890ABCDEF070 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HRMSApp/HRMSApp.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"HRMSApp/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = HRMSApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "HRMS Mobile";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hrms.mobile;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1234567890ABCDEF068 /* Build configuration list for PBXNativeTarget "HRMSApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890ABCDEF06F /* Debug */,
+				A1234567890ABCDEF070 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1234567890ABCDEF06C /* Build configuration list for PBXProject "HRMSApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890ABCDEF06D /* Debug */,
+				A1234567890ABCDEF06E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1234567890ABCDEF06B /* Project object */;
+}
