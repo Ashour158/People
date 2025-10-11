@@ -212,7 +212,7 @@ export const BenefitsEnrollment: React.FC = () => {
 
             {dependents.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                No dependents added. You can skip this step if you don't want to add dependents.
+                No dependents added. You can skip this step if you don&apos;t want to add dependents.
               </Alert>
             )}
 

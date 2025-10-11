@@ -182,7 +182,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ open, onClose }) => 
           <Box>
             {filteredResults.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
-                No results found for "{searchTerm}"
+                No results found for &quot;{searchTerm}&quot;
               </Typography>
             ) : (
               <List>

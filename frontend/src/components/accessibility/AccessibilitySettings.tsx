@@ -318,7 +318,7 @@ const AccessibilitySettings: React.FC = () => {
           <Typography variant="body2" paragraph>
             • <strong>Light Theme:</strong> Uses a light color scheme
             • <strong>Dark Theme:</strong> Uses a dark color scheme
-            • <strong>Auto:</strong> Follows your system's theme preference
+            • <strong>Auto:</strong> Follows your system&apos;s theme preference
           </Typography>
         </DialogContent>
         <DialogActions>

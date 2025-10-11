@@ -242,7 +242,7 @@ export const HelpSystem: React.FC<HelpSystemProps> = ({ open, onClose }) => {
             <Typography variant="h6">Need More Help?</Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Can't find what you're looking for? Contact our support team for personalized assistance.
+            Can&apos;t find what you&apos;re looking for? Contact our support team for personalized assistance.
           </Typography>
           <Button variant="contained" startIcon={<ContactSupportIcon />}>
             Contact Support

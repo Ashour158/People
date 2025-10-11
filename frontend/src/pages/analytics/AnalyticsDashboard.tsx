@@ -154,7 +154,7 @@ const AnalyticsDashboard: React.FC = () => {
         HR Analytics Dashboard
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={4}>
-        Real-time insights into your organization's HR metrics
+        Real-time insights into your organization&apos;s HR metrics
       </Typography>
 
       {/* Key Metrics */}

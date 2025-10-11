@@ -92,7 +92,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </Typography>
             
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              We're sorry for the inconvenience. The application encountered an unexpected error.
+              We&apos;re sorry for the inconvenience. The application encountered an unexpected error.
             </Typography>
 
             {import.meta.env.DEV && this.state.error && (

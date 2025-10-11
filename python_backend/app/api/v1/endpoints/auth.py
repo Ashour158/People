@@ -1,16 +1,19 @@
 """Authentication API endpoints"""
 
+import secrets
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.security import (
     create_access_token,
     create_refresh_token,
+    decode_token,
     hash_password,
     verify_password,
 )
@@ -104,7 +107,7 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)) ->
         logger.error(f"Registration error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Registration failed"
-        )
+        ) from e
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -134,10 +137,9 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)) -> Login
         # Increment failed attempts
         user.failed_login_attempts += 1
 
-        # Lock account after 5 failed attempts
-        if user.failed_login_attempts >= 5:
-            from datetime import timedelta
-
+        # Lock account after MAX_FAILED_ATTEMPTS failed attempts
+        MAX_FAILED_ATTEMPTS = 5
+        if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
             user.account_locked_until = datetime.utcnow() + timedelta(minutes=30)
 
         await db.commit()
@@ -204,8 +206,6 @@ async def logout():
 @router.post("/refresh-token")
 async def refresh_token(refresh_token: str):
     """Refresh access token"""
-    from app.core.security import decode_token
-
     payload = decode_token(refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
@@ -238,11 +238,7 @@ async def request_password_reset(data: PasswordResetRequest, db: AsyncSession = 
         return BaseResponse(success=True, message="If the email exists, a reset link will be sent")
 
     # Generate reset token
-    import secrets
-
     reset_token = secrets.token_urlsafe(32)
-    from datetime import timedelta
-
     user.password_reset_token = reset_token
     user.password_reset_expires = datetime.utcnow() + timedelta(hours=1)
 
@@ -271,7 +267,6 @@ async def send_password_reset_email(email: str, reset_token: str):
     print(f"Password reset link for {email}: {reset_link}")
 
     # TODO: Implement actual email sending
-    # await email_service.send_password_reset_email(email, reset_link)
 
 
 @router.post("/password-reset/confirm", response_model=BaseResponse)

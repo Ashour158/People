@@ -184,7 +184,7 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onComplete, onSkip 
         Welcome to HRMS
       </Typography>
       <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-        Let's set up your HR management system in just a few steps
+        Let&apos;s set up your HR management system in just a few steps
       </Typography>
 
       <Stepper activeStep={activeStep} orientation="vertical">
@@ -262,7 +262,7 @@ const WelcomeStep: React.FC = () => (
       Welcome to HRMS!
     </Typography>
     <Typography variant="body1" paragraph>
-      We're excited to help you streamline your HR processes. This quick setup will 
+      We&apos;re excited to help you streamline your HR processes. This quick setup will 
       configure your system for optimal performance.
     </Typography>
     
@@ -273,7 +273,7 @@ const WelcomeStep: React.FC = () => (
       <Box>
         <Typography variant="subtitle1">Personalized Experience</Typography>
         <Typography variant="body2" color="text.secondary">
-          We'll customize the system based on your organization's needs
+          We&apos;ll customize the system based on your organization&apos;s needs
         </Typography>
       </Box>
     </Box>
@@ -504,7 +504,7 @@ const CompletionStep: React.FC<CompletionStepProps> = ({ formData }) => (
     
     <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
       <Typography variant="subtitle2" gutterBottom>
-        What's Next?
+        What&apos;s Next?
       </Typography>
       <Typography variant="body2" color="text.secondary">
         • Add your first employee
