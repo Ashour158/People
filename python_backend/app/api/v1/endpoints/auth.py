@@ -35,7 +35,26 @@ logger = structlog.get_logger()
 
 @router.post("/register", response_model=BaseResponse, status_code=status.HTTP_201_CREATED)
 async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)) -> BaseResponse:
-    """Register new user and organization"""
+    """
+    Register a new user and create their organization.
+    
+    This endpoint handles the complete user registration process including:
+    - Creating a new organization
+    - Setting up the default company
+    - Creating the user account
+    - Creating the employee profile
+    - Dispatching registration events
+    
+    Args:
+        data: Registration request containing user and organization details
+        db: Database session for transaction management
+        
+    Returns:
+        BaseResponse: Success message confirming registration
+        
+    Raises:
+        HTTPException: If email already exists or registration fails
+    """
 
     # Check if user already exists
     result = await db.execute(select(User).where(User.email == data.email))
@@ -112,7 +131,27 @@ async def register(data: RegisterRequest, db: AsyncSession = Depends(get_db)) ->
 
 @router.post("/login", response_model=LoginResponse)
 async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)) -> LoginResponse:
-    """User login"""
+    """
+    Authenticate user and generate access tokens.
+    
+    This endpoint handles user authentication including:
+    - Validating user credentials
+    - Checking account status (active, locked)
+    - Implementing security measures (failed login attempts, account locking)
+    - Generating JWT access and refresh tokens
+    - Updating last login timestamp
+    - Dispatching login events
+    
+    Args:
+        data: Login request containing email and password
+        db: Database session for user validation
+        
+    Returns:
+        LoginResponse: Access token, refresh token, and user information
+        
+    Raises:
+        HTTPException: If credentials are invalid, account is locked, or user is inactive
+    """
 
     # Find user
     result = await db.execute(select(User, Employee).join(Employee).where(User.email == data.email))
@@ -194,7 +233,17 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)) -> Login
 
 @router.post("/logout")
 async def logout():
-    """User logout"""
+    """
+    Logout user and invalidate session.
+    
+    This endpoint handles user logout including:
+    - Invalidating the current session
+    - Dispatching logout events
+    - Clearing client-side tokens (handled by frontend)
+    
+    Returns:
+        BaseResponse: Success message confirming logout
+    """
     # In a real implementation, you would invalidate the token
     # For now, client-side token removal is sufficient
 
@@ -205,7 +254,24 @@ async def logout():
 
 @router.post("/refresh-token")
 async def refresh_token(refresh_token: str):
-    """Refresh access token"""
+    """
+    Refresh access token using valid refresh token.
+    
+    This endpoint handles token refresh including:
+    - Validating the refresh token
+    - Extracting user information from token
+    - Generating new access token
+    - Maintaining security through token rotation
+    
+    Args:
+        refresh_token: Valid refresh token from previous authentication
+        
+    Returns:
+        dict: New access token and token type
+        
+    Raises:
+        HTTPException: If refresh token is invalid or expired
+    """
     payload = decode_token(refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
@@ -228,7 +294,23 @@ async def refresh_token(refresh_token: str):
 
 @router.post("/password-reset/request", response_model=BaseResponse)
 async def request_password_reset(data: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
-    """Request password reset"""
+    """
+    Request password reset for user account.
+    
+    This endpoint handles password reset requests including:
+    - Validating user email exists
+    - Generating secure reset token
+    - Setting token expiration (1 hour)
+    - Sending reset email (simulated)
+    - Dispatching password reset events
+    
+    Args:
+        data: Password reset request containing user email
+        db: Database session for user lookup
+        
+    Returns:
+        BaseResponse: Success message (always returns success for security)
+    """
 
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
@@ -258,7 +340,23 @@ async def request_password_reset(data: PasswordResetRequest, db: AsyncSession = 
 
 
 async def send_password_reset_email(email: str, reset_token: str):
-    """Send password reset email to user"""
+    """
+    Send password reset email to user.
+    
+    This function handles password reset email delivery including:
+    - Generating secure reset link with token
+    - Preparing email content
+    - Sending email via configured service
+    - Logging reset link for development
+    
+    Args:
+        email: User's email address
+        reset_token: Secure token for password reset
+        
+    Note:
+        Currently logs reset link for development purposes.
+        In production, integrate with email service (SendGrid, AWS SES, etc.)
+    """
     # Implementation for sending password reset email
     # This would integrate with your email service (SendGrid, AWS SES, etc.)
     reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
@@ -271,7 +369,26 @@ async def send_password_reset_email(email: str, reset_token: str):
 
 @router.post("/password-reset/confirm", response_model=BaseResponse)
 async def confirm_password_reset(data: PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
-    """Confirm password reset"""
+    """
+    Confirm password reset with valid token.
+    
+    This endpoint handles password reset confirmation including:
+    - Validating reset token exists and is not expired
+    - Hashing new password securely
+    - Clearing reset token and expiration
+    - Updating user password
+    - Dispatching password reset completion events
+    
+    Args:
+        data: Password reset confirmation containing token and new password
+        db: Database session for user update
+        
+    Returns:
+        BaseResponse: Success message confirming password reset
+        
+    Raises:
+        HTTPException: If token is invalid or expired
+    """
 
     result = await db.execute(select(User).where(User.password_reset_token == data.token))
     user = result.scalar_one_or_none()

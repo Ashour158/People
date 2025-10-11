@@ -243,10 +243,10 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <CheckCircleIcon sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
-            🎉 You're Ready to Go!
+            🎉 You&apos;re Ready to Go!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            You now know the basics of the HRMS system. Start exploring and don't hesitate to use the search feature or help system if you need assistance.
+            You now know the basics of the HRMS system. Start exploring and don&apos;t hesitate to use the search feature or help system if you need assistance.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Chip label="Dashboard" color="primary" />
@@ -265,7 +265,8 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
       setActiveStep(activeStep + 1);
     } else {
       onComplete();
-    onClose();
+      onClose();
+    }
   };
 
   const handleBack = () => {
@@ -336,3 +337,5 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({
     </Dialog>
   );
 };
+
+export default OnboardingTour;

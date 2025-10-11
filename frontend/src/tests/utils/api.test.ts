@@ -1,5 +1,23 @@
 import { describe, it, expect, vi } from 'vitest';
 
+// Global types for test environment
+declare global {
+  interface RequestInit {
+    method?: string;
+    headers?: Record<string, string>;
+    body?: string | null;
+    mode?: string;
+    credentials?: string;
+    cache?: string;
+    redirect?: string;
+    referrer?: string;
+    referrerPolicy?: string;
+    integrity?: string;
+    keepalive?: boolean;
+    signal?: AbortSignal | null;
+  }
+}
+
 // Mock API client
 class MockAPIClient {
   private baseURL: string;
@@ -25,7 +43,7 @@ class MockAPIClient {
     return headers;
   }
 
-  async request(endpoint: string, options: RequestInit = {}) {
+  async request(endpoint: string, options: any = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const headers = this.getHeaders();
     
