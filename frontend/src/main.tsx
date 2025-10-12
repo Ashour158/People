@@ -14,6 +14,8 @@ import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { modernTheme } from './theme/modernTheme';
+// Performance optimizations
+import { LazyAnalyticsRoute, LazyIntegrationsRoute } from './components/performance/LazyRoute';
 // Performance
 import { GoalsDashboard } from './pages/performance/GoalsDashboard';
 import { PerformanceReviews } from './pages/performance/PerformanceReviews';
@@ -137,11 +139,11 @@ function App() {
               <Route path="documents/library" element={<DocumentLibrary />} />
               <Route path="documents/upload" element={<DocumentUpload />} />
               
-              {/* Analytics */}
-              <Route path="analytics" element={<AnalyticsDashboard />} />
+              {/* Analytics - Lazy Loaded */}
+              <Route path="analytics" element={<LazyAnalyticsRoute />} />
               
-              {/* Integrations */}
-              <Route path="integrations" element={<IntegrationsPage />} />
+              {/* Integrations - Lazy Loaded */}
+              <Route path="integrations" element={<LazyIntegrationsRoute />} />
               
               {/* Profile */}
               <Route path="profile" element={<EmployeeProfile />} />
