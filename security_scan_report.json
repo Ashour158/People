@@ -1,0 +1,114 @@
+{
+  "timestamp": "2025-10-12T16:39:43.588783",
+  "scanner_version": "1.0.0",
+  "tests": {
+    "frontend_dependencies": {
+      "status": "error",
+      "error": "[WinError 2] The system cannot find the file specified"
+    },
+    "python_dependencies": {
+      "status": "error",
+      "error": "JSON parse error"
+    },
+    "security_configuration": {
+      "status": "completed",
+      "config_files": {
+        "python_backend/app/core/config.py": {
+          "exists": true,
+          "security_checks": {
+            "has_secret_key": true,
+            "has_jwt_config": true,
+            "has_cors_config": true,
+            "has_rate_limiting": false,
+            "has_security_headers": false,
+            "has_input_validation": false,
+            "has_csrf_protection": false,
+            "has_encryption": false,
+            "has_authentication": false,
+            "has_authorization": false
+          },
+          "security_score": 0.3
+        },
+        "python_backend/app/middleware/security.py": {
+          "exists": true,
+          "security_checks": {
+            "has_secret_key": false,
+            "has_jwt_config": false,
+            "has_cors_config": false,
+            "has_rate_limiting": true,
+            "has_security_headers": true,
+            "has_input_validation": true,
+            "has_csrf_protection": false,
+            "has_encryption": false,
+            "has_authentication": false,
+            "has_authorization": false
+          },
+          "security_score": 0.3
+        },
+        "python_backend/app/middleware/auth.py": {
+          "exists": true,
+          "security_checks": {
+            "has_secret_key": false,
+            "has_jwt_config": false,
+            "has_cors_config": false,
+            "has_rate_limiting": false,
+            "has_security_headers": false,
+            "has_input_validation": false,
+            "has_csrf_protection": false,
+            "has_encryption": false,
+            "has_authentication": true,
+            "has_authorization": true
+          },
+          "security_score": 0.2
+        },
+        "frontend/nginx.conf": {
+          "exists": true,
+          "security_checks": {
+            "has_secret_key": false,
+            "has_jwt_config": false,
+            "has_cors_config": false,
+            "has_rate_limiting": false,
+            "has_security_headers": false,
+            "has_input_validation": false,
+            "has_csrf_protection": false,
+            "has_encryption": false,
+            "has_authentication": false,
+            "has_authorization": false
+          },
+          "security_score": 0.0
+        },
+        "docker-compose.yml": {
+          "exists": true,
+          "security_checks": {
+            "has_secret_key": true,
+            "has_jwt_config": true,
+            "has_cors_config": true,
+            "has_rate_limiting": false,
+            "has_security_headers": false,
+            "has_input_validation": false,
+            "has_csrf_protection": false,
+            "has_encryption": false,
+            "has_authentication": false,
+            "has_authorization": false
+          },
+          "security_score": 0.3
+        }
+      }
+    },
+    "environment_security": {
+      "status": "completed",
+      "results": {
+        "environment_variables": {
+          "has_secret_key": false,
+          "has_jwt_secret": false,
+          "has_database_url": false,
+          "has_redis_url": false,
+          "debug_mode": false,
+          "production_mode": false
+        },
+        "hardcoded_secrets": [],
+        "security_score": 0.0
+      }
+    }
+  }
+}
