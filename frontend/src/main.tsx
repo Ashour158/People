@@ -36,6 +36,12 @@ import { SurveyResults } from './pages/surveys/SurveyResults';
 import { WorkflowDesigner } from './pages/workflows/WorkflowDesigner';
 import { ActiveWorkflows } from './pages/workflows/ActiveWorkflows';
 import { WorkflowTemplates } from './pages/workflows/WorkflowTemplates';
+// Analytics
+import { AnalyticsDashboard } from './pages/analytics/AnalyticsDashboard';
+// Integrations
+import { IntegrationsPage } from './pages/integrations/IntegrationsPage';
+// Profile
+import { EmployeeProfile } from './pages/employees/EmployeeProfile';
 // Expenses
 import { ExpenseClaims } from './pages/expenses/ExpenseClaims';
 import { ExpenseApproval } from './pages/expenses/ExpenseApproval';
@@ -130,6 +136,15 @@ function App() {
               {/* Documents */}
               <Route path="documents/library" element={<DocumentLibrary />} />
               <Route path="documents/upload" element={<DocumentUpload />} />
+              
+              {/* Analytics */}
+              <Route path="analytics" element={<AnalyticsDashboard />} />
+              
+              {/* Integrations */}
+              <Route path="integrations" element={<IntegrationsPage />} />
+              
+              {/* Profile */}
+              <Route path="profile" element={<EmployeeProfile />} />
               
               {/* Settings */}
               <Route path="settings/company" element={<CompanySettings />} />

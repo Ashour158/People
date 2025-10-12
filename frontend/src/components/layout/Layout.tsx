@@ -86,29 +86,210 @@ export const Layout: React.FC = () => {
     setOpenMenus((prev) => ({ ...prev, [text]: !prev[text] }));
   };
 
-  // Ultra-simplified navigation - MAX 3 items for any role
+  // Comprehensive role-based navigation
   const getMenuItems = (userRole: string): MenuItem[] => {
     if (userRole === 'employee') {
       return [
         { text: 'My Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-        { text: 'Time & Leave', icon: <AccessTimeIcon />, path: '/attendance' },
         { text: 'My Profile', icon: <PeopleIcon />, path: '/profile' },
+        { text: 'Time & Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
+        { text: 'Leave Management', icon: <EventNoteIcon />, path: '/leave' },
+        { text: 'My Goals', icon: <TrendingUpIcon />, path: '/performance/goals' },
+        { text: 'My Reviews', icon: <PollIcon />, path: '/performance/reviews' },
+        { text: 'My Payslips', icon: <AttachMoneyIcon />, path: '/payroll/slips' },
+        { text: 'My Expenses', icon: <ReceiptIcon />, path: '/expenses/claims' },
+        { text: 'Support', icon: <HelpCenterIcon />, path: '/helpdesk/tickets' },
+        { text: 'My Documents', icon: <FolderIcon />, path: '/documents/library' },
+        { text: 'Surveys', icon: <PollIcon />, path: '/surveys/list' },
       ];
     }
 
     if (userRole === 'hr_manager') {
       return [
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-        { text: 'Team Management', icon: <PeopleIcon />, path: '/employees' },
-        { text: 'HR Operations', icon: <SettingsIcon />, path: '/hr-operations' },
+        { text: 'Employees', icon: <PeopleIcon />, path: '/employees' },
+        { text: 'Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
+        { text: 'Leave Management', icon: <EventNoteIcon />, path: '/leave' },
+        { 
+          text: 'Performance', 
+          icon: <TrendingUpIcon />, 
+          children: [
+            { text: 'Goals', path: '/performance/goals' },
+            { text: 'Reviews', path: '/performance/reviews' },
+            { text: 'Feedback', path: '/performance/feedback' },
+            { text: 'KPIs', path: '/performance/kpi' },
+          ]
+        },
+        { 
+          text: 'Recruitment', 
+          icon: <WorkIcon />, 
+          children: [
+            { text: 'Job Postings', path: '/recruitment/jobs' },
+            { text: 'Candidates', path: '/recruitment/pipeline' },
+            { text: 'Interviews', path: '/recruitment/interviews' },
+            { text: 'Offers', path: '/recruitment/offers' },
+          ]
+        },
+        { 
+          text: 'Payroll', 
+          icon: <AttachMoneyIcon />, 
+          children: [
+            { text: 'Dashboard', path: '/payroll/dashboard' },
+            { text: 'Processing', path: '/payroll/processing' },
+            { text: 'Salary Slips', path: '/payroll/slips' },
+          ]
+        },
+        { 
+          text: 'Workflows', 
+          icon: <AccountTreeIcon />, 
+          children: [
+            { text: 'Designer', path: '/workflows/designer' },
+            { text: 'Active', path: '/workflows/active' },
+            { text: 'Templates', path: '/workflows/templates' },
+          ]
+        },
+        { 
+          text: 'Expenses', 
+          icon: <ReceiptIcon />, 
+          children: [
+            { text: 'Claims', path: '/expenses/claims' },
+            { text: 'Approval', path: '/expenses/approval' },
+            { text: 'Reports', path: '/expenses/reports' },
+            { text: 'Categories', path: '/expenses/categories' },
+          ]
+        },
+        { 
+          text: 'Helpdesk', 
+          icon: <HelpCenterIcon />, 
+          children: [
+            { text: 'Tickets', path: '/helpdesk/tickets' },
+            { text: 'Create Ticket', path: '/helpdesk/create' },
+            { text: 'Knowledge Base', path: '/helpdesk/kb' },
+          ]
+        },
+        { 
+          text: 'Documents', 
+          icon: <FolderIcon />, 
+          children: [
+            { text: 'Library', path: '/documents/library' },
+            { text: 'Upload', path: '/documents/upload' },
+          ]
+        },
+        { 
+          text: 'Surveys', 
+          icon: <PollIcon />, 
+          children: [
+            { text: 'Builder', path: '/surveys/builder' },
+            { text: 'List', path: '/surveys/list' },
+            { text: 'Results', path: '/surveys/results' },
+          ]
+        },
+        { text: 'Analytics', icon: <TrendingUpIcon />, path: '/analytics' },
+        { 
+          text: 'Settings', 
+          icon: <SettingsIcon />, 
+          children: [
+            { text: 'Company', path: '/settings/company' },
+            { text: 'Users', path: '/settings/users' },
+            { text: 'Roles', path: '/settings/roles' },
+            { text: 'System', path: '/settings/system' },
+          ]
+        },
       ];
     }
 
-    // Admin/Manager - Still simplified
+    // Admin - Full system access
     return [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-      { text: 'People', icon: <PeopleIcon />, path: '/employees' },
-      { text: 'Operations', icon: <SettingsIcon />, path: '/operations' },
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+      { text: 'Employees', icon: <PeopleIcon />, path: '/employees' },
+      { text: 'Attendance', icon: <AccessTimeIcon />, path: '/attendance' },
+      { text: 'Leave Management', icon: <EventNoteIcon />, path: '/leave' },
+      { 
+        text: 'Performance', 
+        icon: <TrendingUpIcon />, 
+        children: [
+          { text: 'Goals', path: '/performance/goals' },
+          { text: 'Reviews', path: '/performance/reviews' },
+          { text: 'Feedback', path: '/performance/feedback' },
+          { text: 'KPIs', path: '/performance/kpi' },
+        ]
+      },
+      { 
+        text: 'Recruitment', 
+        icon: <WorkIcon />, 
+        children: [
+          { text: 'Job Postings', path: '/recruitment/jobs' },
+          { text: 'Candidates', path: '/recruitment/pipeline' },
+          { text: 'Interviews', path: '/recruitment/interviews' },
+          { text: 'Offers', path: '/recruitment/offers' },
+        ]
+      },
+      { 
+        text: 'Payroll', 
+        icon: <AttachMoneyIcon />, 
+        children: [
+          { text: 'Dashboard', path: '/payroll/dashboard' },
+          { text: 'Processing', path: '/payroll/processing' },
+          { text: 'Salary Slips', path: '/payroll/slips' },
+        ]
+      },
+      { 
+        text: 'Workflows', 
+        icon: <AccountTreeIcon />, 
+        children: [
+          { text: 'Designer', path: '/workflows/designer' },
+          { text: 'Active', path: '/workflows/active' },
+          { text: 'Templates', path: '/workflows/templates' },
+        ]
+      },
+      { 
+        text: 'Expenses', 
+        icon: <ReceiptIcon />, 
+        children: [
+          { text: 'Claims', path: '/expenses/claims' },
+          { text: 'Approval', path: '/expenses/approval' },
+          { text: 'Reports', path: '/expenses/reports' },
+          { text: 'Categories', path: '/expenses/categories' },
+        ]
+      },
+      { 
+        text: 'Helpdesk', 
+        icon: <HelpCenterIcon />, 
+        children: [
+          { text: 'Tickets', path: '/helpdesk/tickets' },
+          { text: 'Create Ticket', path: '/helpdesk/create' },
+          { text: 'Knowledge Base', path: '/helpdesk/kb' },
+        ]
+      },
+      { 
+        text: 'Documents', 
+        icon: <FolderIcon />, 
+        children: [
+          { text: 'Library', path: '/documents/library' },
+          { text: 'Upload', path: '/documents/upload' },
+        ]
+      },
+      { 
+        text: 'Surveys', 
+        icon: <PollIcon />, 
+        children: [
+          { text: 'Builder', path: '/surveys/builder' },
+          { text: 'List', path: '/surveys/list' },
+          { text: 'Results', path: '/surveys/results' },
+        ]
+      },
+      { text: 'Analytics', icon: <TrendingUpIcon />, path: '/analytics' },
+      { text: 'Integrations', icon: <WorkIcon />, path: '/integrations' },
+      { 
+        text: 'System Admin', 
+        icon: <SettingsIcon />, 
+        children: [
+          { text: 'User Management', path: '/settings/users' },
+          { text: 'Role Management', path: '/settings/roles' },
+          { text: 'System Configuration', path: '/settings/system' },
+          { text: 'Company Settings', path: '/settings/company' },
+        ]
+      },
     ];
   };
 
