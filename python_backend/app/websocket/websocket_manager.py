@@ -147,6 +147,84 @@ class ConnectionManager:
         
         await self.send_to_channel(f"employee:{employee_id}", message)
     
+    async def send_payroll_update(self, employee_id: str, payroll_data: dict):
+        """Send payroll update"""
+        message = {
+            "type": "payroll.updated",
+            "data": {
+                "employee_id": employee_id,
+                "payroll": payroll_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_channel(f"employee:{employee_id}", message)
+    
+    async def send_performance_update(self, employee_id: str, performance_data: dict):
+        """Send performance update"""
+        message = {
+            "type": "performance.updated",
+            "data": {
+                "employee_id": employee_id,
+                "performance": performance_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_channel(f"employee:{employee_id}", message)
+    
+    async def send_recruitment_update(self, organization_id: str, recruitment_data: dict):
+        """Send recruitment update"""
+        message = {
+            "type": "recruitment.updated",
+            "data": {
+                "organization_id": organization_id,
+                "recruitment": recruitment_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_channel(f"organization:{organization_id}", message)
+    
+    async def send_workflow_update(self, user_id: str, workflow_data: dict):
+        """Send workflow update"""
+        message = {
+            "type": "workflow.updated",
+            "data": {
+                "user_id": user_id,
+                "workflow": workflow_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_user(user_id, message)
+    
+    async def send_system_alert(self, organization_id: str, alert_data: dict):
+        """Send system alert"""
+        message = {
+            "type": "system.alert",
+            "data": {
+                "organization_id": organization_id,
+                "alert": alert_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_channel(f"organization:{organization_id}", message)
+    
+    async def send_maintenance_notification(self, organization_id: str, maintenance_data: dict):
+        """Send maintenance notification"""
+        message = {
+            "type": "system.maintenance",
+            "data": {
+                "organization_id": organization_id,
+                "maintenance": maintenance_data,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        }
+        
+        await self.send_to_channel(f"organization:{organization_id}", message)
+    
     def get_connection_count(self) -> int:
         """Get number of active connections"""
         return len(self.active_connections)

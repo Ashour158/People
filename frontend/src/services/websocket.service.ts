@@ -101,11 +101,52 @@ class WebSocketService {
       store.setLeaveRequests(requests);
     });
 
+    // Payroll updates
+    this.socket.on('payroll.updated', (data) => {
+      const store = useGlobalStore.getState();
+      // Update payroll data in store
+      store.updatePayrollData(data);
+    });
+
+    // Performance updates
+    this.socket.on('performance.updated', (data) => {
+      const store = useGlobalStore.getState();
+      // Update performance data in store
+      store.updatePerformanceData(data);
+    });
+
+    // Recruitment updates
+    this.socket.on('recruitment.updated', (data) => {
+      const store = useGlobalStore.getState();
+      // Update recruitment data in store
+      store.updateRecruitmentData(data);
+    });
+
+    // Workflow updates
+    this.socket.on('workflow.updated', (data) => {
+      const store = useGlobalStore.getState();
+      // Update workflow data in store
+      store.updateWorkflowData(data);
+    });
+
     // System events
+    this.socket.on('system.alert', (data) => {
+      const store = useGlobalStore.getState();
+      store.addNotification({
+        id: Date.now().toString(),
+        type: 'warning',
+        title: 'System Alert',
+        message: data.message || 'System alert',
+        timestamp: new Date(),
+        read: false,
+      });
+    });
+
+    // System maintenance alerts
     this.socket.on('system.maintenance', (data) => {
       const store = useGlobalStore.getState();
       store.addNotification({
-        id: `maintenance-${  Date.now()}`,
+        id: `maintenance-${Date.now()}`,
         type: 'warning',
         title: 'System Maintenance',
         message: data.message || 'System will be under maintenance',
