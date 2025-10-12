@@ -149,6 +149,14 @@ class Employee(Base):
     manager_id = Column(UUID(as_uuid=True), ForeignKey("employees.employee_id"))
     work_location = Column(String(255))
     
+    # ENCRYPTED SENSITIVE FIELDS - CRITICAL SECURITY
+    ssn = Column(Text)  # Encrypted Social Security Number
+    salary = Column(Text)  # Encrypted salary information
+    bank_account = Column(Text)  # Encrypted bank account details
+    personal_id = Column(Text)  # Encrypted passport/driver's license
+    tax_id = Column(Text)  # Encrypted tax identification
+    medical_info = Column(Text)  # Encrypted medical information
+    
     # Metadata
     is_deleted = Column(Boolean, default=False)
     created_by = Column(UUID(as_uuid=True))

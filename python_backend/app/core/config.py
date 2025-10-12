@@ -1,5 +1,6 @@
 """Application configuration"""
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from typing import List, Optional
 from functools import lru_cache
 
@@ -14,8 +15,8 @@ class Settings(BaseSettings):
     API_VERSION: str = "v1"
     PORT: int = 8000
     
-    # Database
-    DATABASE_URL: str = "postgresql://postgres:hrms_secure_password_123@localhost:5432/hr_system"
+    # Database - CRITICAL: Database credentials must be provided via environment variables
+    DATABASE_URL: str = Field(..., regex=r'^postgresql://.*$', description="Database connection URL")
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
     DB_POOL_TIMEOUT: int = 30
@@ -26,9 +27,9 @@ class Settings(BaseSettings):
     REDIS_ENABLED: bool = True
     CACHE_TTL: int = 3600  # 1 hour
     
-    # Security
-    SECRET_KEY: str = "your-secret-key-change-this-in-production"
-    JWT_SECRET_KEY: str = "your-jwt-secret-key-change-this-in-production"
+    # Security - CRITICAL: All secrets must be provided via environment variables
+    SECRET_KEY: str = Field(..., min_length=32, description="Application secret key (min 32 chars)")
+    JWT_SECRET_KEY: str = Field(..., min_length=32, description="JWT signing key (min 32 chars)")
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7

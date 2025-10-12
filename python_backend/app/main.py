@@ -13,7 +13,9 @@ from app.db.database import init_db, close_db
 from app.core.redis_client import init_redis, close_redis
 from app.middleware.error_handler import error_handler_middleware
 from app.middleware.rate_limiter import RateLimiterMiddleware
-from app.middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware, InputValidationMiddleware
+from app.middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware, EnhancedInputValidationMiddleware
+from app.middleware.csrf import CSRFProtectionMiddleware
+from app.middleware.security_monitoring import SecurityMonitoringMiddleware
 from app.api.v1.router import api_router
 from app.events.event_dispatcher import EventDispatcher
 
@@ -78,10 +80,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Security middleware
-app.add_middleware(SecurityHeadersMiddleware)
+# SECURITY MIDDLEWARE - CRITICAL SECURITY STACK
+# Order matters: Security monitoring first, then protection layers
+
+# 1. Security monitoring (logs all security events)
+app.add_middleware(SecurityMonitoringMiddleware)
+
+# 2. CSRF protection (prevents cross-site request forgery)
+app.add_middleware(CSRFProtectionMiddleware, secret_key=settings.SECRET_KEY)
+
+# 3. Enhanced input validation (prevents XSS, SQL injection, path traversal)
+app.add_middleware(EnhancedInputValidationMiddleware)
+
+# 4. Rate limiting (prevents abuse)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
-app.add_middleware(InputValidationMiddleware)
+
+# 5. Security headers (prevents clickjacking, XSS, etc.)
+app.add_middleware(SecurityHeadersMiddleware)
 
 # Custom middleware
 app.middleware("http")(error_handler_middleware)

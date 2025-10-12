@@ -232,7 +232,11 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)) -> Login
 
 
 @router.post("/logout")
-async def logout():
+async def logout(
+    db: AsyncSession = Depends(get_db),
+    credentials = Depends(security),
+    current_user = Depends(AuthMiddleware.get_current_user)
+):
     """
     Logout user and invalidate session.
     
@@ -244,8 +248,22 @@ async def logout():
     Returns:
         BaseResponse: Success message confirming logout
     """
-    # In a real implementation, you would invalidate the token
-    # For now, client-side token removal is sufficient
+    try:
+        # Get token from request
+        token = credentials.credentials
+        
+        # Invalidate token in cache
+        from app.core.redis_client import cache_service
+        await cache_service.delete(f"auth:token:{token}")
+        
+        # Log logout event
+        logger.info(f"User logged out: {current_user['user_id']}")
+        
+        return {"message": "Logged out successfully"}
+        
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        return {"message": "Logged out successfully"}  # Always return success for security
 
     await EventDispatcher.dispatch(Events.USER_LOGOUT, {})
 

@@ -23,10 +23,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         
-        # Content Security Policy
+        # Content Security Policy - SECURE VERSION (No unsafe-inline/unsafe-eval)
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "script-src 'self' 'nonce-{random}'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https: blob:; "
@@ -35,7 +35,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "object-src 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
-            "frame-ancestors 'none'"
+            "frame-ancestors 'none'; "
+            "upgrade-insecure-requests; "
+            "block-all-mixed-content"
         )
         response.headers["Content-Security-Policy"] = csp
         
@@ -84,8 +86,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
-class InputValidationMiddleware(BaseHTTPMiddleware):
-    """Input validation and sanitization middleware"""
+class EnhancedInputValidationMiddleware(BaseHTTPMiddleware):
+    """Enhanced input validation and sanitization middleware"""
     
     async def dispatch(self, request: Request, call_next):
         # Check for suspicious patterns in request
@@ -93,21 +95,89 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
             # Get request body for validation
             body = await request.body()
             if body:
-                body_str = body.decode('utf-8', errors='ignore').lower()
+                body_str = body.decode('utf-8', errors='ignore')
                 
-                # Check for SQL injection patterns
-                sql_patterns = [
-                    'union select', 'drop table', 'delete from',
-                    'insert into', 'update set', 'exec(',
-                    'script>', '<script', 'javascript:',
-                    'onload=', 'onerror=', 'onclick='
+                # Enhanced XSS detection patterns
+                xss_patterns = [
+                    r'<script[^>]*>.*?</script>',
+                    r'javascript:',
+                    r'on\w+\s*=',
+                    r'<iframe[^>]*>',
+                    r'<object[^>]*>',
+                    r'<embed[^>]*>',
+                    r'<form[^>]*>',
+                    r'<input[^>]*>',
+                    r'<link[^>]*>',
+                    r'<meta[^>]*>',
+                    r'<style[^>]*>',
+                    r'expression\s*\(',
+                    r'url\s*\(',
+                    r'@import',
+                    r'<link[^>]*stylesheet',
+                    r'<script[^>]*src',
+                    r'<img[^>]*onerror',
+                    r'<svg[^>]*onload',
+                    r'<body[^>]*onload',
+                    r'<div[^>]*onclick',
+                    r'<a[^>]*onclick',
+                    r'<button[^>]*onclick'
                 ]
                 
-                for pattern in sql_patterns:
-                    if pattern in body_str:
-                        logger.warning(f"Suspicious input detected: {pattern}")
+                # SQL injection patterns
+                sql_patterns = [
+                    r'union\s+select',
+                    r'drop\s+table',
+                    r'delete\s+from',
+                    r'insert\s+into',
+                    r'update\s+set',
+                    r'exec\s*\(',
+                    r'execute\s*\(',
+                    r'sp_',
+                    r'xp_',
+                    r'--',
+                    r'/\*.*?\*/',
+                    r'waitfor\s+delay',
+                    r'benchmark\s*\(',
+                    r'sleep\s*\(',
+                    r'load_file\s*\(',
+                    r'into\s+outfile',
+                    r'into\s+dumpfile'
+                ]
+                
+                # Check for XSS patterns
+                import re
+                for pattern in xss_patterns:
+                    if re.search(pattern, body_str, re.IGNORECASE | re.DOTALL):
+                        logger.warning(f"XSS attempt detected: {pattern}")
                         return Response(
-                            content="Invalid input detected",
+                            content="Invalid input detected - XSS attempt blocked",
+                            status_code=400
+                        )
+                
+                # Check for SQL injection patterns
+                for pattern in sql_patterns:
+                    if re.search(pattern, body_str, re.IGNORECASE):
+                        logger.warning(f"SQL injection attempt detected: {pattern}")
+                        return Response(
+                            content="Invalid input detected - SQL injection attempt blocked",
+                            status_code=400
+                        )
+                
+                # Check for path traversal
+                path_traversal_patterns = [
+                    r'\.\./',
+                    r'\.\.\\',
+                    r'%2e%2e%2f',
+                    r'%2e%2e%5c',
+                    r'\.\.%2f',
+                    r'\.\.%5c'
+                ]
+                
+                for pattern in path_traversal_patterns:
+                    if re.search(pattern, body_str, re.IGNORECASE):
+                        logger.warning(f"Path traversal attempt detected: {pattern}")
+                        return Response(
+                            content="Invalid input detected - Path traversal attempt blocked",
                             status_code=400
                         )
         
