@@ -16,6 +16,13 @@ from app.middleware.rate_limiter import RateLimiterMiddleware
 from app.middleware.security import SecurityHeadersMiddleware, RateLimitMiddleware, EnhancedInputValidationMiddleware
 from app.middleware.csrf import CSRFProtectionMiddleware
 from app.middleware.security_monitoring import SecurityMonitoringMiddleware
+from app.middleware.performance_middleware import (
+    PerformanceMonitoringMiddleware,
+    DatabaseQueryMonitoringMiddleware,
+    CachePerformanceMiddleware,
+    SystemMetricsMiddleware,
+    PerformanceAlertMiddleware
+)
 from app.api.v1.router import api_router
 from app.events.event_dispatcher import EventDispatcher
 
@@ -97,6 +104,24 @@ app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 
 # 5. Security headers (prevents clickjacking, XSS, etc.)
 app.add_middleware(SecurityHeadersMiddleware)
+
+# PERFORMANCE MONITORING MIDDLEWARE - CRITICAL FOR OPTIMIZATION
+# Order matters: Performance monitoring first, then system metrics
+
+# 6. Performance monitoring (tracks API performance)
+app.add_middleware(PerformanceMonitoringMiddleware)
+
+# 7. Database query monitoring (tracks DB performance)
+app.add_middleware(DatabaseQueryMonitoringMiddleware)
+
+# 8. Cache performance monitoring (tracks cache performance)
+app.add_middleware(CachePerformanceMiddleware)
+
+# 9. System metrics collection (tracks system resources)
+app.add_middleware(SystemMetricsMiddleware)
+
+# 10. Performance alerts (checks for performance issues)
+app.add_middleware(PerformanceAlertMiddleware)
 
 # Custom middleware
 app.middleware("http")(error_handler_middleware)

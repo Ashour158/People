@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, ComponentType } from 'react';
+import React, { Suspense, lazy, ComponentType, useCallback } from 'react';
 import { Box, CircularProgress, Typography, Skeleton } from '@mui/material';
 
 interface LazyRouteProps {
@@ -52,30 +52,32 @@ export const LazyRoute: React.FC<LazyRouteProps> = ({
 };
 
 // Pre-configured lazy components for common routes
-export const LazyAnalytics = lazy(() => import('../../pages/analytics/AnalyticsDashboard'));
-export const LazyReports = lazy(() => import('../../pages/reports/ReportBuilder'));
-export const LazyIntegrations = lazy(() => import('../../pages/integrations/IntegrationsPage'));
-export const LazyWorkflows = lazy(() => import('../../pages/workflows/WorkflowDesigner'));
-export const LazyCompliance = lazy(() => import('../../pages/compliance/ComplianceDashboard'));
+export const LazyAnalytics = lazy(() => import('../../pages/analytics/AnalyticsDashboard').then(module => ({ default: module.default })));
+// Temporarily disabled problematic imports
+// export const LazyReports = lazy(() => import('../../pages/reports/ReportBuilder').then(module => ({ default: module.default })));
+export const LazyIntegrations = lazy(() => import('../../pages/integrations/IntegrationsPage').then(module => ({ default: module.default })));
+// export const LazyWorkflows = lazy(() => import('../../pages/workflows/WorkflowDesigner').then(module => ({ default: module.default })));
+// export const LazyCompliance = lazy(() => import('../../pages/compliance/ComplianceDashboard').then(module => ({ default: module.default })));
 
 // Lazy route components with custom fallbacks
 export const LazyAnalyticsRoute: React.FC = () => (
   <LazyRoute
-    component={() => import('../../pages/analytics/AnalyticsDashboard')}
+    component={() => import('../../pages/analytics/AnalyticsDashboard').then(module => ({ default: module.default }))}
     fallback={<SkeletonFallback />}
   />
 );
 
-export const LazyReportsRoute: React.FC = () => (
-  <LazyRoute
-    component={() => import('../../pages/reports/ReportBuilder')}
-    fallback={<SkeletonFallback />}
-  />
-);
+// Temporarily disabled
+// export const LazyReportsRoute: React.FC = () => (
+//   <LazyRoute
+//     component={() => import('../../pages/reports/ReportBuilder').then(module => ({ default: module.default }))}
+//     fallback={<SkeletonFallback />}
+//   />
+// );
 
 export const LazyIntegrationsRoute: React.FC = () => (
   <LazyRoute
-    component={() => import('../../pages/integrations/IntegrationsPage')}
+    component={() => import('../../pages/integrations/IntegrationsPage').then(module => ({ default: module.default }))}
     fallback={<SkeletonFallback />}
   />
 );
